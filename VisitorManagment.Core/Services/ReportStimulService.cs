@@ -22,6 +22,9 @@ namespace VisitorManagment.Core.Services
             _hameshService = hameshService;
             _webApiService = webApiService;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ReportTestInfoViewModel GetReportFullPersonal(int fileId)
         {
             var result = _context.Files.Include(x => x.Personal)
@@ -196,6 +199,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ReportTestInfoViewModelV2 GetReportFullPersonalV2(int fileId)
         {
             var file = _context.Files
@@ -263,6 +269,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetHameshByRoleTypeFinal(int fileId, int roleTypeFinalId)
         {
             var hamesh = _context.Hameshes.Include(x => x.User)
