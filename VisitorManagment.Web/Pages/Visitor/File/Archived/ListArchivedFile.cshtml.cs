@@ -36,6 +36,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
         public List<Users> users { get; set; }
 
         public ListHameshViewModel listHameshViewModel { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int pageId = 1, string filterCaption = "", int requestsubject = 0, int filterAvamerSadereh = 0, string filterGharargah = "")
         {
             users = new List<Users>();
@@ -54,6 +57,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
 
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetFileInfo(int fileid)
         {
             var fileId = _fileService.GetFile(fileid);
@@ -63,6 +69,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
 
         #region هامش های ثبت شده برای درخواست ملاقات
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetHamesh(int fileId)
         {
             listHameshViewModel = _hameshService.GetHameshIdByFileId(fileId);
