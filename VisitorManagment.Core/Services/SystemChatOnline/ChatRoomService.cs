@@ -22,6 +22,12 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             _context = context;
             _userService = userService;
         }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
 
         public async Task<Guid> CreateChatRoom(string ConnectionId , string personalCode)
         {
@@ -44,6 +50,9 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             return await Task.FromResult(chatRoom.Id);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task<List<ChatRoomDTO>> GetAllrooms()
         {
             //var rooms = _context.ChatRooms
@@ -75,10 +84,14 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             return await Task.FromResult(room);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task<Guid> GetChatRoomForConnection(string CoonectionId)
         {
             var chatRoom = _context.ChatRooms.SingleOrDefault(p => p.ConnectionId == CoonectionId);
             return await Task.FromResult(chatRoom.Id);
         }
+        #endregion
     }
 }
