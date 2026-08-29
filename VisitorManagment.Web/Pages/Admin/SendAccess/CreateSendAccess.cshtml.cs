@@ -30,6 +30,12 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
         public List<WorkFlowViewModel> ListUnAccsessPersonal { get; set; }
 
         public int? RoleId;
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet(int? roleId = 0)
         {
@@ -119,5 +125,6 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
             return Page();
         }
 
+        #endregion
     }
 }
