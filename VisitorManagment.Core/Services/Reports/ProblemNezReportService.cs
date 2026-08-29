@@ -19,6 +19,12 @@ namespace VisitorManagment.Core.Services.Reports
         {
             _context = context;
         }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
+
         public List<ProblemAllNez> GetPeroblemAllNez()
         {
             var strAnd = " AND ";
@@ -51,6 +57,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemGhaReport> GetPeroblemGhaNez()
         {
             var strAnd = " AND ";
@@ -82,6 +91,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemOmdOrganReport> GetPeroblemOmdOrganNez()
         {
             var strAnd = " AND ";
@@ -115,6 +127,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ChartProblemOmdOrgan GetProblemCountOmdOrganInfo(int OmdOrganId)
         {
             var model = new ChartProblemOmdOrgan();
@@ -130,6 +145,9 @@ namespace VisitorManagment.Core.Services.Reports
             return model;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemOmdOrganReport> GetProblemOmdOrgByGhCd_OmdCd(int GhaCd, int OmdCd, DateTime? startDateEnglish, DateTime? endDateEnglish) 
         {
             var strAnd = " AND ";
@@ -362,5 +380,6 @@ namespace VisitorManagment.Core.Services.Reports
 
 
 
+        #endregion
     }
 }
