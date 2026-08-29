@@ -1,213 +1,95 @@
-﻿@page
+@page
 @model VisitorManagment.Web.Pages.Admin.SendAccess.CreateSendAccessModel
-@{
-    //Layout = "_LayoutPages";
-    var counter1 = 0;
-    var counter2 = 0;
-}
+@{ ViewData["Title"] = "دسترسی ارسال بین نقش‌ها"; }
 
-<form>
-    <div class="container-fluid card ">
-        <h3 class="text-info mt-2">ایجاد دسترسی</h3>
-        <hr />
-        <div class="col-md-7 demo-code-preview " style="background-color:rgb(228 222 222 / 0.42);position:relative; bottom:50px">
-            <div class="form-row">
-                <div class="col-md-8">
-                    <label for="validationCustom02"><h5 style="font:bold">سمت ، شغل   : </h5></label>
+<link rel="stylesheet" href="~/css/access-management.css" />
 
-                    <select id="ComCodeSemat" onchange="this.form.submit()" name="roleId"
-                            asp-items="@ViewBag.AllRole" asp-for="@Model.RoleId"
-                            class="form-control js-example-basic-single" required="">
-
-                        <option value="سمت ، شغل  را انتخاب نمایید">سمت ، شغل   را انتخاب نمایید</option>
-
-                    </select>
-
-                    <div class="invalid-feedback">
-                        سمت ، شغل کاربر   را انتخاب نمایید
-                    </div>
-                </div>
-
-                <div class=" col-md-3 text-center float-left m-t-35" id="errormaxLengthFile">
-
-                    <a href="/Admin/sendaccess/CreateSendAccess" class="btn btn-outline-instagram ml-2">  بازنشانی</a>
-
-                </div>
-            </div>
+<main class="access-page" dir="rtl">
+    <header class="access-hero access-hero--workflow">
+        <div>
+            <span class="access-eyebrow"><i class="ti-exchange-vertical"></i> مسیر گردش کار</span>
+            <h1>دسترسی ارسال بین نقش‌ها</h1>
+            <p>مشخص کنید هر نقش، مجاز به ارسال درخواست برای کدام نقش‌های دیگر باشد.</p>
         </div>
-    </div>
-</form>
+        <div class="access-hero__icon" aria-hidden="true"><i class="ti-direction-alt"></i></div>
+    </header>
 
-
-@if (ViewBag.ShowForm == true)
-{
-
-    <form method="post" class="row">
-        <input type="hidden" value="@ViewBag.RoleId" name="roleId">
-        @*<div class="row">*@
-
-        <div class="col-md-6 ">
-            <div class="card card-body">
-                <div class="d-flex justify-content-between">
-                    <h4 class="text-danger">  دسترسی ندارد</h4>
-                    <button class="btn btn-success" type="submit" asp-page-handler="RegAccess"><i class="ti-plus mr-2"></i> ایجاد دسترسی</button>
-
-                </div>
-                <hr />
-                <a>
-                    <div class="table-responsive">
-                        <table id="myTable" style="direction:rtl" class="table table-striped table-bordered">
-                            <thead>
-                                <tr class="text-center">
-                                    <th>  ردیف</th>
-                                    <th> مشخصات پرسنل </th>
-                                    <th>
-                                        <a class=" font-italic float-left">
-                                            <label class="" for="customCheckAllUnAcc">انتخاب همه</label>
-                                            <input type="checkbox" class=" btn btn-danger p-10" id="customCheckAllUnAcc">
-                                        </a>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var UnPersonal in Model.ListUnAccsessPersonal)
-                                {
-                                    <tr class="text-center">
-                                        <td>@(++counter1)</td>
-                                        <td>@UnPersonal.Title [@UnPersonal.RankTitle @UnPersonal.Fname &nbsp; @UnPersonal.Lname] </td>
-                                        <td class="d-sm-flex justify-content-center ">
-                                            <div class="custom-control">
-                                                <input type="checkbox" name="UnAccessRoleId" class="p-10" id="customCheck4" value="@UnPersonal.Id" multiple>
-                                                <label class="" for="customCheck4"></label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                        </table>
-                    </div>
-
-                </a>
-                <div>
-                </div>
-            </div>
+    <form method="get" class="access-role-picker">
+        <div class="access-role-picker__field">
+            <label for="rolePicker"><i class="ti-user"></i> نقش ارسال‌کننده</label>
+            <select id="rolePicker" name="roleId" asp-items="ViewBag.AllRole" asp-for="RoleId" class="form-control js-example-basic-single" data-role-picker required>
+                <option value="0">یک نقش را انتخاب کنید</option>
+            </select>
+            <small>نقشی را انتخاب کنید که می‌خواهید مقصدهای مجاز آن را تنظیم کنید.</small>
         </div>
-
-        <div class="col-md-6 ">
-            <div class="card card-body">
-                <div class="d-flex justify-content-between">
-                    <h4 style="color: #029f55">  دسترسی دارد</h4>
-                    <button class="btn btn-danger" type="submit" asp-page-handler="UnAccess"><i class="ti-trash mr-2"></i> حذف دسترسی</button>
-
-                </div>
-                <hr>
-                <a>
-                    <div class="table-responsive">
-                        <table id="myTableAccess" class="table table-striped table-bordered ">
-                            <thead>
-                                <tr class="text-center">
-                                    <th>  ردیف</th>
-                                    <th> مشخصات پرسنل </th>
-                                    <th>
-                                        <a href="#" class=" ml-2 font-italic float-left" style="background-color:rgba(142, 138, 138, 0.31);padding-top:7px;padding-left:5px;padding-right:7px; border-radius:10px;">
-                                            <label class="" for="CheckAllAcc">انتخاب همه</label>
-                                            <input type="checkbox" class=" btn btn-danger p-10" id="CheckAllAcc">
-
-                                        </a>
-
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var Personal in Model.ListAccsessPersonal)
-                                {
-                                    <tr class="text-center">
-                                        <td>@(++counter2)</td>
-                                        <td>@Personal.Title [@Personal.RankTitle @Personal.Fname &nbsp; @Personal.Lname]</td>
-                                        <td class="d-sm-flex justify-content-center ">
-                                            <div class="custom-control">
-                                                <input type="checkbox" name="AccessRoleId" class="p-10" id="customCheck4" value="@Personal.Id" multiple>
-                                                <label class="" for="customCheck4"></label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                        </table>
-                    </div>
-
-                </a>
-                <div>
-                </div>
-            </div>
-        </div>
+        <a asp-page="./CreateSendAccess" class="access-reset"><i class="ti-reload"></i> بازنشانی</a>
     </form>
 
-}
+    @if (ViewBag.ShowForm == true)
+    {
+        <form method="post" class="access-board" data-access-board>
+            <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
+            <section class="access-panel access-panel--available" data-access-panel>
+                <div class="access-panel__header">
+                    <div><span class="access-panel__status"><i class="ti-close"></i> غیرمجاز</span><h2>نقش‌های قابل افزودن</h2></div>
+                    <span class="access-count">@Model.ListUnAccsessPersonal.Count مورد</span>
+                </div>
+                <div class="access-toolbar">
+                    <label class="access-search"><i class="ti-search"></i><input type="search" placeholder="جست‌وجوی نقش یا نام پرسنل..." data-access-search /></label>
+                    <label class="access-select-all"><input type="checkbox" data-select-all /><span>انتخاب همه</span></label>
+                </div>
+                <div class="access-list" data-access-list>
+                    @foreach (var role in Model.ListUnAccsessPersonal)
+                    {
+                        var checkboxId = $"add-role-{role.Id}";
+                        <label class="access-item" for="@checkboxId" data-access-item>
+                            <span class="access-item__check"><input id="@checkboxId" type="checkbox" name="UnAccessRoleId" value="@role.Id" /><span><i class="ti-check"></i></span></span>
+                            <span class="access-item__content"><strong>@role.Title</strong><small>@role.RankTitle @role.Fname @role.Lname</small></span>
+                            <i class="ti-angle-left access-item__arrow"></i>
+                        </label>
+                    }
+                    <div class="access-empty @(Model.ListUnAccsessPersonal.Count == 0 ? "is-visible" : "")" data-empty-state><i class="ti-check-box"></i><span>همه نقش‌ها در مسیر ارسال قرار دارند.</span></div>
+                    <div class="access-empty" data-no-result><i class="ti-search"></i><span>نتیجه‌ای پیدا نشد.</span></div>
+                </div>
+                <footer class="access-panel__footer">
+                    <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
+                    <button type="submit" asp-page-handler="RegAccess" class="access-action access-action--add" data-requires-selection data-confirm="نقش‌های انتخاب‌شده به مسیر ارسال اضافه شوند؟"><i class="ti-plus"></i> افزودن به مسیر</button>
+                </footer>
+            </section>
 
+            <section class="access-panel access-panel--granted" data-access-panel>
+                <div class="access-panel__header">
+                    <div><span class="access-panel__status"><i class="ti-check"></i> مجاز</span><h2>مقصدهای فعال ارسال</h2></div>
+                    <span class="access-count">@Model.ListAccsessPersonal.Count مورد</span>
+                </div>
+                <div class="access-toolbar">
+                    <label class="access-search"><i class="ti-search"></i><input type="search" placeholder="جست‌وجوی نقش یا نام پرسنل..." data-access-search /></label>
+                    <label class="access-select-all"><input type="checkbox" data-select-all /><span>انتخاب همه</span></label>
+                </div>
+                <div class="access-list" data-access-list>
+                    @foreach (var role in Model.ListAccsessPersonal)
+                    {
+                        var checkboxId = $"remove-role-{role.Id}";
+                        <label class="access-item" for="@checkboxId" data-access-item>
+                            <span class="access-item__check"><input id="@checkboxId" type="checkbox" name="AccessRoleId" value="@role.Id" /><span><i class="ti-check"></i></span></span>
+                            <span class="access-item__content"><strong>@role.Title</strong><small>@role.RankTitle @role.Fname @role.Lname</small></span>
+                            <i class="ti-angle-left access-item__arrow"></i>
+                        </label>
+                    }
+                    <div class="access-empty @(Model.ListAccsessPersonal.Count == 0 ? "is-visible" : "")" data-empty-state><i class="ti-info-alt"></i><span>هنوز مقصدی برای این نقش تعریف نشده است.</span></div>
+                    <div class="access-empty" data-no-result><i class="ti-search"></i><span>نتیجه‌ای پیدا نشد.</span></div>
+                </div>
+                <footer class="access-panel__footer">
+                    <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
+                    <button type="submit" asp-page-handler="UnAccess" class="access-action access-action--remove" data-requires-selection data-confirm="نقش‌های انتخاب‌شده از مسیر ارسال حذف شوند؟"><i class="ti-trash"></i> حذف از مسیر</button>
+                </footer>
+            </section>
+        </form>
+    }
+    else
+    {
+        <div class="access-welcome"><span><i class="ti-hand-point-up"></i></span><h2>نقش ارسال‌کننده را انتخاب کنید</h2><p>مقصدهای مجاز و غیرمجاز این نقش به‌صورت تفکیک‌شده نمایش داده می‌شوند.</p></div>
+    }
+</main>
 
-
-
-
-
-@section Scripts
-{
-
-
-<script>
-    $(document).ready(function () {
-        $('#myTable').DataTable();
-    });
-    $(document).ready(function () {
-        $('#myTableAccess').DataTable();
-    });
-</script>
-<script>
-
-
-    $('#ComCodeSemat').on('change', function () {
-        $(this).closest('form').submit();
-    });
-
-
-    $("#customCheckAllUnAcc").click(function () {
-        var ele = document.getElementsByName('UnAccessRoleId');
-        if (this.checked) {
-            for (var i = 0; i < ele.length; i++) {
-                if (ele[i].type == 'checkbox') {
-                    ele[i].checked = true;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < ele.length; i++) {
-                if (ele[i].type == 'checkbox') {
-                    ele[i].checked = false;
-                }
-            }
-        }
-
-    });
-
-
-    $("#CheckAllAcc").click(function () {
-        var ele = document.getElementsByName('AccessRoleId');
-        if (this.checked) {
-            for (var i = 0; i < ele.length; i++) {
-                if (ele[i].type == 'checkbox') {
-                    ele[i].checked = true;
-                }
-            }
-        }
-        else {
-            for (var i = 0; i < ele.length; i++) {
-                if (ele[i].type == 'checkbox') {
-                    ele[i].checked = false;
-                }
-            }
-        }
-
-    });
-
-</script>
-
-
-}
+@section Scripts { <script src="~/js/access-management.js"></script> }
