@@ -100,11 +100,17 @@ namespace VisitorManagment.Core.Services.Interfaces
         ListFileReferenceViewModel GetListFileForEditReferenceForOnlineConversation(int meetingId);
 
         #region تغییر وضعیت جلسه ملاقات 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public BaseResult ChangeStatusMeeting(int meetingId);
         #endregion
 
 
         #region تغییر وضعیت نفر در لیست اعضای جلسه که جلسه ش رگزار شده است
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public BaseResult ChangeStatusPersonInMeeting(int fileId);
 
         #endregion
