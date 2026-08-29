@@ -23,7 +23,18 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
         }
         public IActionResult OnPost(int Id)
         {
+            if (Id <= 0)
+            {
+                TempData["OperationTitle"] = "خطا در حذف";
+                TempData["OperationMessage"] = "شناسه جلسه معتبر نیست.";
+                TempData["OperationIcon"] = "error";
+                return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
+            }
+
             _meetingservice.DeleteMeeting(Id);
+            TempData["OperationTitle"] = "حذف موفق";
+            TempData["OperationMessage"] = "جلسه با موفقیت حذف شد.";
+            TempData["OperationIcon"] = "success";
             return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
         }
     }
