@@ -18,29 +18,19 @@
 </head>
 <body class="omid-login-page">
     <main class="omid-login-shell">
-        <section class="omid-login-intro" aria-label="معرفی سامانه">
-            <div class="omid-brand">
-                <img src="~/LOGO.png" alt="نشان سامانه امید" />
-                <div>
-                    <div class="omid-brand-name">سامانه امید</div>
-                    <div class="omid-brand-subtitle">سامانه ملاقات عمومی کارکنان نزاجا</div>
-                </div>
-            </div>
-            <h1>رسیدگی منظم، سریع و شفاف به درخواست‌های کارکنان</h1>
-            <p>برای مشاهده کارتابل، ثبت درخواست و پیگیری مراحل رسیدگی، با حساب سازمانی خود وارد شوید.</p>
-        </section>
-
-        <section class="omid-login-panel">
-            <div class="omid-login-card">
-                <h2>ورود به سامانه</h2>
-                <p>نام کاربری و رمز عبور خود را وارد کنید.</p>
+        <section class="omid-login-card" aria-label="ورود به سامانه">
+                <header class="omid-brand">
+                    <div class="omid-logo-frame"><img src="~/LOGO.png" alt="نشان سامانه امید" /></div>
+                    <h1>ورود به سامانه امید</h1>
+                    <p>سامانه ملاقات عمومی کارکنان نزاجا</p>
+                </header>
 
                 <form id="login-form" method="post" autocomplete="on">
                     <div asp-validation-summary="ModelOnly" role="alert"></div>
                     <div class="omid-field">
                         <label asp-for="LoginViewModel.UserName">نام کاربری</label>
                         <div class="omid-input-wrap">
-                            <i class="fa fa-user" aria-hidden="true"></i>
+                            <i class="fa fa-user omid-input-icon" aria-hidden="true"></i>
                             <input asp-for="LoginViewModel.UserName" class="omid-input" inputmode="numeric"
                                    autocomplete="username" maxlength="10"
                                    placeholder="نام کاربری خود را وارد کنید" autofocus />
@@ -51,7 +41,7 @@
                     <div class="omid-field">
                         <label asp-for="LoginViewModel.Password">رمز عبور</label>
                         <div class="omid-input-wrap">
-                            <i class="fa fa-lock" aria-hidden="true"></i>
+                            <i class="fa fa-lock omid-input-icon" aria-hidden="true"></i>
                             <input asp-for="LoginViewModel.Password" class="omid-input" type="password"
                                    autocomplete="current-password" maxlength="200"
                                    placeholder="رمز عبور خود را وارد کنید" />
@@ -72,14 +62,13 @@
                     <button id="login-submit" class="omid-submit" type="submit"><span>ورود امن به سامانه</span></button>
                 </form>
 
-                <div class="omid-browser">
+                <div class="omid-help">
                     <a href="~/downloadapp/Chrome.exe" target="_blank" rel="noopener" title="دانلود گوگل کروم">
                         <img src="~/downloadapp/chrome-1.png" alt="گوگل کروم" />
-                        <span>برای عملکرد بهتر سامانه از مرورگر به‌روز استفاده کنید.</span>
+                        <span>راهنمای استفاده و دریافت مرورگر پیشنهادی</span>
                     </a>
                 </div>
-                <footer class="omid-footer">سازمان فناوری اطلاعات م فاوا نزاجا<br /><span>تمام حقوق سامانه محفوظ است.</span></footer>
-            </div>
+                <footer class="omid-footer">سازمان فناوری اطلاعات م فاوا نزاجا</footer>
         </section>
     </main>
 
