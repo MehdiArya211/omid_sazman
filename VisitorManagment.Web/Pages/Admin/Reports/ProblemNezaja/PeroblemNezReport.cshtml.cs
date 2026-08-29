@@ -41,6 +41,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         public SearchPageReportProblemNezajaReportViewModel searchPageReportViewModel { get; set; }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int filterGharargah = 0)
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
@@ -192,6 +195,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         }
 
        
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int Gharargahid, int Yeganid, string startDateSearch = "", string endDateSearch = "")
         {
 
@@ -405,6 +411,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
             return Page();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             ViewData["Message"] = "گزارش فراوانی مشکلات در سطح نیروی زمینی";
