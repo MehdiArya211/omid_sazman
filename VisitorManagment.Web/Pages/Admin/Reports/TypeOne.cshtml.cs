@@ -37,6 +37,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         [BindProperty]
         public List<Chart> BarLineDataSet { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int pageId = 1, string filterCaption = "", int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0, string startDateSearch = "", string endDateSearch = "")
         {
 
@@ -130,6 +133,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         }
 
         
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
@@ -142,6 +148,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
             return new JsonResult(result);
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetAdvanceSearch( int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0, string startDateSearch = "", string endDateSearch = "")
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
