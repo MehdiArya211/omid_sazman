@@ -17,10 +17,19 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
         }
         [BindProperty]
         public DeleteMeetingViewModel deleteMeetingViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet(int id)
         {
             deleteMeetingViewModel = _meetingservice.GetMeetingInformation(id);
         }
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int Id)
         {
             if (Id <= 0)
@@ -37,5 +46,6 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
             TempData["OperationIcon"] = "success";
             return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
         }
+        #endregion
     }
 }
