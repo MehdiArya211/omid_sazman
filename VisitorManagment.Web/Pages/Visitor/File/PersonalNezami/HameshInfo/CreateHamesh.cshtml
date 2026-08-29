@@ -10,6 +10,8 @@
     var isArchived = ViewBag.IsArchived;
 }
 
+<link rel="stylesheet" href="~/css/hamesh-management.css" />
+
 
 @*عودت با موفقیت انجام شد *@
 @if (ViewBag.successAoudat == true)
@@ -165,15 +167,15 @@
     </div>
     <!-- end::page-header -->
 
-    <div class="row">
+    <div class="row hamesh-page" dir="rtl">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card hamesh-shell">
                 <div class="container-fluid">
                     <div class="card-body">
-                        <div class="row" style="justify-content: space-between">
-                            <h4 id="hameshSection1">ثبت هامش</h4>
-                            <a href="#" class="hamesh btn bg-success" data-placement="right" title="راهنمای سامانه">
-                                راهنما
+                        <div class="hamesh-heading">
+                            <div><span class="hamesh-heading__label"><i class="ti-pencil-alt"></i> گردش درخواست</span><h4 id="hameshSection1">ثبت هامش و ارجاع درخواست</h4><p>سوابق درخواست را بررسی کنید، نظریه خود را بنویسید و مقصد ارجاع را انتخاب کنید.</p></div>
+                            <a href="#" class="hamesh btn hamesh-help" data-placement="right" title="راهنمای سامانه">
+                                <i class="ti-help-alt"></i> راهنما
                             </a>
                         </div>
 
@@ -189,16 +191,16 @@
 
 
                                 <div class="col-md-2">
-                                    <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@ViewBag.FileId" data-toggle="modal" id="SendId"
-                                   data-target="#ModalSpecificationPersonal" class="hameshSection2 btn btn-outline-warning " data-placement="right">
-                                        خلاصه وضعیت خدمتی
+                                    <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@ViewBag.FileId" data-toggle="modal"
+                                   data-target="#ModalSpecificationPersonal" class="hameshSection2 btn btn-outline-warning hamesh-info-action" data-placement="right">
+                                        <i class="ti-id-badge"></i><span>خلاصه وضعیت خدمتی</span>
                                     </a>
                                 </div>
 
                                 <div class="col-md-2">
-                                    <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@ViewBag.FileId" data-toggle="modal" id="SendId"
-                                   data-target="#ModalGardeshDarkhast" class="hameshSection3 btn btn-outline-warning" data-placement="right">
-                                        گردش درخواست ملاقات
+                                    <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@ViewBag.FileId" data-toggle="modal"
+                                   data-target="#ModalGardeshDarkhast" class="hameshSection3 btn btn-outline-warning hamesh-info-action" data-placement="right">
+                                        <i class="ti-exchange-vertical"></i><span>گردش درخواست ملاقات</span>
                                     </a>
                                 </div>
 
@@ -209,10 +211,10 @@
                                         @if (Model?.hameshFullInfoViewModel?.attacmentFileName != null ||
                                                                             Model?.hameshFullInfoViewModel?.AttachDastorName != null)
                                         {
-                                            <a data-toggle="modal" id="SendId1" data-target="#ModalShowAttachment" data-placement="right" title="مدارک پیوستی"
-                                            class="hameshSection4 btn btn-outline-warning">
+                                            <a data-toggle="modal" data-target="#ModalShowAttachment" data-placement="right" title="مدارک پیوستی"
+                                            class="hameshSection4 btn btn-outline-warning hamesh-info-action">
 
-                                                نمایش فایل های پیوستی
+                                                <i class="ti-clip"></i><span>نمایش فایل‌های پیوستی</span>
                                             </a>
                                         }
 
@@ -227,8 +229,8 @@
                                     <div class="border-radius-1">
 
                                         @*<a href="/FileAttachment/@Model.attacmentFileName" class="btn btn-info btn-pulse">*@
-                                        <a data-toggle="modal" id="SendId" data-target="#ModalShowFishAttachment" data-placement="right" title="فیش حقوقی" class="hameshSection5 btn btn-outline-warning">
-                                            نمایش فیش حقوقی
+                                        <a data-toggle="modal" data-target="#ModalShowFishAttachment" data-placement="right" title="فیش حقوقی" class="hameshSection5 btn btn-outline-warning hamesh-info-action">
+                                            <i class="ti-receipt"></i><span>نمایش فیش حقوقی</span>
                                         </a>
 
 
@@ -241,8 +243,8 @@
                                     <div class="border-radius-1">
 
                                         @*<a href="/FileAttachment/@Model.attacmentFileName" class="btn btn-info btn-pulse">*@
-                                        <a href="/Visitor/File/PersonalNezami/ListFile" class=" btn btn-outline-primary" data-placement="right">
-                                            بازگشت به کارتابل
+                                        <a href="/Visitor/File/PersonalNezami/ListFile" class="btn btn-outline-primary hamesh-info-action" data-placement="right">
+                                            <i class="ti-arrow-right"></i><span>بازگشت به کارتابل</span>
                                         </a>
 
 
@@ -268,7 +270,7 @@
 
                                 <div class="col-md-12 mb-6">
                                     <label for="validationCustom01">شرح مشکل متقاضی :</label>
-                                    <textarea id="userDesc" style="min-height:100px" rows="50" cols="110" class="form-control" asp-for="hameshFullInfoViewModel.file.ProblemDescription" required readonly></textarea>
+                                    <textarea id="requestProblemDescription" style="min-height:100px" rows="5" class="form-control" asp-for="hameshFullInfoViewModel.file.ProblemDescription" required readonly></textarea>
                                 </div>
                             </div>
 
@@ -277,7 +279,7 @@
 
                                 <div class="col-md-12 mb-6">
                                     <label for="validationCustom01">شرح درخواست متقاضی :</label>
-                                    <textarea id="userDesc" style="min-height:100px" rows="50" cols="110" class="form-control" asp-for="hameshFullInfoViewModel.file.RequestDescription" required readonly></textarea>
+                                    <textarea id="requestDescription" style="min-height:100px" rows="5" class="form-control" asp-for="hameshFullInfoViewModel.file.RequestDescription" required readonly></textarea>
                                 </div>
                             </div>
 
@@ -332,7 +334,7 @@
                                 <div class="form-row">
                                     <div class="col-md-12 mb-6">
                                         <label for="validationCustom01">نظریه کارشناس قرارگاه انصار نزاجا:</label>
-                                        <textarea id="userDesc" style="min-height:70px" rows="50" cols="110" class="form-control"
+                                        <textarea id="hierarchyDescription" style="min-height:70px" rows="4" class="form-control"
                                               asp-for="hameshFullInfoViewModel.hameshKarshenasGharagahAnsarNezaja" required readonly>
                                                                                                                                         </textarea>
                                     </div>
@@ -523,7 +525,7 @@
 
                                     <div class="col-md-6 mb-6">
                                         <label for="validationCustom01"> مبلغ وام محقق شده:</label>
-                                        <input class="form-control " id="MablaghVamDarkhasti" asp-for="@Model.hameshFullInfoViewModel.MablaghVamMohaghaghSode" readonly>
+                                        <input class="form-control " id="MablaghVamMohaghaghShode" asp-for="@Model.hameshFullInfoViewModel.MablaghVamMohaghaghSode" readonly>
                                     </div>
 
                                 </div>
@@ -572,6 +574,7 @@
                         }
 
                         <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+                            <input type="hidden" value="@ViewBag.FileId" name="fileId" />
                             <div data-label=" نوع اقدام / نظریه  " id="hameshSection7" class="demo-code-preview col-md-12 mb-1 ">
                                 @*  نوع اقدام   *@
                                 <div class="col-md-12 mb-6">
@@ -597,7 +600,8 @@
                                 <div class="form-row">
                                     <div class="col-md-12 mb-6" id="hameshSection8">
                                         <label for="validationCustom01">نظریه / دستور:</label>
-                                        <textarea id="userDescFinal" style="min-height:150px" asp-for="@Model.hameshFullInfoViewModel.UserDesc" class="form-control" name="userDesc" required></textarea>
+                                        <textarea id="userDescFinal" rows="6" maxlength="2000" asp-for="@Model.hameshFullInfoViewModel.UserDesc" class="form-control" name="userDesc" required placeholder="نظریه یا دستور خود را شفاف و کامل بنویسید..." data-hamesh-text></textarea>
+                                        <small class="hamesh-char-count"><span data-hamesh-count>۰</span> از ۲۰۰۰ کاراکتر</small>
                                     </div>
                                     <div class="valid-feedback">
                                         عالی!
@@ -618,7 +622,7 @@
                                 <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                                     <div class=" modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalCenterTitle">ارسال</h5>
+                                            <h5 class="modal-title">انتخاب مقصد ارجاع</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <i class="ti-close"></i>
                                             </button>
@@ -635,7 +639,7 @@
 
                                         </div>
                                         <div class="modal-footer">
-                                            <button class="btn btn-success" type="submit" asp-page-handler="HameshSendFile" id="SabtVaErjaSubmitButton">
+                                            <button class="btn btn-success" type="submit" asp-page-handler="HameshSendFile" id="SabtVaErjaSubmitButton" data-confirm="هامش ثبت و درخواست برای مقصد انتخاب‌شده ارسال شود؟">
                                                 <i class="ti-check-box mr-2"></i>ارسال
                                             </button>
 
@@ -655,16 +659,13 @@
                                 <div class="modal-dialog modal-xl modal-dialog-centered">
                                     <div class=" modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalCenterTitle">ارجاع به رده پایین</h5>
+                                            <h5 class="modal-title">ارجاع به رده پایین</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <i class="ti-close"></i>
                                             </button>
                                         </div>
 
                                         <div class=" modal-body justify-content-sm-around ">
-                                            <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
-
-
                                                 <div>
 
                                                     <div id="gridsendlist">
@@ -675,11 +676,9 @@
                                                 </div>
                                                 <br>
 
-                                            </form>
-
                                         </div>
                                         <div class="modal-footer">
-                                            <button class="btn btn-success" type="submit" asp-page-handler="BackFile" id="submitSendButtonAoudat">
+                                            <button class="btn btn-success" type="submit" asp-page-handler="BackFile" id="submitSendButtonAoudat" data-confirm="هامش ثبت و درخواست به رده پایین ارجاع شود؟">
                                                 <i class="ti-check-box mr-2"></i> ارجاع به رده پایین
                                             </button>
 
@@ -699,7 +698,7 @@
                             <div class="modal-dialog modal-xl modal-dialog-centered">
                                 <div class=" modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalCenterTitle">ارسال</h5>
+                                        <h5 class="modal-title">ارجاع درخواست به جلسه</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <i class="ti-close"></i>
                                         </button>
@@ -711,7 +710,7 @@
 
                                             <div class="form-row">
 
-                                                <div class="mr-md-4" id="gridsendlistMain">
+                                                <div class="mr-md-4" id="meetingListContainer">
                                                     <partial name="_GridListMeeting" model="@Model.listMeetingForHameshFormViewModel" />
                                                 </div>
 
@@ -746,7 +745,7 @@
                             <div class="modal-dialog modal-lg modal-dialog-centered">
                                 <div class=" modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalCenterTitle">مدارک و فایل های پیوستی</h5>
+                                        <h5 class="modal-title">مدارک و فایل‌های پیوستی</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <i class="ti-close"></i>
                                         </button>
@@ -754,7 +753,7 @@
                                     <div class=" modal-body justify-content-sm-around ">
 
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalCenterTitle">مدارک و فایل های پیوستی نفر :</h5>
+                                            <h5 class="modal-title">مدارک و فایل‌های پیوستی پرسنل</h5>
                                             @if (Model.hameshFullInfoViewModel.file.AttachmentFileName != null)
                                             {
 
@@ -781,7 +780,7 @@
                                         <br>
 
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalCenterTitle">  فایل  پیوستی هیئت رئیسه :</h5>
+                                            <h5 class="modal-title">فایل پیوستی هیئت رئیسه</h5>
 
                                             @foreach (var item in Model.hameshFullInfoViewModel.AttachDastorName)
                                             {
@@ -813,7 +812,7 @@
                             <div class="modal-dialog modal-lg modal-dialog-centered">
                                 <div class=" modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalCenterTitle">مدارک فیش حقوقی</h5>
+                                        <h5 class="modal-title">مدارک فیش حقوقی</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <i class="ti-close"></i>
                                         </button>
@@ -821,7 +820,7 @@
                                     <div class=" modal-body justify-content-sm-around ">
                                         <div class="modal-header">
 
-                                            <h5 class="modal-title" id="exampleModalCenterTitle">فیش حقوقی :</h5>
+                                            <h5 class="modal-title">فیش حقوقی</h5>
 
                                             <a href="/FishAttachment/@Model.hameshFullInfoViewModel.fishAttacmentFileName" target="_blank"
                                            class="btn btn-info btn-pulse">
@@ -849,7 +848,7 @@
                             <div class="modal-dialog  modal-xl modal-dialog-scrollable">
                                 <div class=" modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalCenterTitle">خلاصه وضعیت خدمتی </h5>
+                                        <h5 class="modal-title">خلاصه وضعیت خدمتی</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <i class="ti-close"></i>
                                         </button>
@@ -879,7 +878,7 @@
                             <div class="modal-dialog modal-dialog-scrollable modal-xl">
                                 <div class=" modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalCenterTitle">گردش درخواست</h5>
+                                        <h5 class="modal-title">گردش درخواست</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <i class="ti-close"></i>
                                         </button>
@@ -890,7 +889,7 @@
 
 
                                             @*model="@Model.collectionSpecificationPersonalViewModel"*@
-                                            @*<div class="mr-md-4" id="gridsendlist">*@
+                                            @* محل نمایش گردش درخواست *@
                                             <partial name="_GardeshDarkhast" model="@Model.listHameshViewModel" />
                                             @*</div>*@
 
@@ -920,16 +919,16 @@
                             </div> *@
                             
                             
-                            <a onclick="SendfilesMain(@fileId)" data-toggle="modal" id="SendIdButton" data-target="#ModalSendMain"
+                            <a onclick="return prepareHameshAction(@fileId, 'send')" data-toggle="modal" id="HameshSendTrigger" data-target="#ModalSendMain"
                            name="sendOrAoudat"
-                           data-placement="right" title="ارسال" class="hameshSection9 btn btn-outline-info">
+                           data-placement="right" title="ارسال" class="hameshSection9 btn btn-outline-info hamesh-operation hamesh-operation--send">
                                 <i class="ti-shift-left mr-2"></i>
                                 ثبت و ارجاع
                             </a>
 
-                            <a onclick="Aoudatfiles(@fileId)" data-toggle="modal" id="SendIdButton" data-target="#ModalSend"
+                            <a onclick="return prepareHameshAction(@fileId, 'back')" data-toggle="modal" id="HameshBackTrigger" data-target="#ModalSend"
                            name="sendOrAoudat" value="2"
-                           data-placement="right" title="عودت" class=" btn btn-outline-info">
+                           data-placement="right" title="عودت" class="btn btn-outline-info hamesh-operation hamesh-operation--back">
                                 <i class="ti-shift-left mr-2"></i>
                                 ثبت و ارجاع به رده پایین
                             </a>
@@ -938,8 +937,8 @@
                             @if (User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "2")
                             {
 
-                                <a onclick="erjaToMeeting()" data-toggle="modal" id="ListMeeting" data-target="#ErjaBeMeeting"
-                           data-placement="right" title="ثبت و ارجاع به جلسه" class=" btn btn-outline-success">
+                                <a onclick="return prepareHameshAction(@fileId, 'meeting')" data-toggle="modal" id="ListMeeting" data-target="#ErjaBeMeeting"
+                           data-placement="right" title="ثبت و ارجاع به جلسه" class="btn btn-outline-success hamesh-operation hamesh-operation--meeting">
                                     <i class="ti-check-box mr-2"></i>
                                     ثبت و ارجاع به جلسه
                                 </a>
@@ -966,8 +965,32 @@
 @section GetInformationPersonal
     {
 
-
+    <script src="~/js/hamesh-management.js"></script>
     <script>
+
+        // پیش از باز شدن مودال، کامل بودن اطلاعات اصلی هامش را کنترل می‌کند.
+        function prepareHameshAction(fileId, action) {
+            const actionType = document.getElementById("filestatusid");
+            const description = document.getElementById("userDescFinal");
+
+            if (!actionType || !actionType.value) {
+                toastr.error("ابتدا نوع اقدام را انتخاب کنید.");
+                actionType?.focus();
+                return false;
+            }
+            if (!description || !description.value.trim()) {
+                toastr.error("نظریه یا دستور را وارد کنید.");
+                description?.focus();
+                return false;
+            }
+
+            if (action === "send") {
+                SendfilesMain(fileId);
+            } else if (action === "back") {
+                Aoudatfiles(fileId);
+            }
+            return true;
+        }
 
         /////////////////////***********ثبت و ارجاع************////////////////////
         //const sabtVaErjaSubmitButton = document.getElementById("SabtVaErjaSubmitButton");
@@ -1028,7 +1051,8 @@
 
 
 
-        erjaBeMeetingSubmitButton.addEventListener("click", (e) => {
+        if (erjaBeMeetingSubmitButton) erjaBeMeetingSubmitButton.addEventListener("click", (e) => {
+            e.preventDefault();
  
 
             const hameshId = window.location.href.split("/").pop();
@@ -1046,6 +1070,11 @@
             //alert(currentSelectedElement);
             
 
+            if (!currentSelectedElement || !activeTableRow) {
+                toastr.error('ابتدا یک جلسه را انتخاب کنید');
+                return;
+            }
+
             const selectInput = activeTableRow.parentElement.parentElement.children[5];
             const selectValue = selectInput.children[0].value;
 
@@ -1053,11 +1082,6 @@
 
             if (!selectValue) {
                 toastr.error('  محل قرار گرفتن نفر را انتخاب کنید');
-                return;
-            }
-
-            if (!currentSelectedElement) {
-                toastr.error('ابتدا یک عملیات را انتخاب کنید');
                 return;
             }
 
@@ -1076,7 +1100,7 @@
             $.ajax({
                 url: "@Url.Page("CreateHamesh")?handler=ErjaBeMeeting",
                 type: "GET",
-                contentType: "appllication/json; charset=utf-8",
+                contentType: "application/json; charset=utf-8",
                 data: postData,
                 dataType: "json",
                 success: function (data) {
@@ -1094,7 +1118,7 @@
 
                     else {
                         toastr.error((data && data.message) || 'عملیات ارجاع به جلسه با خطا همراه بوده است، لطفاً مجدداً تلاش کنید.');
-                        modal.close("#ErjaBeMeeting");
+                        $("#ErjaBeMeeting").modal("hide");
                     }
 
                 },
