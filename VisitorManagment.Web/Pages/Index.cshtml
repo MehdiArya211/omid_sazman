@@ -19,11 +19,10 @@
 <body class="omid-login-page">
     <main class="omid-login-shell">
         <section class="omid-login-card" aria-label="ورود به سامانه">
+            <div class="omid-login-form-panel">
                 <header class="omid-brand">
                     <div class="omid-logo-frame"><img src="~/LOGO.png" alt="نشان سامانه امید" /></div>
-                    <h1>ورود به سامانه امید</h1>
-                    <p>سامانه ملاقات عمومی کارکنان نزاجا</p>
-                    <span class="omid-secure-badge"><i class="fa fa-shield"></i> ورود امن سازمانی</span>
+                    <div><h1>ورود به سامانه امید</h1><p>سامانه ملاقات عمومی کارکنان نزاجا</p></div>
                 </header>
 
                 <form id="login-form" method="post" autocomplete="on">
@@ -70,6 +69,17 @@
                     </a>
                 </div>
                 <footer class="omid-footer">سازمان فناوری اطلاعات م فاوا نزاجا</footer>
+            </div>
+            <aside class="omid-login-slider" aria-label="تصاویر معرفی سامانه">
+                <div class="omid-slide is-active"><img src="~/assets/media/image/photo2.jpg" alt="محیط کاری دیجیتال" /><div class="omid-slide-caption"><strong>دسترسی سریع و یکپارچه</strong><span>ثبت و پیگیری درخواست‌ها در یک محیط سازمانی</span></div></div>
+                <div class="omid-slide"><img src="~/assets/media/image/photo3.jpg" alt="کار با سامانه سازمانی" /><div class="omid-slide-caption"><strong>پیگیری شفاف درخواست‌ها</strong><span>مشاهده وضعیت و گردش درخواست در هر مرحله</span></div></div>
+                <div class="omid-slide"><img src="~/assets/media/image/photo1.jpg" alt="سامانه هوشمند مدیریتی" /><div class="omid-slide-caption"><strong>مدیریت ساده‌تر</strong><span>دسترسی به کارتابل و خدمات موردنیاز کارکنان</span></div></div>
+                <div class="omid-slider-dots" role="group" aria-label="انتخاب تصویر">
+                    <button class="omid-slider-dot is-active" type="button" aria-label="تصویر اول"></button>
+                    <button class="omid-slider-dot" type="button" aria-label="تصویر دوم"></button>
+                    <button class="omid-slider-dot" type="button" aria-label="تصویر سوم"></button>
+                </div>
+            </aside>
         </section>
     </main>
 
@@ -82,6 +92,31 @@
             var toggle = document.getElementById("toggle-password");
             var form = document.getElementById("login-form");
             var submit = document.getElementById("login-submit");
+            var slides = Array.prototype.slice.call(document.querySelectorAll(".omid-slide"));
+            var dots = Array.prototype.slice.call(document.querySelectorAll(".omid-slider-dot"));
+            var activeSlide = 0;
+            var sliderTimer;
+
+            function showSlide(index) {
+                activeSlide = index;
+                slides.forEach(function (slide, i) { slide.classList.toggle("is-active", i === index); });
+                dots.forEach(function (dot, i) { dot.classList.toggle("is-active", i === index); });
+            }
+
+            function startSlider() {
+                sliderTimer = window.setInterval(function () {
+                    showSlide((activeSlide + 1) % slides.length);
+                }, 5000);
+            }
+
+            dots.forEach(function (dot, index) {
+                dot.addEventListener("click", function () {
+                    window.clearInterval(sliderTimer);
+                    showSlide(index);
+                    startSlider();
+                });
+            });
+            if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) startSlider();
 
             toggle.addEventListener("click", function () {
                 var visible = password.type === "text";
