@@ -17,6 +17,12 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
         }
         [BindProperty]
         public Meeting meetingViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet()
         {
             ViewData["MeetingPlaceList"] = new SelectList(_meetingService.GetMeetingPlace(), "Id", "Title");
@@ -25,6 +31,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
             ViewData["MeetingStatusList"] = new SelectList(_meetingService.GetMeetingStatus(), "Id", "Title");
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int meetingStatusId, int meetingPlaceId, int boseMeetingId, int clerkMeetingId)
         {
             OnGet();
@@ -48,5 +57,6 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
             return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
 
         }
+        #endregion
     }
 }
