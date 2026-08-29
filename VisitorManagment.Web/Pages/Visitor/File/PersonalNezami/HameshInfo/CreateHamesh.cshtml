@@ -1082,8 +1082,8 @@
                 success: function (data) {
                     console.log(data, "datame");
 
-                    if (data) {
-                        toastr.success('با موفقیت به جلسه اضافه شد');
+                    if (data && data.success) {
+                        toastr.success(data.message || 'با موفقیت به جلسه اضافه شد');
                        // modal.close("#ErjaBeMeeting");
                       //  consloe.log("set time out" , "time out");
                         setTimeout(() => {
@@ -1093,7 +1093,7 @@
                     }
 
                     else {
-                        toastr.error('عملیات ارجاع به جلسه با خطا همراه بوده است ، لطفا مجددا تلاش فرمایید');
+                        toastr.error((data && data.message) || 'عملیات ارجاع به جلسه با خطا همراه بوده است، لطفاً مجدداً تلاش کنید.');
                         modal.close("#ErjaBeMeeting");
                     }
 
