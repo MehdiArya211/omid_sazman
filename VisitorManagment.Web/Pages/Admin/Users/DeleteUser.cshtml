@@ -1,0 +1,64 @@
+﻿@page "{id}"
+@using VisitorManagment.Core.Convertors
+@model VisitorManagment.Web.Pages.Admin.Users.DeleteUserModel
+@{
+    ViewData["Title"] = "حذف کاربر";
+}
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>حذف کاربر</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="#">کتابخانه</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#"> مدیریت سیستم</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت کاربران</a>
+                </li>
+
+
+                <li class="breadcrumb-item active" aria-current="page">حذف کاربر</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="card card-body ">
+            <h4> حذف کاربر</h4>
+        <hr />
+        <br />
+        <br />
+        <p style="color:red;font-size:20px">آیا مطمئن هستید میخواهید حذف کنید؟</p>
+        <div class="panel-body">
+            <form method="post">
+                <input type="hidden" name="UserId" value="@ViewData["UserId"].ToString()" />
+
+                <dl class="m-5 d-lg-table-cell">
+                    <dt>نام کاربری : </dt>
+                    <dd style="padding-right:50px">@Model.InformationUserViewModel.UserName</dd>
+                    <dt>نام : </dt>
+                    <dd style="padding-right:50px">@Model.InformationUserViewModel.FirstName</dd>
+                    <dt> نام خانوادگی: </dt>
+                    <dd style="padding-right:50px">@Model.InformationUserViewModel.LastName</dd>
+                    <dt>تاریخ عضویت : </dt>
+                    <dd style="padding-right:50px">@Model.InformationUserViewModel.SaveDate</dd>
+                    <dt></dt>
+                    <br />
+                    <br />
+                    <br />
+                    <dd style="padding-right:20px">
+                        <button class="btn btn-danger" type="submit"><i class="ti-trash mr-2"></i> حذف</button>
+                        <a href="/Admin/Users" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                    </dd>
+                </dl>
+            </form>
+        </div>
+        <!-- /.panel-body -->
+    </div>
+    <!-- /.panel -->
+</div>
+
+

@@ -1,0 +1,999 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeetingHold.CreateHameshMeetingModel
+@{
+    ViewData["Title"] = "هامش";
+    var fileId = ViewBag.fileId;
+
+}
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4></h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ملاقات ها</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">ثیت هامش</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- end::page-header -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4>ثبت هامش</h4>
+                    <hr>
+
+                    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert">
+
+                            @* کار نمیکنه *@
+                            <input type="hidden" value="@fileId" asp-for="@Model.hameshFullInfoViewModel.FileId">
+
+                        </div>
+                        @* خلاصه وضعیت خدمتی *@
+                        <div data-label=" اطلاعات تکمیلی " class="demo-code-preview col-md-12 mb-1 ">
+                            <div class="row">
+
+
+                                <div class="col-md-6" style="margin: 10px 0;">
+                                    <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@fileId" data-toggle="modal" id="SendId"
+                                       data-target="#ModalSpecificationPersonal" class=" btn btn-outline-warning" data-placement="right">
+                                        خلاصه وضعیت خدمتی
+                                    </a>
+                                </div>
+
+                                <div class="col-md-3 " style="margin: 10px 0;">
+
+                                    <div class="border-radius-1">
+                                        @if (Model.hameshFullInfoViewModel.attacmentFileName != null)
+                                        {
+                                            <a data-toggle="modal" id="SendId1" data-target="#ModalShowAttachment" data-placement="right" title="مدارک پیوستی" class=" btn btn-outline-warning">
+                                                نمایش فایل های پیوستی
+                                            </a>
+                                        }
+
+
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 " style="margin: 10px 0;">
+
+                                    <div class="border-radius-1">
+                                        @if (@Model.hameshFullInfoViewModel != null)
+                                        {
+                                            @*<a href="/FileAttachment/@Model.attacmentFileName" class="btn btn-info btn-pulse">*@
+                                            <a data-toggle="modal" id="SendId" data-target="#ModalShowFishAttachment" data-placement="right" title="فیش حقوقی" class=" btn btn-outline-warning">
+                                                نمایش فیش حقوقی
+                                            </a>
+                                        }
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* موضوع درخواست متقاضی *@
+                        <div data-label=" اطلاعات تکمیلی " class="demo-code-preview col-md-12 mb-1 ">
+                            <div>
+                                <div class="col-md-12 mb-6 p-0">
+
+                                    <label for="validationCustom02">موضوع درخواست متقاضی:</label>
+                                    <br />
+                                    <input class="form-control" type="text" name="name" value="@Model.hameshFullInfoViewModel.file.ReqSubTitle" readonly />
+
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        موضوع در خواست را انتخاب کنید!
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            @* مشکل  متقاضی *@
+                            <div class="form-row">
+
+                                <div class="col-md-12 mb-6">
+                                    <label for="validationCustom01">شرح مشکل متقاضی :</label>
+                                    <textarea id="userDesc" style="min-height:100px" rows="50" cols="110" class="form-control" asp-for="hameshFullInfoViewModel.file.ProblemDescription" required readonly></textarea>
+                                </div>
+
+                                <div class="valid-feedback">
+                                    @*عالی!*@
+                                </div>
+                                <div class="invalid-feedback">
+                                    @*نظریه / دستور را وارد کنید !*@
+                                </div>
+                            </div>
+
+                            @*  درخواست متقاضی *@
+                            <div class="form-row">
+
+                                <div class="col-md-12 mb-6">
+                                    <label for="validationCustom01">شرح درخواست متقاضی :</label>
+                                    <textarea id="userDesc" style="min-height:100px" rows="50" cols="110" class="form-control" asp-for="hameshFullInfoViewModel.file.RequestDescription" required readonly></textarea>
+                                </div>
+
+                                <div class="valid-feedback">
+                                    @*عالی!*@
+                                </div>
+                                <div class="invalid-feedback">
+                                    @*نظریه / دستور را وارد کنید !*@
+                                </div>
+                            </div>
+                            <br />
+
+                            <div data-label=" نظریه های سلسله مراتب " class="demo-code-preview col-md-12 mb-1 ">
+                                @*کل نظریه هامتقاضی*@
+
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-6">
+
+                                        <label for="validationCustom01">نظریه های یگان:</label>
+
+                                        <table class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>قسمت</th>
+                                                    <th>متن هامش</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                @if (Model.hameshFullInfoViewModel.hameshAllYegan.Count() == 0)
+                                                {
+                                                    <tr>
+                                                        <td style="color:red">موردی یافت نشد!</td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var item in Model.hameshFullInfoViewModel.hameshAllYegan)
+                                                    {
+
+
+                                                        <tr>
+                                                            <td>@item.RoleTypeTitle</td>
+                                                            <td>@item.UserDesc</td>
+
+
+                                                        </tr>
+
+
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+
+
+
+
+                                    </div>
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        @*نظریه / دستور را وارد کنید !*@
+                                    </div>
+                                </div>
+                                <br />
+                                @*  نظریه کارشناس قرارگاه انصار نزاجا  *@
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-6">
+                                        <label for="validationCustom01">نظریه کارشناس قرارگاه انصار نزاجا:</label>
+                                        <textarea id="userDesc" style="min-height:70px" rows="50" cols="110" class="form-control"
+                                                  asp-for="hameshFullInfoViewModel.hameshKarshenasGharagahAnsarNezaja" required readonly>
+                                    </textarea>
+                                    </div>
+                                    <div class="valid-feedback">
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        @*نظریه / دستور را وارد کنید !*@
+                                    </div>
+                                </div>
+                                <br />
+
+                                @*  نظریه معاونت ها  *@
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-6">
+
+                                        <label for="validationCustom01">نظریه معاونت ها:</label>
+
+                                        <table class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>معاونت</th>
+                                                    <th>متن هامش</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                @if (Model.hameshFullInfoViewModel.HameshMoavenats.Count() == 0)
+                                                {
+                                                    <tr>
+                                                        <td style="color:red">موردی یافت نشد!</td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var item in Model.hameshFullInfoViewModel.HameshMoavenats)
+                                                    {
+
+
+                                                        <tr>
+                                                            <td>@item.RoleTypeTitle</td>
+                                                            <td>@item.UserDesc</td>
+
+                                                        </tr>
+
+
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+                                @if (User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "15")
+                                {
+                                    @*  نظریه کاربر نزاجا (رئیس دفتر معاون هماهنگ کننده نیرو)  *@
+                                    <div class="form-row">
+                                        <div class="col-md-12 mb-6">
+
+                                            <label for="validationCustom01">نظریه رئیس دفتر معاون هماهنگ کننده نیرو:</label>
+
+                                            <table class="table table-striped table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>متن هامش</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                    @if (Model.hameshFullInfoViewModel.hameshKarshenasGharagahAnsarNezaja.Count() == 0)
+                                                    {
+                                                        <tr>
+                                                            <td style="color:red">موردی یافت نشد!</td>
+                                                        </tr>
+                                                    }
+                                                    else
+                                                    {
+
+
+                                                        <tr>
+                                                            <td>@Model.hameshFullInfoViewModel.hameshKarshenasGharagahAnsarNezaja</td>
+
+                                                        </tr>
+
+
+
+                                                    }
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <br />
+
+
+                        <br />
+                        @* وام درخواستی و وام محقق شده *@
+
+                        <div data-label="وام درخواستی / وام محقق شده" class="demo-code-preview col-md-12 mb-1 ">
+                            <div class="form-row">
+                                <div class="col-md-6 mb-6">
+                                    <label for="validationCustom01"> مجموع وام های تصویب شده :</label>
+                                    <input class="form-control " id="MablaghVamDarkhasti"
+                                           asp-for="@Model.hameshFullInfoViewModel.SumMablaghVamDarkhasti">
+                                </div>
+
+                                <div class="col-md-6 mb-6">
+                                    <label for="validationCustom01"> افزودن وام های تصویب شده :</label>
+                                    <br>
+                                    <span style="color:red">
+                                        جهت افزودن هر وام دکمه ثبت وام را بزنید.
+                                    </span>
+                                    <a data-toggle="modal" id="SendId"
+                                       data-target="#ModalCreateVam" class="btn btn-success" style="color:white">
+                                        <i class="ti-plus mr-2"></i>
+                                        ثبت وام
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <hr>
+                            <div class="form-row">
+                                <div class="col-md-12 mb-6">
+
+                                    <label for="validationCustom01">لیست وام های تصویب شده:</label>
+
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>عنوان وام</th>
+                                                <th>کد وام </th>
+                                                <th> وام </th>
+                                                <th> مبلغ وام </th>
+                                                <th> عملیات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @if (Model.hameshFullInfoViewModel.ListVam.Count() == 0)
+                                            {
+                                                <tr>
+                                                    <td style="color:red">موردی یافت نشد!</td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+
+                                                @foreach (var item in @Model.hameshFullInfoViewModel.ListVam)
+                                                {
+                                                    <tr>
+                                                        <td>@item.Title</td>
+                                                        <td>@item.CodeVam</td>
+                                                        <td>@item.VamCodeTitle</td>
+                                                        <td>@item.VamPrice.ToString("N0")</td>
+                                                        <td>
+                                                            <a onclick="DeleteVam(@item.Id)" class="AllIcon "
+                                                               data-toggle="tooltip" data-placement="right" title="حذف">
+                                                                <i class="fa fa-trash text-danger"></i>
+                                                            </a>
+                                                        </td>
+
+                                                    </tr>
+                                                }
+
+
+
+
+                                            }
+                                        </tbody>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <br />
+
+
+                        <br />
+                        @*پیوست*@
+                        <div data-label="پیوست جلسه" class="demo-code-preview col-md-12 mb-1 ">
+                            <div class="form-row">
+
+                                <div class="card card-img  col-md-6 mb-3">
+                                    <label>پیوست دستور جلسه:</label>
+                                    <div class="panel panel-default">
+                                        <div class="card-img  panel-body" id="">
+                                            <input type="file" asp-for="@Model.hameshFullInfoViewModel.AttachDastors" multiple>
+                                            <br />
+                                            <small>حجم فایل:حداکثر2Mb</small>
+                                            <br />
+                                            <small style="color:orangered">قابلیت انتخاب چند فایل پیوستی هم دارد،هنگام انتخاب دکمه ctrl  را نگه دارید</small>
+                                        </div>
+
+                                        <div class="card-img  panel-body" id="divAddAttachmentDastor">
+                                        </div>
+                                    </div>
+                                </div>
+                                @*</div>*@
+
+                                <div class="card card-img  col-md-6 mb-3">
+                                    <label>انتخاب فایل(صوتی)</label>
+                                    <div class="panel panel-default">
+                                        <div class="card-img  panel-body">
+                                            <input type="file" asp-for="@Model.hameshFullInfoViewModel.VoiceRecord">
+                                            <small>حجم فایل:حداکثر10Mb</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div data-label="نوع اقدام / نظریه" class="demo-code-preview col-md-12 mb-1">
+                            <div class="form-row">
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="validationCustom02">نوع اقدام:</label>
+                                    <select id="filestatusid" asp-items="ViewBag.ActionType" asp-for="hameshFullInfoViewModel.ActionTypeId" class="form-control " required>
+                                        <option value=""> نوع اقدام را انتخاب نمایید</option>
+                                    </select>
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        نوع اقدام را انتخاب کنید!
+                                    </div>
+                                </div>
+
+                                <div id="" class="col-md-6 mb-3">
+                                    <label>ارسال به:</label>
+                                    <select class="form-control" asp-for="hameshFullInfoViewModel.RcvrId">
+                                        @*value => UserId from table User*@
+                                        <option value="132" selected>قرارگاه انصار نزاجا</option>
+                                    </select>
+                                    <span></span>
+
+                                    <div class="valid-feedback">
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        انتخاب کنید
+                                    </div>
+                                </div>
+                            </div>
+                            @*  نظریه   *@
+                            <div class="form-row">
+                                <div class="col-md-12 mb-6">
+                                    <label for="validationCustom01">نظریه / دستور:</label>
+                                    <textarea id="userDescFinal" style="min-height:150px" rows="50" cols="110" class="form-control" asp-for="@Model.hameshFullInfoViewModel.UserDesc" required></textarea>
+                                </div>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    نظریه / دستور را وارد کنید !
+                                </div>
+                            </div>
+                        </div>
+
+                        <br>
+
+                        <button id="submitsazmani" class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت</button>
+                        <a href="/Visitor/Meets/MeetingInfo/MeetingHold/ListPersonalMeetingHold/@ViewBag.meetingId" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@*Modal Specification Personal*@
+<!-- .modal-xl -->
+<div id="ModalSpecificationPersonal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl">
+        <div class=" modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">خلاصه وضعیت خدمتی </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <div class=" modal-body justify-content-sm-around ">
+                <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+
+
+                    <div class="form-row">
+                        @*model="@Model.collectionSpecificationPersonalViewModel"*@
+                        @*<div class="mr-md-4" id="gridsendlist">*@
+                        <partial name="_SpecificationPersonalMeeting" model="@Model.collectionSpecificationPersonalViewModel" />
+                        @*</div>*@
+
+
+                    </div>
+                    <br>
+                    @*<button class="btn btn-success" type="submit" asp-page-handler="BackFile"><i class="ti-check-box mr-2"></i> عودت</button>*@
+
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    بستن
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@*End Modal Specification Personal*@
+
+@*modal Show Fish Attachment*@
+<div class="modal fade" id="ModalShowFishAttachment" tabIndex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class=" modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">مدارک فیش حقوقی</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <div class=" modal-body justify-content-sm-around ">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">فیش حقوقی :</h5>
+                    <a href="/FishAttachment/@Model.hameshFullInfoViewModel.fishAttacmentFileName" target="_blank" class="btn btn-info btn-pulse">دانلود</a>
+
+                </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    بستن
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@*end modal*@
+
+@*modal Create Vam*@
+<div class="modal fade" id="ModalCreateVam" tabIndex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class=" modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">ثبت وام</h5>
+                <button type="button" onclick="window.location.reload()" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <div class=" modal-body justify-content-sm-around ">
+                <div data-label="وام درخواستی / وام محقق شده" class="demo-code-preview col-md-12 mb-1 ">
+                    <div class="form-row">
+                        <div class="col-md-6 mb-1">
+                            <label for="validationCustom02">عنوان وام :</label>
+                            <input type="text" id="titleVam" class="form-control" name="title" required />
+                            <span></span>
+
+                            <div class="valid-feedback">
+                            </div>
+                            <div class="invalid-feedback">
+                                عنوان وام را وارد کنید!
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6 mb-1">
+                            <label for="validationCustom02">کد وام :</label>
+                            <select id="vamCode" class="form-control" name="vamCode"
+                                    asp-items="ViewBag.codeVam" required>
+                                <option value=""> کد وام را انتخاب نمایید</option>
+                            </select>
+
+                            <span></span>
+
+                            <div class="valid-feedback">
+                            </div>
+                            <div class="invalid-feedback">
+                                کد وام را وارد کنید!
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="modal-footer">
+                    <a onclick="CreateVam()" class="btn btn-success">
+                        ثبت
+                    </a>
+                    <button onclick="window.location.reload()" class="btn btn-secondary" data-dismiss="modal">
+                        بستن
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    @*end modal*@
+
+</div>
+
+
+
+@section GetInformationPersonal
+{
+
+    <script src="~/sweetalert2/sweetalert2.min.js"></script>
+    <script>
+
+
+        function CreateVam() {
+
+            var vamCode = $("#vamCode").val();
+            var title = $("#titleVam").val();
+            $.ajax({
+                url: '@Url.Page("CreateHameshMeeting", "CreateVam")',
+                method: "Get",
+                contentType: "appllication/json; charset=utf-8",
+                data: { vamCode: vamCode, title: title, fileId: @fileId},
+                dataType: "json",
+                success: function (data) {
+                    if (data == false) {
+                        // alert('برای این درخواست ملاقات این کد وام ثبت شده است');
+                        toastr.error('برای این درخواست ملاقات این کد وام ثبت شده است');
+                        // swal("برای این درخواست ملاقات این کد وام ثبت شده است!","" ,  "error");
+
+                    }
+                    else {
+                        // alert('برای این درخواست ملاقات این کد وام ثبت شده است');
+                        toastr.success('ثبت وام انجام شد');
+                        //swal("ثبت وام انجام شد!","" ,  "success");
+                    }
+                },
+                error: function (result) {
+                    toastr.error('عملیات با خطا مواجه شده است، مجددا تلاش فرمای');
+                    // swal("برای این درخواست ملاقات وام با این کد ثبت شده است!","" ,  "error");
+                }
+            });
+        }
+
+        function DeleteVam(id) {
+            console.log(id , "vamId");
+            var vamId = id;
+
+            $.ajax({
+                url: '@Url.Page("CreateHameshMeeting", "DeleteVam")',
+                method: "Get",
+                contentType: "appllication/json; charset=utf-8",
+                data: { vamId: vamId },
+                dataType: "json",
+                success: function (data) {
+                    if (data == false) {
+                        toastr.error('عملیات با خطا مواجه شد');
+                    }
+                    else {
+                        toastr.success('عملیات با موفقیت  انجام شد');
+                        window.location.reload();
+                    }
+                },
+                error: function (result) {
+                    toastr.error('عملیات با خطا مواجه شده است، مجددا تلاش فرمایید');
+                }
+            });
+        }
+        //************************************************
+        //Tashvighat
+        function Tashvighat(personalCode) {
+            $('#loderTashvighat').removeClass("d-none");
+
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetTashvighat",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+
+                success: function (data) {
+                    $('#loderTashvighat').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+
+                            //if (item.val==0) {
+                            //    row += "<tr>موردی یافت نشد!<td>"
+                            //}
+                            //else {
+                            //    row += "<tr><td>" + ++index + "</td><td>" + item.rowBeginDate + "</td><td>" + item.encourageTypeTitle + "</td><td>" + item.encourageReasonTitle + "</td></tr>";
+                            //}
+                            row += "<tr><td>" + ++index + "</td><td>" + item.rowBeginDate + "</td><td>" + item.encourageTypeTitle + "</td><td>" + item.encourageReasonTitle + "</td></tr>";
+                        });
+                    $("#getTashvighat").html(row);
+
+                },
+                error: function (result) {
+                    alert("موردی یافت نشد");
+
+
+                    $('#loderTashvighat').addClass("d-none");
+                }
+            });
+        }
+        //************************************************
+        //Tanbihat
+        function Tanbihat(personalCode) {
+            $('#loderTanbihat').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetTanbihat",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTanbihat').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+
+                            row += "<tr><td>" + ++index + "</td><td>" + item.rowBeginDate + "</td><td>" + item.convictionTypeTitle + "</td><td>" + item.convictionReasonTitle + "</td></tr>";
+                        });
+                    $("#getTanbihat").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loderTanbihat').addClass("d-none");
+                }
+            });
+        }
+        //************************************************
+        //Enteghalat
+        function Enteghal(personalCode) {
+            $('#loderEnteghal').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetEnteghal",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+
+                    $('#loderEnteghal').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+
+
+                            row += "<tr><td>" + ++index + "</td><td>" + item.fromOrgan + "</td><td>" + item.wentDate + "</td><td>" + item.toOrgan + "</td></tr>";
+                        });
+                    $("#getEnteghal").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loderEnteghal').addClass("d-none");
+                }
+            });
+        }
+
+        //************************************************
+        //Aeleh
+        function Aeleh(personalCode) {
+            $('#loderAeleh').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetAeleh",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderAeleh').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.firstName + "</td><td>" + item.lastName + "</td><td>" + item.relativeTitle + "</td><td>" + item.nationalNoFamily + "</td><td>" + item.certificateNumber + "</td></tr>";
+                        });
+                    $("#getAeleh").html(row);
+                },
+
+            });
+        }
+
+        //************************************************
+        //TashilatMaskan
+        function GetTashilatMaskan(personalCode) {
+            $('#loderTashilatMaskan').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("SpecificationPersonal")?handler=GetTashilatMaskan",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTashilatMaskan').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.unitNo + "</td><td>" + item.tavoniName + "</td><td>" + item.projectName + "</td><td>" + item.tashilatTypeDesc + "</td><td>" + item.mablaqTitle + "</td><td>" + item.metraz + "</td><td>" + item.vagozariDate + "</td><td>" + item.cancelDate + "</td></tr>";
+                        });
+                    $("#TashilateMaskan").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderTashilatMaskan').addClass("d-none");
+                }
+            });
+        }
+
+
+
+        //************************************************
+        //TashilatDabirKhaneh
+        function TashilatDabirKhaneh(personalCode) {
+            $('#loderTashilatDabirKhaneh').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("SpecificationPersonal")?handler=GetTashilatDabirKhaneh",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTashilatDabirKhaneh').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.tashilatTypeTitle + "</td><td>" + item.vagozariDesc + "</td><td>" + item.confirmMablaqVamTitle + "</td><td>" + item.confirmOrderDate + "</td></tr>";
+                        });
+                    $("#getTashilatDabirKhaneh").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderTashilatDabirKhaneh').addClass("d-none");
+                }
+            });
+        }
+
+        //************************************************
+        //TashilatDastor
+        function TashilatDastor(personalCode) {
+            $('#loderTashilatDastor').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetTashilatDastor",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTashilatDastor').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.tashilatTypeTitle + "</td><td>" + item.maliTitle + "</td><td>" + item.mablagheVam + "</td><td>" + item.rowBeginDate + "</td></tr>";
+                        });
+                    $("#getTashilatDastor").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loderTashilatDastor').addClass("d-none");
+                }
+            });
+        }
+
+
+        //Other Tashilat
+        function TashilatOther(personalCode) {
+            $('#loderOtherTashilat').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetTashilatOther",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderOtherTashilat').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.mosaedatTypeDesc + "</td><td>" + item.mosaedatResourceDesc + "</td><td>" + item.mosaedatDate + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getTashilatDastor").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderTashilatDastor').addClass("d-none");
+                }
+            });
+        }
+        //************************************************
+        //Nomarat Arzyabi (Exam)
+        function GetExam(personalCode) {
+            $('#loaderExam').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetExam",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loaderExam').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.examTypeTitle + "</td><td>" + item.rowBeginDate + "</td><td>" + item.rowEndDate + "</td><td>" + item.registerDate + "</td><td>" + item.documentOwnerUnitCode + "</td><td>" + item.mark + "</td><td>" + item.totalMark + "</td></tr>";
+                        });
+                    $("#getExam").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loaderExam').addClass("d-none");
+                }
+            });
+        }
+
+        //Other Belaavaz
+        function TashilatBelaavaz(personalCode) {
+            $('#loaderBelaavaz').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetTashilatBelaavaz",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loaderBelaavaz').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.vagozariDesc + "</td><td>" + item.mablaq + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getTashilatBelaavaz").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loaderBelaavaz').addClass("d-none");
+                }
+            });
+        }
+
+
+        //Fish
+        function TashilatFish(personalCode) {
+            $('#loderFish').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetFish",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderFish').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.deductionDate.substring(0, 4) + "/" + item.deductionDate.substring(4, 6) + "</td><td>" + item.deductionType + "</td><td>" + item.deductionCode + "</td><td>" + item.totalDebtFormat + "</td></tr>";
+                        });
+                    $("#getFish").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderFish').addClass("d-none");
+                }
+            });
+        }
+
+
+        //Moeeser
+        function TashilatMoeeser(personalCode) {
+            $('#loderMoeeser').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("CreateHamesh")?handler=GetMoeeser",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderMoeeser').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.moeeserTypeDesc + "</td><td>" + item.unitHelpToMoeeser + "</td><td>" + item.nezajaHelpToMoeeser + "</td><td>" + item.moeeserDesc + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getMoeeser").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderMoeeser').addClass("d-none");
+                }
+            });
+        }
+
+
+
+
+    </script>
+}

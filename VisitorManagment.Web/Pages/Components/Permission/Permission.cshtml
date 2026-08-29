@@ -1,0 +1,26 @@
+﻿
+@model IEnumerable<VisitorManagment.DataLayer.Entities.Permissions.Permission>
+
+@{
+    var CController = Context.Request.Path.Value;
+}
+
+<li><a style="color:red" href="/Visitor/Index">صفحه اصلی</a></li>
+
+@foreach (var item in Model.Where(p => p.ParentID == null && p.IsActive==true))
+{
+    <li class="@(CController.Contains(@item.ParentUrl)? "open" : "")">
+
+        <a href="#" style="color:dodgerblue"> @item.PermissionTitle</a>
+        <ul>
+            @foreach (var sub in Model.Where(p => p.ParentID == item.PermissionId && p.IsActive==true))
+            {
+
+                <li>
+                    <a  href="@sub.SubUrl" class="@(CController.Contains(@sub.MenuUrl) ? "active" : "")">@sub.PermissionTitle</a>
+                </li>
+            }
+        </ul>
+    </li>
+}
+

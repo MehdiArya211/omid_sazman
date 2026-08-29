@@ -1,0 +1,689 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.File.PersonalNezami.EditFileModel
+@{
+    ViewData["Title"] = "ویرایش درخواست ملاقات  ";
+}
+
+@if (ViewBag.successcreate == true)
+{
+                //****
+    <div class="swal-overlay swal-overlay--show-modal" tabIndex="-1">
+        <div class="swal-modal" role="dialog" aria-modal="true">
+            <div class="swal-icon swal-icon--success">
+                <span class="swal-icon--success__line swal-icon--success__line--long"></span>
+                <span class="swal-icon--success__line swal-icon--success__line--tip"></span>
+
+                <div class="swal-icon--success__ring"></div>
+                <div class="swal-icon--success__hide-corners"></div>
+            </div><div class="swal-title" style=""></div><div class="swal-text" style="">ویرایش درخواست شما با موفقیت ثبت شد!</div><div class="swal-footer">
+                <div class="swal-button-container">
+
+                    <a class="swal-button swal-button--confirm text-white" href="/Visitor/File/PersonalNezami/ListFile">تایید</a>
+
+                    <div class="swal-button__loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    //****
+
+}
+
+else
+{
+    <!-- begin::page-header -->
+    <div class="page-header">
+        <div class="container-fluid d-sm-flex justify-content-between">
+            <h4>لیست اقدامات</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="#">مدیریت درخواست ملاقات ها</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">ویرایش درخواست ملاقات</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- end::page-header -->
+
+    <div class="container-fluid" id="editFileSection1">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row" style="justify-content: space-between">
+                            <h4>ویرایش درخواست ملاقات</h4>
+                            <a href="#" class="editFileTour btn bg-success" data-placement="right" title="راهنمای سامانه">
+                                راهنما
+                            </a>
+                        </div>
+                        <hr>
+
+                        <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+
+                            @* <input type="hidden" asp-for="@Model.editFactPersonalViewModel.AttachmentFileName" /> *@
+                            <input type="hidden" asp-for="@Model.editFactPersonalViewModel.PersonalAvatarName" />
+                            <input type="hidden" asp-for="@Model.editFactPersonalViewModel.Id" />
+                            <input type="hidden" asp-for="@Model.editFactPersonalViewModel.PersonalId" />
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+                            <div data-label="نوع درخواست ملاقات" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-1">
+                                        <label for="validationCustom02"> نوع درخواست (امید / لبیک 24) :</label>
+
+                                        <select asp-for="@Model.editFactPersonalViewModel.FileTypeId"
+                                                asp-items="ViewBag.FileTypeList" class="form-control " required>
+                                            <option value="" selected>نوع درخواست را انتخاب کنید</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+
+                                <div data-label="مشخصات پرسنلی" class="demo-code-preview col-md-9 mb-1 ">
+                                    <div class="form-row">
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label id="label" for="validationCustom02">کد پرسنلی :</label>
+                                            <input id="personalno" asp-for="@Model.editFactPersonalViewModel.PersonalCode" type="text" class="form-control" readonly required />
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                کد پرسنلی را انتخاب کنید
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label for="validationCustom02">نام :</label>
+                                            <input id="fname" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.FirstName" readonly required />
+
+                                            <span></span>
+
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                نام را وارد کنید!
+                                            </div>
+
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label for="validationCustom02">نام خانوادگی :</label>
+                                            <input id="lname" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.LastName" readonly required />
+
+                                            <span></span>
+
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                نام خانوادگی را وارد کنید!
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="col-md-4 mb-1 ">
+                                            <label for="validationCustom02">کد ملی :</label>
+
+                                            <input id="codemeli" type="text" class="form-control " asp-for="@Model.editFactPersonalViewModel.MelliCode" readonly required />
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                کد ملی را انتخاب کنید
+                                            </div>
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02">درجه :</label>
+                                            <input id="darjeh" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.RankTitle" readonly required />
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                درجه را انتخاب کنید!
+                                            </div>
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02">رسته :</label>
+                                            <input id="branchtitle" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.BranchTitle" readonly required />
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                رسته را انتخاب کنید!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div data-label="عکس پرسنل" class="demo-code-preview col-md-3 mb-1 ">
+                                    <div class="card-img  panel-body" id="PersonalAvatar">
+                                        @if (string.IsNullOrEmpty(Model.editFactPersonalViewModel.PersonalAvatarName))
+                                        {
+                                            <img style="border:3px solid; border-radius:20px" width="150" height="120" id="imgAvatar" class="thumbnail" src="/PersonalAvatar/Default.png" />
+                                        }
+                                        else
+                                        {
+                                            <img style="border:3px solid; border-radius:20px" width="130" height="90" id="imgAvatar" class="thumbnail" src="/PersonalAvatar/@Model.editFactPersonalViewModel.PersonalAvatarName" />
+                                        }
+
+
+                                        @*<img style="border:3px solid; border-radius:20px" width="150" height="120" id="imgAvatar" class="thumbnail" src="/PersonalAvatar/@Model.factPersonalViewModel.PersonalAvatar" />*@
+
+                                        <div class="form-group">
+                                            <label>انتخاب تصویر</label>
+                                            <br />
+                                            <input type="file" asp-for="editFactPersonalViewModel.PersonalAvatar">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div data-label="مشخصات فرمانده" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div id="" class="col-md-6 mb-1">
+                                            <label> کد پرسنلی ف یگان عمده :</label>
+                                            <input type="text" id="personalfarmandehno" class="form-control" asp-for="@Model.editFactPersonalViewModel.FPersonalCode" />
+                                            <span></span>
+
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                کد پرسنلی ف یگان عمده را وارد کنید
+                                            </div>
+                                        </div>
+                                        <div id="" class="col-md-6 mb-1">
+                                            <label> نام ف یگان عمده :</label>
+                                            <input type="text" id="farmandehname" class="form-control" asp-for="@Model.editFactPersonalViewModel.FPersonalName" readonly />
+                                            <span></span>
+
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                نام ف یگان عمده را وارد کنید
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div data-label="مشخصات یگان" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02"> یگان خدمتی :</label>
+                                            <input id="yeganekhedmati" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.UnitDutyTitle" readonly />
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                یگان خدمتی را انتخاب کنید!
+                                            </div>
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02"> یگان عمده :</label>
+                                            <input id="yeganeomdeh" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.UnitTitle" readonly />
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                یگان عمده را انتخاب کنید!
+                                            </div>
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02">قرارگاه منطقه ای / ارشد نظامی :</label>
+                                            <select asp-for="@Model.editFactPersonalViewModel.CodGha"
+                                                asp-items="ViewBag.GharargahList" class="form-control  js-example-basic-single">
+                                                <option value="" selected>یگان(قرارگاه) را انتخاب نمایید</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div data-label="وضعیت جانبازی / ایثارگری" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div class="col-md-4 mb-1">
+                                            <label> جانبازی ارتش :</label>
+                                            <input id="janbaziartesh" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.DRSAD_JA" readonly />
+                                            <span></span>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                جانبازی ارتش را وارد کنید
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label>جانبازی بنیاد  :</label>
+                                            <input id="janbazibonyad" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.DRSAD_JB" readonly />
+                                            <span></span>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                جانبازی بنیاد را وارد کنید
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label>وضعیت ایثارگری :</label>
+                                            <input id="isarstatus" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.IsarStatus" readonly />
+                                            <span></span>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                وضعیت ایثارگری را انتخاب کنید
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div id="hideforshakhsi" class="col-md-6 mb-1">
+                                            <label> مدت خدمت در منطقه عملیاتی :</label>
+                                            <input id="amaliatikhedmate" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.TOT_AML2" readonly />
+                                            <span></span>
+
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                مدت خدمت در منطقه عملیاتی را وارد کنید
+                                            </div>
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-6 mb-1">
+                                            <label> مدت خدمت در منطقه عملیاتی قبل قطعنامه :</label>
+                                            <input id="ghableghatname" type="text" class="form-control" asp-for="@Model.editFactPersonalViewModel.TOT_AML" readonly />
+                                            <span></span>
+
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                مدت خدمت در منطقه عملیاتی قبل قطعنامه را وارد کنید
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+
+                            <div class="form-row" id="createFileSection3">
+                                <div data-label="اطلاعات فیش حقوقی" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div class="col-md-3 mb-1">
+                                            <label for="validationCustom01">حقوق کل :</label>
+                                            <input asp-for="@Model.editFactPersonalViewModel.TotalMoney" type="text" class="form-control" required />
+                                            <small style="color:red">سمت راست فیش حقوقی</small>
+                                            <span asp-validation-for="editFactPersonalViewModel.TotalMoney" style="color:red"> </span>
+
+                                        </div>
+
+                                        <div class="col-md-3 mb-1">
+                                            <label for="validationCustom01"> میزان دریافتی :</label>
+                                            <input asp-for="@Model.editFactPersonalViewModel.ReciveMoney" type="text" class="form-control" required />
+                                            <small style="color:red">سمت چپ فیش حقوقی</small>
+                                            <span asp-validation-for="editFactPersonalViewModel.ReciveMoney" style="color:red"> </span>
+
+                                        </div>
+
+
+                                        <div class="col-md-3 mb-1">
+                                            <label for="validationCustom01"> تعداد وام:</label>
+                                            <input asp-for="@Model.editFactPersonalViewModel.CountVam" type="text" class="form-control" required />
+                                            <span asp-validation-for="editFactPersonalViewModel.CountVam" style="color:red"> </span>
+
+                                        </div>
+
+                                        <div class="col-md-3 mb-1">
+                                            <label for="validationCustom01"> مجموع اقساط ماهیانه:</label>
+                                            <input asp-for="@Model.editFactPersonalViewModel.SumAghsatVamMahiyaneh" type="text" class="form-control" required />
+                                            <span asp-validation-for="editFactPersonalViewModel.SumAghsatVamMahiyaneh" style="color:red"> </span>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div data-label="جزئیات درخواست ملاقات" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div class="col-md-4 mb-1">
+                                            <label for="validationCustom01">موضوع درخواست :</label>
+                                            <select id="requestdescription" class="form-control" asp-for="@Model.editFactPersonalViewModel.RequestSubjectId"
+                                                asp-items="ViewBag.RequestSubject" required>
+                                                <option value=""> موضوع درخواست را انتخاب نمایید</option>
+                                            </select>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                موضوع درخواست را انتخاب کنید
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label for="validationCustom01">اولویت:</label>
+                                            <select id="titletypeid" class="form-control" asp-for="@Model.editFactPersonalViewModel.PriorityId" asp-items="ViewBag.Priority" required>
+                                                <option value="">اولویت را انتخاب نمایید</option>
+                                            </select>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                اولویت را انتخاب کنید
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label for="validationCustom02">وضعیت درخواست ملاقات :</label>
+                                            <select id="filestatusid" asp-for="@Model.editFactPersonalViewModel.FileStatusId" class="form-control js-example-basic-single">
+                                                <option value="">وضعیت درخواست ملاقات را انتخاب نمایید</option>
+                                                <option value="1" selected>ثبت اولیه</option>
+                                            </select>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                وضعیت درخواست ملاقات را انتخاب کنید!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-label="آدرس و شماره تماس و شرح مشکل" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="form-row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="validationCustom02"> آدرس :</label>
+                                        <textarea id="address" asp-for="@Model.editFactPersonalViewModel.Addres" cols="150" rows="50" class="form-control" required></textarea>
+                                        <div class="valid-feedback">
+                                            عالی!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            آدرس را وارد کنید!
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="validationCustom02">تلفن همراه :</label>
+                                        <input id="phone" asp-for="@Model.editFactPersonalViewModel.Phone" type="text" class="form-control" required />
+                                        <small>Format:09-123456789</small>
+
+                                        <span asp-validation-for="@Model.editFactPersonalViewModel.Phone"></span>
+
+                                        <div class="valid-feedback">
+                                            عالی!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            تلفن همراه را انتخاب کنید
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div data-label="شرح مشکل / درخواست" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div class="col-md-12 mb-6">
+                                            <label for="validationCustom01">  شرح مشکل    :</label>
+                                            <textarea asp-for="@Model.editFactPersonalViewModel.ProblemDescription" style="min-height:150px" class="form-control" required></textarea>
+                                        </div>
+                                        <div class="valid-feedback">
+                                            عالی!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            مشکل  را وارد کنید !
+                                        </div>
+                                        <br>
+
+                                        <div class="form-row">
+                                            <div class="col-md-12 mb-6">
+                                                <label for="validationCustom01"> شرح درخواست  :</label>
+                                                <textarea asp-for="@Model.editFactPersonalViewModel.RequestDescription" style="min-height:150px" cols="150" rows="50" class="form-control" required></textarea>
+                                            </div>
+                                            <div class="valid-feedback">
+                                                عالی!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                درخواست را وارد کنید!
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div data-label="فایل های پیوستی" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="row">
+
+                                    <br>
+                                    <div class="card card-img  col-md-6 mb-3">
+                                        <label>انتخاب فایل(پیوست)</label>
+                                        <div class="panel panel-default">
+                                            <div class="card-img  panel-body">
+                                                <input type="file" asp-for="@Model.editFactPersonalViewModel.Attachment">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (@Model.editFactPersonalViewModel.AttachmentFileName != "")
+                                    {
+                                        <div class="card card-img  col-md-6 mb-3">
+                                            <label>دانلود فایل:</label>
+                                            <div class="panel panel-default">
+                                                <div class="border-radius-1">
+                                                    <a target="_blank" href="/FileAttachment/@Model.editFactPersonalViewModel.AttachmentFileName">
+                                                        جهت دانلود فایل <span style="color:red">اینجا</span> کلیک کنید
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    else
+                                    {
+                                        <div class="card card-img  col-md-6 mb-3">
+                                            <label>دانلود فایل:</label>
+                                            <div class="panel panel-default">
+                                                <div class="border-radius-1">
+                                                    <span style="color:red">
+                                                        فایلی جهت دانلود وجود ندارد
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="row">
+
+                                    <br>
+                                    <div class="card card-img  col-md-6 mb-3">
+                                        <label>پیوست فیش حقوقی</label>
+                                        <div class="panel panel-default">
+                                            <div class="card-img  panel-body">
+                                                <input type="file" asp-for="@Model.editFactPersonalViewModel.FishAttachmnet">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (@Model.editFactPersonalViewModel.FishAttacmentFileName != "")
+                                    {
+                                        <div class="card card-img  col-md-6 mb-3">
+                                            <label>دانلود فایل:</label>
+                                            <div class="panel panel-default">
+                                                <div class="border-radius-1">
+                                                    <a target="_blank" href="/FishAttachment/@Model.editFactPersonalViewModel.FishAttacmentFileName">
+                                                        جهت دانلود فایل <span style="color:red">اینجا</span> کلیک کنید
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    else
+                                    {
+                                        <div class="card card-img  col-md-6 mb-3">
+                                            <label>دانلود فایل:</label>
+                                            <div class="panel panel-default">
+                                                <div class="border-radius-1">
+                                                    <span style="color:red">
+                                                        فایلی جهت دانلود وجود ندارد
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+
+                            <br>
+
+                            <button id="submitsazmani" class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت</button>
+                            <a href="/Visitor/File/PersonalNezami/ListFile" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+@section Scripts
+    {
+    <script>
+        $('#personalno').on('keydown', function (e) {
+            if (e.key == 'Tab') {
+                getinformation();
+            }
+        });
+
+        function getinformation() {
+            var PersonalCodeNo = $("#personalno").val();
+            $("#fname").empty();
+            $("#lname").empty();
+            $("#address").empty();
+            $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
+                $("#fname").val(data.firstName);
+                $("#lname").val(data.lastName);
+                $("#codemeli").val(data.melliCode);
+                $("#darjeh").val(data.rankTitle);
+                $("#yeganekhedmati").val(data.unitDutyTitle);
+                $("#yeganeomdeh").val(data.unitTitle);
+                $("#gharargahemantaghei").val(data.codGhaTitle);
+                $("#address").val(data.addres);
+            });
+        };
+
+        $('#personalfarmandehno').blur(function (e) {
+
+            getinformationfarmandeh();
+            $('#loderFPersonalCode').removeClass("d-none");
+
+        });
+
+        function getinformationfarmandeh() {
+
+            var PersonalCodeNo = $("#personalfarmandehno").val();
+
+            $("#farmandehname").empty();
+
+            $.getJSON(`?handler=GetPersonalFarmandehId&personalno=${PersonalCodeNo}`, (data) => {
+
+                if (data.message == "پرسنلی با این مشخصات یافت نشد" || data.message == "این شخص جزء پرسنل یگان شما نمیباشد ، لذا جهت برطرف شدن آن به نیروی انسانی یگان خود مراجعه فرمایید") {
+                    alert(data.message);
+                    $("#farmandehname").empty();
+                }
+
+                else {
+                    $("#farmandehname").val(data.rankTitle + " " + data.firstName + " " + data.lastName);
+
+                }
+                $('#loderFPersonalCode').addClass("d-none");
+
+            });
+        };
+
+
+        //validation Upload file
+        $("#editFactPersonalViewModel_Attachment").change(function () {
+
+            var ext = this.value.match(/\.([^\.]+)$/)[1];
+            if (this.files[0].size > 2097152) {
+                alert("حجم فایل نمیتواند بیشتر از 2Mb باشد!!!");
+                this.value = '';
+            }
+            switch (ext) {
+                case 'doc':
+                case 'docx':
+                case 'txt':
+                case 'png':
+                case 'ico':
+                case 'svg':
+                case 'tif':
+                case 'pdf':
+                    // readURL(this);
+
+                    break;
+                default:
+                    alert("فرمت فایل انتخاب شده نامعتبر است!!!");
+                    this.value = '';
+            }
+        });
+
+        //validation Upload Picture
+        $("#editFactPersonalViewModel_PersonalAvatar").change(function () {
+
+            var ext = this.value.match(/\.([^\.]+)$/)[1];
+            if (this.files[0].size > 2097152) {
+                alert("حجم فایل نمیتواند بیشتر از 2Mb باشد!!!");
+                this.value = '';
+            }
+            switch (ext) {
+                case 'png':
+                case 'jpeg':
+                case 'jpg':
+                case 'tiff':
+                    // readURL(this);
+
+                    break;
+                default:
+                    alert("فرمت فایل انتخاب شده نامعتبر است!!!");
+                    this.value = '';
+            }
+        });
+
+
+        //picture change
+
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#imgAvatar').attr('src', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $("#editFactPersonalViewModel_PersonalAvatar").change(function () {
+            readURL(this);
+        });
+    </script>
+
+
+}
+
+

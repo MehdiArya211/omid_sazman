@@ -1,0 +1,163 @@
+USE [DistributedFirewall]
+GO
+/****** Object:  StoredProcedure [dbo].[SplitPadvishLog]    Script Date: 11/6/2024 10:29:56 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+ALTER PROCEDURE [dbo].[SplitPadvishLog] 
+	
+AS
+BEGIN
+	
+	declare @t int
+
+  
+END
+
+
+--1
+CREATE PROCEDURE InsertPadvishLog
+    @LogEntry NVARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @AttackDate DATETIME;
+    DECLARE @AttackType NVARCHAR(255);
+    DECLARE @Attacker NVARCHAR(255);
+    DECLARE @AttackFlow NVARCHAR(255);
+    DECLARE @ActionTaken NVARCHAR(255);
+    DECLARE @AttackDetector NVARCHAR(255);
+    DECLARE @RegDate DATETIME = GETDATE();
+
+    -- جداسازی تاریخ و زمان
+    SET @AttackDate = CAST(SUBSTRING(@LogEntry, CHARINDEX('[', @LogEntry) + 1, 19) AS DATETIME);
+
+    -- جداسازی نوع حمله
+    SET @AttackType = SUBSTRING(@LogEntry, 
+        CHARINDEX('detected ''', @LogEntry) + LEN('detected '''),
+        CHARINDEX(''' on', @LogEntry) - (CHARINDEX('detected ''', @LogEntry) + LEN('detected '''))
+    );
+
+    -- جداسازی حمله کننده
+    SET @Attacker = SUBSTRING(@LogEntry,
+        CHARINDEX('from ', @LogEntry) + LEN('from '),
+        CHARINDEX(' on client', @LogEntry) - (CHARINDEX('from ', @LogEntry) + LEN('from '))
+    );
+
+    -- جریان حمله
+    SET @AttackFlow = 'Incoming connection';
+
+    -- اقدام انجام شده
+    SET @ActionTaken = 'Blocked it';
+
+    -- تشخیص دهنده حمله
+    SET @AttackDetector = 'IPS detected';
+
+    -- درج داده‌ها در جدول
+    INSERT INTO PadvishLogConvert (AttackDate, AttackType, Attacker, AttackFlow, ActionTaken, AttackDetector, RegDate)
+    VALUES (@AttackDate, @AttackType, @Attacker, @AttackFlow, @ActionTaken, @AttackDetector, @RegDate);
+END
+
+
+
+
+--2
+CREATE PROCEDURE ConvertPadvishLog
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO PadvishLOGConvert (AttackType, Attacker, AttackFlow, ActionTaken, AttackDetector, AttackDate)
+    SELECT
+        -- استخراج نوع حمله
+        SUBSTRING(MsgText, CHARINDEX('IPS detected ', MsgText) + LEN('IPS detected '), 
+            CHARINDEX(' on Incoming connection', MsgText) - (CHARINDEX('IPS detected ', MsgText) + LEN('IPS detected '))) AS AttackType,
+        
+        -- استخراج حمله کننده
+        SUBSTRING(MsgText, CHARINDEX('from ', MsgText) + LEN('from '), 
+            CHARINDEX(' on client', MsgText) - (CHARINDEX('from ', MsgText) + LEN('from '))) AS Attacker,
+        
+        -- استخراج جریان حمله
+        SUBSTRING(MsgText, CHARINDEX('Incoming connection', MsgText), 
+            LEN('Incoming connection')) AS AttackFlow,
+        
+        -- استخراج اقدام انجام شده
+        SUBSTRING(MsgText, CHARINDEX('Blocked it', MsgText), 
+            LEN('Blocked it')) AS ActionTaken,
+
+        -- استخراج تشخیص دهنده حمله
+        SUBSTRING(MsgText, 1, CHARINDEX(' detected', MsgText) + LEN(' detected') - 1) AS AttackDetector,
+
+        -- استخراج تاریخ و ساعت
+        CONVERT(DATETIME, SUBSTRING(MsgText, 1, 19), 120) AS AttackDate
+
+    FROM PadvishLOG
+END
+
+
+
+
+--3
+
+
+CREATE PROCEDURE ConvertPadvishLog
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO PadvishLOGConvert (AttackType, Attacker, AttackFlow, ActionTaken, AttackDetector, AttackDate)
+    SELECT
+        -- استخراج نوع حمله
+        CASE 
+            WHEN CHARINDEX('IPS detected ', MsgText) > 0 AND CHARINDEX(' on Incoming connection', MsgText) > 0 THEN
+                SUBSTRING(MsgText, 
+                    CHARINDEX('IPS detected ', MsgText) + LEN('IPS detected '), 
+                    CHARINDEX(' on Incoming connection', MsgText) - (CHARINDEX('IPS detected ', MsgText) + LEN('IPS detected ')))
+            ELSE NULL
+        END AS AttackType,
+        
+        -- استخراج حمله کننده
+        CASE 
+            WHEN CHARINDEX('from ', MsgText) > 0 AND CHARINDEX(' on client', MsgText) > 0 THEN
+                SUBSTRING(MsgText, 
+                    CHARINDEX('from ', MsgText) + LEN('from '), 
+                    CHARINDEX(' on client', MsgText) - (CHARINDEX('from ', MsgText) + LEN('from ')))
+            ELSE NULL
+        END AS Attacker,
+        
+        -- استخراج جریان حمله
+        CASE 
+            WHEN CHARINDEX('Incoming connection', MsgText) > 0 THEN
+                'Incoming connection'
+            ELSE NULL
+        END AS AttackFlow,
+        
+        -- استخراج اقدام انجام شده
+        CASE 
+            WHEN CHARINDEX('Blocked it', MsgText) > 0 THEN
+                'Blocked it'
+            ELSE NULL
+        END AS ActionTaken,
+
+        -- استخراج تشخیص دهنده حمله
+        CASE 
+            WHEN CHARINDEX('IPS detected', MsgText) > 0 THEN
+                SUBSTRING(MsgText, 1, CHARINDEX(' detected', MsgText) + LEN(' detected') - 1)
+            ELSE NULL
+        END AS AttackDetector,
+
+        -- استخراج تاریخ و ساعت
+        CASE 
+            WHEN LEN(MsgText) >= 19 THEN
+                CONVERT(DATETIME, SUBSTRING(MsgText, 1, 19), 120)
+            ELSE NULL
+        END AS AttackDate
+
+    FROM PadvishLOG
+END
+

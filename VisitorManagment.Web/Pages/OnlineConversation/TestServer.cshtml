@@ -1,0 +1,82 @@
+﻿@page
+@model VisitorManagment.Web.Pages.OnlineConversation.TestServerModel
+@{
+}
+<div style="text-align:center; direction:ltr">
+    <h1>
+        Test TURN server
+    </h1>
+    <hr />
+
+</div>
+<div style="direction:ltr">
+    <div class="row">
+        <div class="col-md-2">
+            TURN URL:
+        </div>
+        <div class="col-md-4">
+            <input id='url' placeholder='enter turn server IP or address...' />
+        </div>
+        <div class="col-md-1">
+            Port:
+        </div>
+        <div class="col-md-4">
+            <input type='number' value='3478' id='port' placeholder='enter a port number' />
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            Transport:
+        </div>
+        <div class="col-md-4">
+            <input type="radio" name="transport" id="tcp" value="tcp" /> TCP
+            <input type="radio" name="transport" id="udp" value="udp" checked />UDP
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            <label>Username:</label>
+
+        </div>
+        <div class="col-md-4">
+            <input id="name" placeholder="turn username" />
+        </div>
+    </div>
+
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            <label>Password:</label> 
+
+        </div>
+        <div class="col-md-4">
+            <input id="pass" type="password" placeholder="turn password" />
+        </div>
+    </div>
+
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            Checking Timeout:
+        </div>
+        <div class="col-md-4">
+            <input type='number' id="time" placeholder="wait time  before checking timeout" value=5000 />
+        </div>
+    </div>
+    <br />
+    <div class="row col-md-4">
+        <button id='buttonserver'>
+            Check TURN Server
+        </button>
+    </div>
+    <br />
+
+    <h4 id='result' class="alert-info" style="direction:rtl; text-align:center; padding:10px 10px 10px 10px; font-size:medium;"></h4>
+</div>
+
+@section Scripts{
+    <script src="~/onlineconvercsation/js/testserver.js"></script>
+
+}

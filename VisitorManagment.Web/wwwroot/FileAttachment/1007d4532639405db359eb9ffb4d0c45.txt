@@ -1,0 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using VisitorManagment.Core.DTOs;
+using VisitorManagment.Core.Services.Interfaces;
+using static VisitorManagment.Core.DTOs.MeetingViewModel;
+
+namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
+{
+
+    [Authorize]
+    public class IndexModel : PageModel
+    {
+
+        private readonly IMeetingService _meetingService;
+
+        public IndexModel(IMeetingService meetingService)
+        {
+
+            _meetingService = meetingService;
+        }
+        [BindProperty]
+        public ListMeetingViewModel listMeetingViewModel { get; set; }
+
+        public void OnGet(int pageId = 1, int filterMeetingStatus = 1 , string filterCaption = "")
+        {
+            ViewData["MeetingPlaceList"] = new SelectList(_meetingService.GetMeetingPlace(), "Id", "Title");
+            ViewData["BoseMeetingList"] = new SelectList(_meetingService.GetBoseMeeting(), "Id", "FullName");
+            ViewData["ClerkMeetingList"] = new SelectList(_meetingService.GetClerkMeeting(), "Id", "FullName");
+            ViewData["MeetingStatusList"] = new SelectList(_meetingService.GetMeetingStatus(), "Id", "Title");
+            //ViewData["Organ"] = new SelectList(_meetingService.GetMeetingStatus(), "Id", "Title");
+            listMeetingViewModel = _meetingService.GetListMeeting(pageId, filterMeetingStatus, filterCaption);
+        }
+
+        public IActionResult OnPost()
+        {
+            return Page();
+        }
+
+        #region autocomplete search
+        public IActionResult OnGetSearch(string term)
+        {
+            var names = _meetingService.GetMeetingForAutoCompliteSearch(term);
+            return new JsonResult(names);
+        }
+        #endregion
+    }
+}

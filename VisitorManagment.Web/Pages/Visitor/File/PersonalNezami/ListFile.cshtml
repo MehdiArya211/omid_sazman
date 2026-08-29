@@ -1,0 +1,798 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Visitor.ListFileModel
+@using VisitorManagment.Core.Convertors
+@using VisitorManagment.Core.DTOs
+@{
+    var personalCode = ViewBag.PersonalCodeUserLogined;
+}
+
+@if (ViewBag.successcreate == true)
+{
+    @Html.Partial("_SwalModal", new { IconClass = "swal-icon--success", Title = "", Message = "درخواست ملاقات شما با موفقیت ارسال شد!", ButtonText = "تایید", LinkUrl = "/Visitor/File/PersonalNezami/ListFile" })
+}
+
+@if (ViewBag.faildsend == true)
+{
+    @Html.Partial("_SwalModal", new { IconClass = "swal-icon--error", Title = "خطا!", Message = "شما نوع اقدام این درخواست ملاقات را بر روی <span class=\"text-danger\">عودت یا رد درخواست</span> قرار داده اید", ButtonText = "تایید", LinkUrl = "/Visitor/File/PersonalNezami/ListFile" })
+}
+
+@if (ViewBag.FaildHamesh == true)
+{
+    @Html.Partial("_SwalModal", new { IconClass = "swal-icon--error", Title = "خطا!", Message = "شما برای این درخواست ملاقات هامش ثبت نکرده اید!", ButtonText = "تایید", LinkUrl = "/Visitor/File/PersonalNezami/ListFile" })
+}
+
+
+
+
+@if (ViewBag.ShowPage != false)
+{
+
+
+    <!-- begin::page-header -->
+    <div class="page-header">
+        <div class="container-fluid d-sm-flex justify-content-between">
+            <h4>لیست اقدامات</h4>
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+
+                    <li class=" breadcrumb-item">
+                        <a href="/Visitor/Index">صفحه اصلی</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="#">مدیریت درخواست ملاقات</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">لیست درخواست ملاقات ها</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- end::page-header -->
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div>
+                            <div class="row" style="justify-content: space-between">
+                                <h4>لیست درخواست ملاقات ها</h4>
+                                <a href="#" class="listFileTour btn bg-success" data-placement="right" title="راهنمای سامانه">
+                                    راهنما
+                                </a>
+                            </div>
+
+
+                        </div>
+
+                        <hr>
+                        <br>
+                        @*اگر کاربر عادی نبود سرچ ها رو نشون بده*@
+                        @if (ViewBag.roleTypeId != 1)
+                        {
+                            <div class="container" id="listFileSection1">
+
+                                <div class="row d-flex justify-content-center">
+                                    <div class="col-md-9">
+                                        <form>
+                                            <div class="input-group mb-3">
+                                                <input id="autofilter" name="filterCaption" type="text" class="form-control"
+                                               aria-label="Example text with button addon"
+                                               placeholder="جستجو براساس کد پرسنلی" autofocus
+                                               aria-describedby="button-addon1">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-primary" type="submit"
+                                                    id="button-addon1">
+                                                        <i data-feather="search"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                    </div>
+                                </div>
+
+                                @* adnavce search *@
+
+                                <div class="card-body">
+
+                                    <p>
+                                        <a class="btn btn-primary btn-block bg-primary-gradient " data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                            جستجوی پیشرفته
+                                        </a>
+                                    </p>
+
+                                    <span style="color:red">
+                                        توجه:
+                                    </span>
+                                    <span id="listFileSection2">
+                                        <br />
+                                        1. درخواست ملاقات هایی که به رنگ آبی هستند اوامر به امر رسیده هیئت رئیسه میباشد
+                                        <br />
+                                        2.درخواست ملاقات هایی که به رنگ زرد هستند از معاونت ها برگشته اند
+                                        <br />
+                                        3.درخواست ملاقات هایی که به رنگ قرمز هستند عملیاتش به پایان رسیده و باید به یگان برگردد
+                                    </span>
+
+
+
+                                    <div class="collapse" id="collapseExample">
+                                        <div class="card card-body">
+                                            <form method="post">
+                                                <div class="row">
+                                                    @if (User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "15")
+                                                    {
+
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+
+                                                                <label class="form-control-label">اوامر صادره</label>
+                                                                <select name="filterAvamerSadereh" asp-items="ViewBag.ListAvamerSadereh" class="form-control  js-example-basic-single">
+                                                                    <option value="" selected>اوامر صادره را انتخاب کنید </option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+
+                                                                <label class="form-control-label">(قرارگاه)یگان</label>
+                                                                <select name="filterGharargah" asp-items="ViewBag.GharargahList" class="form-control  js-example-basic-single">
+                                                                    <option value="" selected>یگان(قرارگاه) را انتخاب نمایید</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label class="form-control-label">موضوع درخواست</label>
+                                                            <select name="requestsubject" asp-items="ViewBag.RequestSubject" class="form-control  js-example-basic-single">
+                                                                <option value="">موضوع درخواست را انتخاب نمایید</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <button asp-page-handler="Pagination" class="btn btn-outline-info float-right mr-1">جستجو</button>
+                                                    <button href="/Visitor/File/PersonalNezami/ListFile" class="btn btn-outline-success float-right">پاک کردن</button>
+                                                </div>
+
+
+                                            </form>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                                @*end adnavce search *@
+
+
+
+                            </div>
+                        }
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger">
+                        </div>
+
+                        <div class="col-md-12">
+                            <a href="#" style="color:white" data-toggle="modal" data-target="#modalfortypepersonal"
+                           class="btn btn-success btn-pulse listFileSection3" data-placement="right">
+                                <i class="ti-plus mr-2"></i>
+                                ثبت درخواست ملاقات
+                            </a>
+                            <br>
+                        </div>
+
+                        <table id="dataTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ردیف</th>
+                                    <th>نوع(امید / لبیک 24)</th>
+                                    <th>مشخصات</th>
+                                    <th>کد پرسنلی</th>
+                                    <th>قرارگاه</th>
+                                    <th>یگان عمده</th>
+                                    <th>یگان</th>
+                                    <th>موضوع درخواست</th>
+                                    <th>زمان ایجاد</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @if (@Model.ListViewModel.count == 0)
+                                {
+                                    <tr>
+                                        <td style="color:red ">موردی یافت نشد!</td>
+                                    </tr>
+                                }
+
+                                else
+                                {
+                                    @foreach (var file in Model.ListViewModel.files)
+                                    {
+
+                                        //=================================معاونت روش عملیات انجام داده  ==========================//
+
+                                        if (file.IsAnswerdMoavenat == true && file.IsArchived == false && file.IsMeetingHold == false)
+                                        {
+                                            <tr>
+
+
+                                                <td class="colorfileMoavenat">@(++Model.ListViewModel.skip)</td>
+                                                <td class="colorfileMoavenat">@(file.FileTypeTitle)</td>
+                                                <td class="colorfileMoavenat">@file.RankTitle  @file.BranchTitle  @file.FirstName @file.LastName</td>
+                                                <td class="colorfileMoavenat">@file.PersonalCode</td>
+                                                <td class="text-width-align colorfileMoavenat">@file.CodGhaTitle</td>
+                                                <td class="text-width-align colorfileMoavenat">@file.UnitTitle</td>
+                                                <td class="text-width-align colorfileMoavenat">@file.UnitDutyTitle</td>
+                                                <td class="colorfileMoavenat">@file.ReqSubTitle</td>
+                                                <td class="colorfileMoavenat">@file.RegDate.ToShamsi()</td>
+
+                                                <td class="text-center text-width-align">
+                                                    <div class="row">
+
+
+
+                                                        <a href="#" onclick="showfiles(@file.Id)" data-toggle="modal" id="InfoId"
+                                           data-target="#exampleModalCenter" data-placement="right" class="AllIcon"
+                                           title="نمایش جزئیات">
+                                                            <i class="fa fa-eye text-info"></i>
+                                                        </a>
+
+                                                        <a href="/Visitor/File/PersonalNezami/editfile/@file.Id" data-toggle="tooltip" id="listFileSection5" class="AllIcon"
+                                           data-placement="right" title="ویرایش">
+                                                            <i class="fa fa-edit text-warning"></i>
+                                                        </a>
+
+                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2"))
+                                                        {
+                                                            <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
+                                           data-toggle="tooltip" data-placement="right" title="حذف">
+                                                                <i class="fa fa-trash text-danger"></i>
+                                                            </a>
+                                                        }
+
+                                                        <a href="/Visitor/File/PersonalNezami/HameshInfo/CreateHamesh/@file.Id"
+                                           data-toggle="tooltip" id="SendId" class="AllIcon"
+                                           data-target="#ModalHamesh" data-placement="right" title="هامش">
+                                                            <i class="fa fa-edit text-danger"></i>
+                                                        </a>
+
+                                                        <a onclick="showHamesh(@file.Id)" data-toggle="modal" data-target="#Modalhamesh"
+                                           class=" AllIcon " id="" data-placement="right" title="گردش درخواست">
+                                                            <i class="fa fa-history"></i>
+                                                        </a>
+
+
+                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2") && file.IsArchived == false)
+                                                        {
+                                                            <a href="#" onclick="archive(@file.Id)"
+                                           data-placement="right" title=" خاتمه / بایگانی" class=" AllIcon ">
+                                                                <i class="fa fa-folder"></i>
+
+                                                            </a>
+                                                        }
+
+
+                                                    </div>
+                                                </td>
+
+
+                                            </tr>
+                                        }
+
+                                        //=================================   جلسه ش برگزار شده  ==========================//
+
+                                        if (file.IsMeetingHold == true && file.IsArchived == false)
+                                        {
+                                            <tr>
+
+
+                                                <td class="colorfileMettingHold">@(++Model.ListViewModel.skip)</td>
+                                                <td class="colorfileMettingHold">@(file.FileTypeTitle)</td>
+                                                <td class="colorfileMettingHold">@file.RankTitle  @file.BranchTitle  @file.FirstName @file.LastName</td>
+                                                <td class="colorfileMettingHold">@file.PersonalCode</td>
+                                                <td class="text-width-align colorfileMettingHold">@file.CodGhaTitle</td>
+                                                <td class="text-width-align colorfileMettingHold">@file.UnitTitle</td>
+                                                <td class="text-width-align colorfileMettingHold">@file.UnitDutyTitle</td>
+                                                <td class="colorfileMettingHold">@file.ReqSubTitle</td>
+                                                <td class="colorfileMettingHold">@file.RegDate.ToShamsi()</td>
+
+                                                <td class="text-center text-width-align">
+                                                    <div class="row">
+
+
+
+                                                        <a href="#" onclick="showfiles(@file.Id)" data-toggle="modal" id="InfoId"
+                                           data-target="#exampleModalCenter" data-placement="right" class="AllIcon "
+                                           title="نمایش جزئیات">
+                                                            <i class="fa fa-eye text-info"></i>
+                                                        </a>
+
+                                                        <a href="/Visitor/File/PersonalNezami/editfile/@file.Id" class="AllIcon "
+                                           data-toggle="tooltip" data-placement="right" title="ویرایش">
+                                                            <i class="fa fa-edit text-warning"></i>
+                                                        </a>
+
+
+                                                        <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
+                                           data-toggle="tooltip" data-placement="right" title="حذف">
+                                                            <i class="fa fa-trash text-danger"></i>
+                                                        </a>
+
+                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2"))
+                                                        {
+                                                            <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
+                                           data-toggle="tooltip" data-placement="right" title="حذف">
+                                                                <i class="fa fa-trash text-danger"></i>
+                                                            </a>
+                                                        }
+
+
+
+                                                        <a href="/Visitor/File/PersonalNezami/HameshInfo/CreateHamesh/@file.Id"
+                                           data-toggle="tooltip" id="SendId" class="AllIcon "
+                                           data-target="#ModalHamesh" data-placement="right" title="هامش">
+                                                            <i class="fa fa-edit text-danger"></i>
+                                                        </a>
+
+                                                        <a onclick="showHamesh(@file.Id)" data-toggle="modal" data-target="#Modalhamesh"
+                                           class=" AllIcon " id="" data-placement="right" title="گردش درخواست">
+                                                            <i class="fa fa-history"></i>
+                                                        </a>
+
+                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2") && file.IsArchived == false)
+                                                        {
+                                                            <a onclick="archive(@file.Id)"
+                                           data-placement="right" title=" خاتمه / بایگانی" class=" AllIcon ">
+                                                                <i class="fa fa-folder"></i>
+
+                                                            </a>
+                                                        }
+
+                                                    </div>
+                                                </td>
+
+                                            </tr>
+                                        }
+
+                                        //=================================   جلسه ش برگزار نشده  ==========================//
+
+                                        if (file.IsMeetingHold == false && file.IsAnswerdMoavenat == false && file.IsArchived == false)
+                                        {
+                                            <tr>
+
+
+                                                <td>@(++Model.ListViewModel.skip)</td>
+                                                <td>@(file.FileTypeTitle)</td>
+                                                <td>@file.RankTitle  @file.BranchTitle  @file.FirstName @file.LastName</td>
+                                                <td>@file.PersonalCode</td>
+                                                <td class="text-width-align">@file.CodGhaTitle</td>
+                                                <td class="text-width-align">@file.UnitTitle</td>
+                                                <td class="text-width-align">@file.UnitDutyTitle</td>
+                                                <td>@file.ReqSubTitle</td>
+                                                <td>@file.RegDate.ToShamsi()</td>
+
+                                                <td class="text-center text-width-align">
+                                                    <div class="row">
+                                                        <a href="#" onclick="showfiles(@file.Id)" data-toggle="modal" id="InfoId"
+                                           data-target="#exampleModalCenter" data-placement="right" class="AllIcon "
+                                           title="نمایش جزئیات">
+                                                            <i class="fa fa-eye text-info"></i>
+                                                        </a>
+
+                                                        <a href="/Visitor/File/PersonalNezami/editfile/@file.Id" class="AllIcon "
+                                           data-toggle="tooltip" data-placement="right" title="ویرایش">
+                                                            <i class="fa fa-edit text-warning"></i>
+                                                        </a>
+
+                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2"))
+                                                        {
+                                                            <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
+                                           data-toggle="tooltip" data-placement="right" title="حذف">
+                                                                <i class="fa fa-trash text-danger"></i>
+                                                            </a>
+                                                        }
+
+                                                        <a href="/Visitor/File/PersonalNezami/HameshInfo/CreateHamesh/@file.Id"
+                                           data-toggle="tooltip" id="SendId" class="AllIcon "
+                                           data-target="#ModalHamesh" data-placement="right" title="هامش">
+                                                            <i class="fa fa-edit text-danger"></i>
+                                                        </a>
+
+                                                        <a onclick="showHamesh(@file.Id)" data-toggle="modal" data-target="#Modalhamesh"
+                                           class=" AllIcon " id="" data-placement="right" title="گردش درخواست">
+                                                            <i class="fa fa-history"></i>
+                                                        </a>
+
+                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2") && file.IsArchived == false)
+                                                        {
+                                                            <a onclick="archive(@file.Id)"
+                                           data-placement="right" title=" خاتمه / بایگانی" class=" AllIcon ">
+                                                                <i class="fa fa-folder"></i>
+
+                                                            </a>
+                                                        }
+
+                                                    </div>
+                                                </td>
+
+                                            </tr>
+                                        }
+
+                                    }
+                                }
+
+
+
+
+                            </tbody>
+
+
+                        </table>
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*modal Eyes*@
+    <div id="exampleModalCenter" class="modal fade" tabIndex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-primary" id="exampleModalCenterTitle">جزئیات درخواست ملاقات</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="ti-close text-danger"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <dl class="row">
+                                <dt class="col-sm-5">نام:</dt>
+                                <dd class="col-sm-7 fontcolor" id="fname"></dd>
+
+                                <dt class="col-sm-5">نام خانوادگی:</dt>
+                                <dd class="col-sm-7 fontcolor" id="lname"></dd>
+
+                                <dt class="col-sm-5">کدپرسنلی:</dt>
+                                <dd class="col-sm-7 fontcolor" id="codepersonal"></dd>
+
+                                <dt class="col-sm-5">کد ملی:</dt>
+                                <dd class="col-sm-7 fontcolor" id="codemelli"></dd>
+
+                                <dt class="col-sm-5">درجه:</dt>
+                                <dd class="col-sm-7 fontcolor" id="rank"></dd>
+
+                                <dt class="col-sm-5">رسته:</dt>
+                                <dd class="col-sm-7 fontcolor" id="branch"></dd>
+
+                                <dt class="col-sm-5">وضعیت:</dt>
+                                <dd class="col-sm-7 fontcolor" id="statuse"></dd>
+
+                                <dt class="col-sm-5">جانبازی ارتش:</dt>
+                                <dd class="col-sm-7 fontcolor" id="janbaziartesh"></dd>
+
+                                <dt class="col-sm-5">جانبازی بنیاد:</dt>
+                                <dd class="col-sm-7 fontcolor" id="janbazinonyad"></dd>
+
+                                <dt class="col-sm-5">وضعیت ایثارگری:</dt>
+                                <dd class="col-sm-7 fontcolor" id="isarstatus"></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <dl class="row">
+                                <dt class="col-sm-5">خدمت در منطقه:</dt>
+                                <dd class="col-sm-7 fontcolor" id="khedmatmantaghe"></dd>
+
+                                <dt class="col-sm-5">خدمت در منطقه قبل قطعنامه:</dt>
+                                <dd class="col-sm-7 fontcolor" id="ghableghatname"></dd>
+
+                                <dt class="col-sm-5">یگان خدمتی:</dt>
+                                <dd class="col-sm-7 fontcolor" id="unitdutytitle"></dd>
+
+                                <dt class="col-sm-5">یگان عمده:</dt>
+                                <dd class="col-sm-7 fontcolor" id="unittitle"></dd>
+
+                                <dt class="col-sm-5">قرارگاه منطقه ای / ارشد نظامی:</dt>
+                                <dd class="col-sm-7 fontcolor" id="ghararghah"></dd>
+
+                                <dt class="col-sm-5">کد پرسنلی فرمانده:</dt>
+                                <dd class="col-sm-7 fontcolor" id="fpersonalcode"></dd>
+
+                                <dt class="col-sm-5">نام فرمانده:</dt>
+                                <dd class="col-sm-7 fontcolor" id="ffname"></dd>
+
+                                <dt class="col-sm-5">تلفن:</dt>
+                                <dd class="col-sm-7 fontcolor" id="phone"></dd>
+
+                                <dt class="col-sm-5">آدرس:</dt>
+                                <dd class="col-sm-7 fontcolor" id="address"></dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <hr />
+                    <div>
+                        <dl class="row">
+                            <dt class="col-sm-5">شرح مشکل:</dt>
+                            <dd class="col-sm-7 fontcolor" id="problemDescription"></dd>
+                        </dl>
+                    </div>
+                    <hr />
+                    <div>
+                        <dl class="row">
+                            <dt class="col-sm-5">شرح درخواست:</dt>
+                            <dd class="col-sm-7 fontcolor" id="reqdescription"></dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*end modal Eyes*@
+
+    @*modal for create type personal*@
+    <div class="modal fade" id="modalfortypepersonal" tabIndex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">نوع پرسنل خود را انتخاب کنید</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="ti-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="col-md-12">
+                        <div class="row">
+                            <a class="btn btn-success  m-10 text-white" href="/Visitor/File/PersonalNezami/createfile">ایجاد درخواست (نظامی پرسنل)</a>
+                            <br>
+                            <a class="btn btn-info m-10 text-white disabled" href="/Visitor/File/gheirPersonalNezami/createfile">ایجاد درخواست (نظامی غیرپرسنل)</a>
+                            <br>
+                            <a class="btn btn-info  m-10 text-white disabled" href="/Visitor/File/bazneshasteh/createfile">ایجاد درخواست (بازنشسته)</a>
+                            <br>
+                            <a class="btn btn-info  m-10 text-white disabled" href="/Visitor/File/vazifeh/createfile">ایجاد درخواست (وظیفه)</a>
+                            <br>
+                            <a class="btn btn-info  m-10 text-white disabled" href="/Visitor/File/gheirnezami/createfile">ایجاد درخواست (غیرنظامی)</a>
+
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        بستن
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*end modal*@
+
+    @*modal Send*@
+    <div class="modal fade" id="ModalSend" tabIndex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class=" modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">ارسال درخواست ملاقات</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="ti-close"></i>
+                    </button>
+                </div>
+
+                <div class=" modal-body justify-content-sm-around ">
+                    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+
+                        <div class="form-row">
+
+                            <div id="gridsendlist">
+                                <partial name="_GridSendList" model="@Model.Users" />
+                            </div>
+
+
+                        </div>
+                        <br>
+                        <button class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ارسال</button>
+
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        بستن
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*end modal*@
+
+
+    @*modal hameshs File*@
+    <div class="modal fade" id="Modalhamesh" tabIndex="-1" role="dialog" aria-hidden="true">
+
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class=" modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">گردش درخواست</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="ti-close"></i>
+                    </button>
+                </div>
+
+                <div class=" modal-body">
+
+                    <div class="form-row">
+                        <div class="col-12 gridsendlistMain" id="gridsendlistMain">
+                            <partial name="_GardeshDarkhast" model="@Model.ListHameshViewModel" />
+                        </div>
+                    </div>
+                    <br>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        بستن
+                    </button>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+
+@section GetInformationPersonal
+    {
+    <script>
+        // نمایش اطلاعات فایل با شناسه id
+        function showfiles(id) {
+            try {
+                $.getJSON(`?handler=GetFileInfo&fileid=${id}`, (data) => {
+                    if (!data) throw new Error("اطلاعات فایل یافت نشد");
+
+                    // پر کردن فیلدهای HTML با داده‌های دریافت شده
+                    const fields = {
+                        "#fname": data.firstName,
+                        "#lname": data.lastName,
+                        "#codemelli": data.melliCode,
+                        "#codepersonal": data.personalCode,
+                        "#rank": data.rankTitle,
+                        "#branch": data.branchTitle,
+                        "#statuse": data.statusTitle,
+                        "#janbaziartesh": data.janbaziArtesh,
+                        "#janbazinonyad": data.janbaziBonyad,
+                        "#isarstatus": data.isarStatus,
+                        "#khedmatmantaghe": data.amaliatiKhedmate,
+                        "#ghableghatname": data.ghableGhatnameAmaliatiKhedmate,
+                        "#unitdutytitle": data.unitDutyTitle,
+                        "#unittitle": data.unitTitle,
+                        "#ghararghah": data.codGhaTitle,
+                        "#fpersonalcode": data.farmandehPersonalCode,
+                        "#ffname": data.farmandehPersonalName,
+                        "#phone": data.phone,
+                        "#address": data.addres,
+                        "#reqdescription": data.requestDescription,
+                        "#problemDescription": data.problemDescription
+                    };
+
+                    for (const [selector, value] of Object.entries(fields)) {
+                        $(selector).text(value ?? "اطلاعات موجود نیست");
+                    }
+                    $("#attachment").attr('href', data.attachment ?? "#");
+                }).fail(() => {
+                    alert("خطا در دریافت اطلاعات فایل. لطفا مجددا تلاش کنید.");
+                });
+            } catch (error) {
+                console.error(error);
+                alert("خطای غیرمنتظره‌ای رخ داده است.");
+            }
+        }
+
+        // نمایش هامش‌های مرتبط با فایل
+        function showHamesh(id) {
+            try {
+                $.ajax({
+                    url: "@Url.Page("ListFile")?handler=Hamesh",
+                    type: "GET",
+                    data: { fileId: id },
+                    success: function (data) {
+                        if (!data) throw new Error("هیچ داده‌ای یافت نشد");
+                        $('#gridsendlistMain').html(data);
+                    },
+                    error: function () {
+                        alert("خطا در بارگذاری هامش‌ها. لطفا دوباره تلاش کنید.");
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                alert("خطای غیرمنتظره‌ای در سیستم رخ داده است.");
+            }
+        }
+
+        // ارسال فایل برای کاربران مربوطه
+        function sendFiles(fileId) {
+            try {
+                $.ajax({
+                    url: "@Url.Page("ListFile")?handler=GetRecieverUser",
+                    type: "GET",
+                    data: { fileId },
+                    success: function (data) {
+                        if (!data) throw new Error("هیچ داده‌ای یافت نشد");
+                        $('#gridsendlist').html(data);
+                    },
+                    error: function () {
+                        alert("خطا در ارسال درخواست ملاقات. لطفا مجددا تلاش کنید.");
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                alert("خطای غیرمنتظره‌ای رخ داده است.");
+            }
+        }
+        // آرشیو کردن فایل
+        function archive(fileId) {
+            try {
+                $.ajax({
+                    url: "@Url.Page("ListFile")?handler=Archive",
+                    type: "GET",
+                    data: { fileId },
+                    success: function () {
+                        Swal.fire({
+                            title: 'موفق!',
+                            text: 'فایل با موفقیت آرشیو شد.',
+                            icon: 'success',
+                            confirmButtonText: 'باشه'
+                        }).then(() => {
+                            window.location.href = '/Visitor/File/PersonalNezami/listfile';
+                        });
+                        setTimeout(() => window.location.href = '/Visitor/File/PersonalNezami/listfile', 1000);
+                    },
+                    error: function () {
+                        alert("خطا در آرشیو فایل. لطفا دوباره تلاش کنید.");
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                alert("خطای غیرمنتظره‌ای رخ داده است.");
+            }
+        }
+
+
+        // فعال‌سازی قابلیت تکمیل خودکار برای فیلد جستجو
+        $(document).ready(function () {
+            try {
+                $('#autofilter').autocomplete({
+                    source: '@Url.Page("listfile", "search")',
+                    minLength: 2,
+                    select: function (event, ui) {
+                        console.log("آیتم انتخاب شده:", ui.item.value);
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                alert("خطا در فعال‌سازی تکمیل خودکار. لطفا صفحه را بازنشانی کنید.");
+            }
+        });
+
+    </script>
+}
+

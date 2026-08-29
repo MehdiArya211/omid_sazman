@@ -1,0 +1,34 @@
+﻿@model dynamic
+
+<div class="swal-overlay swal-overlay--show-modal" tabIndex="-1">
+    <div class="swal-modal" role="dialog" aria-modal="true">
+        <div class="swal-icon @Model.IconClass">
+            @if (Model.IconClass == "swal-icon--success")
+            {
+                <span class="swal-icon--success__line swal-icon--success__line--long"></span>
+                <span class="swal-icon--success__line swal-icon--success__line--tip"></span>
+                <div class="swal-icon--success__ring"></div>
+                <div class="swal-icon--success__hide-corners"></div>
+            }
+            else if (Model.IconClass == "swal-icon--error")
+            {
+                <div class="swal-icon--error__x-mark">
+                    <span class="swal-icon--error__line swal-icon--error__line--left"></span>
+                    <span class="swal-icon--error__line swal-icon--error__line--right"></span>
+                </div>
+            }
+        </div>
+        <div class="swal-title">@Model.Title</div>
+        <div class="swal-text">@Model.Message</div>
+        <div class="swal-footer">
+            <div class="swal-button-container">
+                <a class="swal-button swal-button--confirm text-white" href="@Model.LinkUrl">@Model.ButtonText</a>
+                <div class="swal-button__loader">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

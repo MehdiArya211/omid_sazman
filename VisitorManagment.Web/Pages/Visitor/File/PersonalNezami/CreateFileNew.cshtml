@@ -1,0 +1,537 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Visitor.File.PersonalNezami.CreateFileNewModel
+@{
+    ViewData["Title"] = "ایجاد درخواست ملاقات  ";
+
+}
+
+
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4></h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ها</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">تشکیل درخواست ملاقات</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- end::page-header -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row" style="justify-content: space-between">
+                        <h4>ثبت درخواست ملاقات</h4>
+                        <a href="#" class="createFileTour btn bg-success" data-placement="right" title="راهنمای سامانه">
+                            راهنما
+                        </a>
+                    </div>
+                    <hr>
+
+                    <form class="needs-validation" method="post"
+                          novalidate="" enctype="multipart/form-data">
+
+                        <div asp-validation-summary="All" style="color:red" role="alert">
+                        </div>
+
+
+                        <div class="form-row" id="createFileSection1">
+                            <div data-label="نوع درخواست ملاقات" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-1">
+                                        <label for="validationCustom02"> نوع درخواست (امید / لبیک 24) :</label>
+
+                                        <select asp-for="@Model.factPersonalViewModel.FileTypeId"
+                                                asp-items="ViewBag.FileTypeList" class="form-control " required>
+                                            <option value="" selected>نوع درخواست را انتخاب کنید</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-label="مشخصات پرسنلی" class="demo-code-preview col-md-9 mb-1 ">
+                                <div class="form-row">
+                                    <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                        <label id="label" for="validationCustom02">
+                                            کد پرسنلی :
+                                            <div id="loading" class="loading d-none">
+                                                <img src="/asset/images/logo.png" alt="Loading..." />
+                                            </div>
+                                        </label>
+                                        <input id="personalno" asp-for="@Model.factPersonalViewModel.PersonalCode" type="text" class="form-control" required />
+                                        <span asp-validation-for="factPersonalViewModel.PersonalCode" style="color:red"> </span>
+
+                                    </div>
+                                    <div class="col-md-4 mb-1">
+                                        <label for="validationCustom02">نام :</label>
+                                        <input id="fname" type="text" class="form-control" asp-for="@Model.factPersonalViewModel.FirstName" readonly required />
+
+                                    </div>
+                                    <div class="col-md-4 mb-1">
+                                        <label for="validationCustom02">نام خانوادگی :</label>
+                                        <input id="lname" type="text" class="form-control" asp-for="@Model.factPersonalViewModel.LastName" readonly required />
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-4 mb-1 ">
+                                        <label for="validationCustom02">کد ملی :</label>
+
+                                        <input id="codemeli" type="text" class="form-control " asp-for="@Model.factPersonalViewModel.MelliCode" readonly required />
+
+                                    </div>
+                                    <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                        <label for="validationCustom02">درجه :</label>
+                                        <input id="darjeh" type="text" class="form-control" asp-for="@Model.factPersonalViewModel.RankTitle" readonly required />
+
+                                    </div>
+                                    <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                        <label for="validationCustom02">رسته :</label>
+                                        <input id="branchtitle" type="text" class="form-control" asp-for="@Model.factPersonalViewModel.BranchTitle" readonly required />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-label="عکس پرسنل" class="demo-code-preview col-md-3 mb-1 ">
+                                <div class="card-img  panel-body" id="PersonalAvatar">
+
+                                    <img style="border:3px solid; border-radius:20px" width="150" height="120" id="imgAvatar" class="thumbnail" src="/PersonalAvatar/Default.png" />
+
+                                    <div class="form-group">
+                                        <label>انتخاب تصویر</label>
+                                        <br />
+                                        <input type="file" asp-for="factPersonalViewModel.PersonalAvatar">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <section id="createFileSection2">
+                            <div class="form-row">
+                                <div data-label="مشخصات فرمانده" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div id="" class="col-md-6 mb-1">
+                                            <label>
+                                                کد پرسنلی ف یگان عمده :
+                                                <span id="loderFPersonalCode" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                            </label>
+
+                                            <input id="personalfarmandehno" type="text" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.FPersonalCode" required />
+
+                                            <span asp-validation-for="factPersonalViewModel.FPersonalCode" style="color:red"> </span>
+                                        </div>
+                                        <div id="" class="col-md-6 mb-1">
+                                            <label> نام ف یگان عمده :</label>
+                                            <span id="loderPersonalCode" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                            <input id="farmandehname" type="text" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.FPersonalName" readonly required />
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div data-label="مشخصات یگان" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02">قرارگاه منطقه ای / ارشد نظامی :</label>
+                                            <select asp-for="@Model.factPersonalViewModel.CodGha"
+                                                    asp-items="ViewBag.GharargahList" class="form-control " required>
+                                                <option value="" selected>یگان(قرارگاه) را انتخاب نمایید</option>
+                                            </select>
+                                            <span asp-validation-for="@Model.factPersonalViewModel.CodGha" style="color:red"> </span>
+
+                                        </div>
+
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02"> یگان عمده :</label>
+                                            <input id="yeganeomdeh" type="text" class="form-control"
+                                                   readonly required />
+
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-4 mb-1">
+                                            <label for="validationCustom02"> یگان خدمتی :</label>
+                                            <input id="yeganekhedmati" type="text" class="form-control"
+                                                   readonly required />
+
+                                        </div>
+
+                                        <span style="color:red">
+                                            توجه:
+                                            تمام یگان های هوانیروز قرارگاه خود را نیروی زمینی ارتش وارد کنند.
+
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div data-label="وضعیت جانبازی / ایثارگری" class="demo-code-preview col-md-12 mb-1 ">
+                                    <div class="form-row">
+                                        <div class="col-md-4 mb-1">
+                                            <label> درصد جانبازی ارتش :</label>
+                                            <input id="janbaziartesh" type="text" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.DRSAD_JA" readonly />
+
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label>درصد جانبازی بنیاد:</label>
+                                            <input id="janbazibonyad" type="number" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.DRSAD_JB" readonly />
+
+                                        </div>
+                                        <div class="col-md-4 mb-1">
+                                            <label>وضعیت ایثارگری :</label>
+                                            <input id="isarstatus" type="text" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.IsarStatus" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div id="hideforshakhsi" class="col-md-6 mb-1">
+                                            <label> مدت خدمت در منطقه عملیاتی :</label>
+                                            <input id="amaliatikhedmate" type="text" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.TOT_AML2" readonly />
+                                            <span></span>
+                                        </div>
+                                        <div id="hideforshakhsi" class="col-md-6 mb-1">
+                                            <label> مدت خدمت در منطقه عملیاتی قبل قطعنامه :</label>
+                                            <input id="ghableghatname" type="text" class="form-control"
+                                                   asp-for="@Model.factPersonalViewModel.TOT_AML" readonly />
+                                            <span></span>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </section>
+
+                        <br />
+
+                        <div class="form-row" id="createFileSection3">
+                            <div data-label="اطلاعات فیش حقوقی" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="form-row">
+                                    <div class="col-md-3 mb-1">
+                                        <label for="validationCustom01">حقوق کل :</label>
+                                        <input asp-for="@Model.factPersonalViewModel.TotalMoney" type="text" class="form-control" required />
+                                        <small style="color:red">سمت راست فیش حقوقی</small>
+                                        <span asp-validation-for="factPersonalViewModel.TotalMoney" style="color:red"> </span>
+
+                                    </div>
+
+                                    <div class="col-md-3 mb-1">
+                                        <label for="validationCustom01"> میزان دریافتی :</label>
+                                        <input asp-for="@Model.factPersonalViewModel.ReciveMoney" type="text" class="form-control" required />
+                                        <small style="color:red">سمت چپ فیش حقوقی</small>
+                                        <span asp-validation-for="factPersonalViewModel.ReciveMoney" style="color:red"> </span>
+
+                                    </div>
+
+
+                                    <div class="col-md-3 mb-1">
+                                        <label for="validationCustom01"> تعداد وام:</label>
+                                        <input asp-for="@Model.factPersonalViewModel.CountVam" type="text" class="form-control" required />
+                                        <span asp-validation-for="factPersonalViewModel.CountVam" style="color:red"> </span>
+
+                                    </div>
+
+                                    <div class="col-md-3 mb-1">
+                                        <label for="validationCustom01"> مجموع اقساط ماهیانه:</label>
+                                        <input asp-for="@Model.factPersonalViewModel.SumAghsatVamMahiyaneh" type="text" class="form-control" required />
+                                        <span asp-validation-for="factPersonalViewModel.SumAghsatVamMahiyaneh" style="color:red"> </span>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row" id="createFileSection4">
+                            <div data-label="جزئیات درخواست ملاقات" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="form-row">
+                                    <div class="col-md-4 mb-1">
+                                        <label for="validationCustom01">موضوع درخواست :</label>
+                                        <select id="requestdescription" class="form-control"
+                                                asp-for="@Model.factPersonalViewModel.RequestSubjectId" asp-items="ViewBag.RequestSubject" required>
+                                            <option value=""> موضوع درخواست را انتخاب نمایید</option>
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-4 mb-1">
+                                        <label for="validationCustom01">اولویت:</label>
+                                        <select id="titletypeid" class="form-control"
+                                                asp-for="@Model.factPersonalViewModel.PriorityId" asp-items="ViewBag.Priority" required>
+                                            <option value="">اولویت را انتخاب نمایید</option>
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-4 mb-1">
+                                        <label for="validationCustom02">وضعیت درخواست ملاقات :</label>
+                                        <select id="filestatusid"
+                                                asp-for="@Model.factPersonalViewModel.FileStatusId" class="form-control" required>
+                                            @*                                                <option value="">وضعیت درخواست را انتخاب نمایید</option>
+                                            *@
+                                            <option value="1" selected>ثبت اولیه</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row" id="createFileSection5">
+                            <div data-label="آدرس و شماره تماس و شرح مشکل" class="demo-code-preview col-md-12 mb-1 ">
+                                <div class="form-row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="validationCustom02"> آدرس :</label>
+                                        <textarea id="address" asp-for="@Model.factPersonalViewModel.Addres"
+                                                  cols="150" rows="50" class="form-control" required></textarea>
+                                        <span asp-validation-for="factPersonalViewModel.Addres" style="color:red"> </span>
+
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="validationCustom02">تلفن همراه :</label>
+                                        <input id="phone" asp-for="@Model.factPersonalViewModel.Phone"
+                                               type="tel" pattern="[0]{1}[9]{1}[0-9]{9}" class="form-control" required />
+                                        <small>Format:09-123456789</small>
+
+                                        <span asp-validation-for="@Model.factPersonalViewModel.Phone" style="color:red"></span>
+
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-6">
+                                        <label for="validationCustom01">  شرح مشکل    :</label>
+                                        <textarea asp-for="@Model.factPersonalViewModel.ProblemDescription"
+                                                  style="min-height:150px" rows="5000" cols="5000" class="form-control" required>
+                                                                                                                                                                                 </textarea>
+
+                                    </div>
+                                    <span asp-validation-for="factPersonalViewModel.ProblemDescription" style="color:red"> </span>
+
+                                </div>
+                                <br />
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-6">
+                                        <label for="validationCustom01">  شرح درخواست  :</label>
+                                        <textarea asp-for="@Model.factPersonalViewModel.RequestDescription" style="min-height:150px"
+                                                  rows="5000" cols="5000" class="form-control" required>
+                                                                                                                                                                                </textarea>
+                                    </div>
+                                    <span asp-validation-for="factPersonalViewModel.RequestDescription" style="color:red"> </span>
+
+
+                                </div>
+                                <br />
+
+                            </div>
+                        </div>
+
+                        <div class="form-row" id="createFileSection6">
+                            <div data-label="افزودن فایل پیوستی" class="demo-code-preview col-md-12 mb-6 ">
+                                <div class="form-row">
+                                    <div class="col-md-3 mb-3">
+                                        <label>انتخاب فایل(پیوست)</label>
+                                        <div class="form-group">
+                                            <input type="file" class="form-control"
+                                                   id="attachment"
+                                                   accept="image/* , .doc , .docx , .pdf , .rar "
+                                                   asp-for="@Model.factPersonalViewModel.Attachment">
+                                            <span asp-validation-for="factPersonalViewModel.PersonalCode" style="color:red"> </span>
+                                            <br>
+                                            <small>حجم فایل:حداکثر2Mb</small>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label for="validationCustom02"> آپلود فایل فیش حقوقی :</label>
+                                        <div class="panel panel-default">
+
+                                            <div class="form-group">
+                                                <input type="file" class="form-control" id="fishAttachment"
+                                                       asp-for="@Model.factPersonalViewModel.FishAttachment"
+                                                       accept="image/*" onchange="previewFile(event)">
+
+                                                <span asp-validation-for="factPersonalViewModel.FishAttachment" style="color:red"> </span>
+                                                <br>
+                                                <small>حجم فایل:حداکثر2Mb</small>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3" id="previewContainer" style="margin-top: 10px;">
+                                        <!-- پیش‌نمایش فایل بارگزاری شده در اینجا نمایش داده می‌شود -->
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <br>
+
+                        <button id="submitsazmani" class="btn btn-success" type="submit">
+                            <i class="ti-check-box mr-2"></i>
+                            ثبت
+                        </button>
+                        <a href="/Visitor/File/PersonalNezami/ListFile" style="color:white" class="btn btn-outline btn-warning">
+                            <i class="ti-back-left mr-2"></i>
+                            بازگشت
+                        </a>
+
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="col-md-3 mb-3" id="alertattachment" style="margin-top: 10px;">
+    <!-- show alert -->
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="toastMessage" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastText">
+                <!-- پیام اینجا قرار می‌گیرد -->
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+@section GetInformationPersonal
+{
+    <script>
+
+        $(document).ready(function () {
+    // رویداد برای دریافت اطلاعات زمانی که فیلد کد پرسنلی تغییر می‌کند
+    $("#personalno").on("blur keydown", function (e) {
+        if (e.type === "keydown" && (e.key === "Enter" || e.key === "Tab")) {
+            e.preventDefault();
+            fetchPersonalInfo();
+        } else if (e.type === "blur") {
+            fetchPersonalInfo();
+        }
+    });
+});
+
+/**
+ * پاک‌سازی محتوای فیلدها
+ */
+function clearFields(selectors) {
+    selectors.forEach(selector => {
+        $(selector).val('');
+    });
+}
+
+/**
+ * مدیریت پاسخ دریافتی از سرور
+ */
+function handleResponse(data) {
+    if (data.message === "پرسنلی با این مشخصات یافت نشد" ||
+        data.message === "این شخص جزء پرسنل یگان شما نمیباشد") {
+        alert(data.message);
+        clearFields(["#fname", "#lname", "#codemeli", "#darjeh", "#branchtitle"]);
+        return;
+    }
+
+    $("#fname").val(data.firstName);
+    $("#lname").val(data.lastName);
+    $("#codemeli").val(data.melliCode);
+    $("#darjeh").val(data.rankTitle);
+    $("#branchtitle").val(data.branchTitle);
+
+    // بررسی وضعیت ایثارگری
+    const isAmaliatiEmpty = $("#amaliatikhedmate").val() === "00000000";
+    const isGhablEmpty = $("#ghableghatname").val() === "00000000";
+    $("#isarstatus").val(isAmaliatiEmpty || isGhablEmpty ? "ندارم" : "دارم");
+
+    // آواتار
+    $("#imgAvatar").attr("src", "/PersonalAvatar/" + data.personalAvatarName);
+}
+
+/**
+ * نمایش یا مخفی کردن لودر
+ */
+function showLoading(isVisible) {
+    $("#loading").toggleClass("d-none", !isVisible);
+}
+
+
+
+        function fetchPersonalInfo() {
+            const personalCode = $("#personalno").val().trim();
+
+            // ⚠️ ممکنه کاربر صفرهای اول رو وارد نکنه، مشکلی نیست
+
+            const isValid = /^\d{1,8}$/.test(personalCode);
+            if (!isValid) {
+                showToast("کد پرسنلی باید عددی و حداکثر ۸ رقم باشد.");
+                return;
+            }
+
+            if (!personalCode) {
+                showToast("کد پرسنلی را وارد نمایید");
+                location.href = "/Visitor/File/PersonalNezami/createfile";
+                return;
+            }
+
+            showLoading(true);
+            clearFields(["#fname", "#lname", "#codemeli", "#darjeh", "#branchtitle"]);
+
+            $.getJSON(`?handler=GetPersonalId&personalno=${personalCode}`, function (data) {
+                handleResponse(data);
+                showLoading(false);
+            }).fail(function () {
+                showToast("خطا در دریافت اطلاعات پرسنلی", "warning");
+                showLoading(false);
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function showToast(message, type = "danger") {
+            const toastEl = document.getElementById("toastMessage");
+            const toastText = document.getElementById("toastText");
+
+            // تغییر رنگ پس‌زمینه بر اساس نوع پیام (danger, success, info, warning)
+            toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+
+            toastText.textContent = message;
+
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
+
+
+}

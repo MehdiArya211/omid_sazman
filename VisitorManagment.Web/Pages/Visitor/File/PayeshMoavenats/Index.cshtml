@@ -1,0 +1,274 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Visitor.File.PayeshMoavenats.IndexModel
+@using VisitorManagment.Core.Convertors
+@{
+}
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>لیست اقدامات</h4>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ملاقات</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">پیگیری کارتابل معاونت ها</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- end::page-header -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4>گزارش تعداد درخواست ها در کارتابل معاونت ها</h4>
+                    <hr>
+                    <br>
+
+
+                    <div style="overflow:auto" id="print_this">
+
+                        <table class="table table-striped table-bordered">
+
+                            <thead>
+                                <tr>
+                                    <th>کارشناس قرارگاه انصار نزاجا</th>
+                                    <th> ر دفتر معاون هماهنگ کننده</th>
+                                    <th> م ن انسانی</th>
+                                    <th> م مهندسی </th>
+                                    <th> م طرح و برنامه </th>
+                                    <th> م تربیت آموزش </th>
+                                    <th> م آماد و پش </th>
+                                    <th> م حقوقی و قضایی </th>
+                                    <th> بازرسی نزاجا</th>
+                                    <th> ف هواپیمایی</th>
+                                    <th>  دارایی</th>
+                                    <th> ایثارگران </th>
+                                    <th> رابهاد نزاجا </th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr>
+                                    <td>@Model.listCountCartableMoavenat.CountKarshenasGharargahAnsarNezaja</td>
+                                    <td>@Model.listCountCartableMoavenat.CountKarbarNezaja</td>
+                                    <td>@Model.listCountCartableMoavenat.CountMNEnsani</td>
+                                    <td>@Model.listCountCartableMoavenat.CountMMohandesi</td>
+                                    <td>@Model.listCountCartableMoavenat.CountMTarhVaBarnameh</td>
+                                    <td>@Model.listCountCartableMoavenat.CountMAmozesh</td>
+                                    <td>@Model.listCountCartableMoavenat.CountMAmadVaPosh</td>
+                                    <td>@Model.listCountCartableMoavenat.CountMHoghoghiVaGhazayi</td>
+                                    <td>@Model.listCountCartableMoavenat.CountBazresiNezaja</td>
+                                    <td>@Model.listCountCartableMoavenat.CountFHavapeymayi</td>
+                                    <td>@Model.listCountCartableMoavenat.CountDarayi</td>
+                                    <td>@Model.listCountCartableMoavenat.CountIsargaran</td>
+                                    <td>@Model.listCountCartableMoavenat.CountBehdasht</td>
+
+
+
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr />
+                    <div class="container">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-control-label">معاونت ها</label>
+                                        <select id="listMoavenatHa" name="filterMoavenat" asp-for="@Model.listviewmodel.MoavenatId"
+                                                asp-items="ViewBag.ListMoavenatHa"
+                                                class="form-control  js-example-basic-single">
+
+                                            <option value="">معاونت موردنظر را انتخاب نمایید</option>
+                                        </select>
+
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-4 " style="margin-top:30px">
+                                    <div class="form-group">
+                                        <input type="submit" value="جستجو" class="btn btn-success" />
+
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+
+                        </form>
+
+                    </div>
+                    <div style="overflow:auto" id="print_this">
+                        @*<span style="color:red ; font-size:17px">تعداد درخواست ملاقات در کارتابل:@Model.listviewmodel.files.Count()</span>*@
+                        <table id="dataTable" class="table table-striped table-bordered">
+
+                            <thead>
+                                <tr>
+                                    <th width="10px">ردیف</th>
+                                    @*<th>نوع درخواست ملاقات</th>*@
+                                    <th>مشخصات</th>
+
+                                    <th>کد پرسنلی</th>
+                                    <th>وضعیت خدمت</th>
+                                    <th>یگان خدمتی</th>
+                                    <th>قرارگاه </th>
+                                    <th>موضوع درخواست</th>
+                                    <th>زمان ایجاد</th>
+                                    <th style="min-width:100px">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.listviewmodel.files.Count() == 0)
+                                {
+                                    <tr>
+                                        <td>--</td>
+                                        <td style="color:red"> موردی یافت نشد</td>
+                                    </tr>
+                                }
+
+                                else
+                                {
+                                    @foreach (var file in Model.listviewmodel.files)
+                                    {
+                                        <tr>
+                                            <td>@(++Model.listviewmodel.skip)</td>
+                                            @*<td>کادر سازمان</td>*@
+                                            <td class="text-width-align">@file.RankTitle  @file.BranchTitle  @file.FirstName @file.LastName</td>
+
+                                            <td>@file.PersonalCode</td>
+                                            <td>@file.StatuseTitle</td>
+                                            <td class="text-width-align">@file.UnitDutyTitle</td>
+                                            <td class="text-width-align">@file.CodGhaTitle</td>
+                                            <td class="text-width-align">@file.ReqSubTitle</td>
+                                            <td>@file.RegDate.ToShamsi()</td>
+
+                                            <td class="text-center">
+                                                <div class="row">
+                                                    <a onclick="showHamesh(@file.Id)" data-toggle="modal" data-target="#Modalhamesh"
+                                               class=" AllIcon " id="" data-placement="right" title="گردش درخواست">
+                                                        <i class="fa fa-history"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*modal hameshs File*@
+<div class="modal fade" id="Modalhamesh" tabIndex="-1" role="dialog" aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class=" modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">گردش درخواست</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+
+            <div class=" modal-body">
+
+                <div class="form-row">
+                    <div class="col-12 gridsendlistMain" id="gridsendlistMain">
+                        <partial name="_GardeshDarkhast" model="@Model.listHameshViewModel" />
+                    </div>
+                </div>
+                <br>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    بستن
+                </button>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script>
+        function printdiv() {
+            var printContents = document.getElementById('print_this').innerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+
+        }
+
+
+        $(function () {
+            $("#gharargah").on("change", function () {
+                var id = $(this).val();
+
+                $("#yegan").empty();
+                $("#yegan").append("<option value=''>یگان را انتخاب کنید</option>");
+                $.getJSON(`?handler=Yegan&id=${id}`, (data) => {
+                    $.each(data, function (i, item) {
+                        $("#yegan").append(`<option value="${item.id}">${item.title}</option>`);
+                    });
+                });
+            });
+
+        });
+
+
+        function showHamesh(id) {
+            var fileId = id;
+            $(function () {
+
+                $.ajax({
+
+                    url: "@Url.Page("Index")?handler=Hamesh",
+
+                    type: "GET",
+
+                    data: { fileId },
+
+                    success: function (data) {
+
+                        $('#gridsendlistMain').html('');
+                        $('#gridsendlistMain').html(data);
+                    },
+
+                    error: function (result) {
+                        alert("کاربر گرامی ، خطایی در سیستم رخ داده است لطفا مجددا تلاش فرمایید");
+                    }
+                });
+            });
+        }
+    </script>
+}

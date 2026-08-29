@@ -1,0 +1,108 @@
+﻿@model List<VisitorManagment.DataLayer.Entities.User.Users>
+@using VisitorManagment.Core.Convertors
+@{
+    var i = 0;
+}
+@*<script src="~/vendors/bundle.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>*@
+
+<table id="myTable" class="table table-striped table-bordered reciverlistpersonal">
+    <thead>
+        <tr>
+            <th> ردیف</th>
+            <th>درجه - رسته</th>
+            @*<th>رسته</th>*@
+            <th>نام</th>
+            <th>نام خانوادگی</th>
+            <th>کد پرسنلی</th>
+            <th>شغل</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if (Model.Count() != 0)
+        {
+            @foreach (var item in Model)
+            {
+
+                <tr>
+                    <td>@(i += 1)</td>
+                    <td>@item.RankTitle &nbsp; @item.BranchTitle </td>
+                    @* <td>@item.BranchTitle</td>*@
+                    <td>@item.FirstName</td>
+                    <td>@item.LastName</td>
+                    <td>@item.UserName</td>
+
+                    <td>@item.JobDes</td>
+                    <td class="text-center">
+                        <div class="listReciverIdDiv">
+                            <input class="btn-success listReciverIdInput" type="checkbox"
+                                   name="rcvrUserId" id="rcvrUserIdInput" value="@item.Id" />
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td style="font-size:12px">
+                    کاربر گرامی سلسله مراتب شناخته نشد ،
+                    برای حل مشکل طبق دستور العمل زیر عمل نمایید:
+                    <br>
+                    <span style="color:red">
+                        1.دکمه ctrl + f5  کیبورد را چند بار پشت سر هم همزمان فشار دهید تا صفحه شما رفرش شود و اطلاعات بروزرسانی شود.
+                        <br>
+                        2.از سامانه خارج شده و مجددا وارد سامانه شوید
+                        <br>
+                        3.در صورتی که مرحله اول را انجام دادید و همچنان سلسله مراتب شناخته نشده بود در منوی تنظمات مرورگر خود cache مرورگر را پاک نمایید.
+                        <br>
+                        4.در صورتی که موارد بالا را انجام دادید و مشکل مرتفع نگردید با داخلی زیر پشتیبان سامانه(مهدی آریانژاد) تماس حاصل فرمایید
+                        021-297-22686
+                    </span>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@if (Model.Count != 0)
+{
+    <input type="hidden" name="fileId" value="@ViewBag.fileId">
+
+    @*    <button class="btn btn-success" type="submit" asp-page-handler="HameshSendFile"><i class="ti-check-box mr-2"></i>ارسال</button>
+*@}
+@*
+<script>
+//چک میکنیم وقتی تیک یکی از موارد خورد یا بیشتر دکمه ارسال فعال بشه
+        $('#submitSendButton').prop('disabled' , true);
+        $('table.reciverlistpersonal input[type=checkbox]').on('change' , function(){
+           // alert("کلیک شد");
+            let checked=$(this).closest('table').find('input[type=checkbox]:checked').length===0;
+           // alert(checked);
+            $('#submitSendButton').prop('disabled' , checked);
+        });
+</script> *@
+
+
+<script>
+    $(document).ready(function () {
+        // ابتدا دکمه ارسال را غیرفعال می‌کنیم
+        $('#SabtVaErjaSubmitButton').prop('disabled', true);
+
+        // وقتی وضعیت یکی از چک‌باکس‌ها تغییر کرد
+        $('table.reciverlistpersonal input[type=checkbox]').on('change', function () {
+            // بررسی اینکه هیچ چک‌باکسی انتخاب نشده باشد
+            let checked = $(this).closest('table').find('input[type=checkbox]:checked').length === 0;
+
+            // اگر هیچ چک‌باکسی انتخاب نشده باشد، دکمه غیرفعال شود
+            $('#SabtVaErjaSubmitButton').prop('disabled', checked);
+        });
+    });
+
+</script>
+

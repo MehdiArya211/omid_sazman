@@ -1,0 +1,64 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.File.PersonalNezami.DeleteFileModel
+@{
+}
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>درخواست ملاقات </h4>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+
+
+                <li class="breadcrumb-item">
+                    <a href="/Library">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ملاقات</a>
+                </li>
+
+                <li class="breadcrumb-item active" aria-current="page">حذف درخواست ملاقات </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+
+<div class=" col-md-12" id="deleteFileSection1">
+    <div class="card card-body">
+            <div class="row" style="justify-content: space-between">
+            <h4> حذف درخواست ملاقات</h4>
+            <a href="#" class="deleteFileTour btn bg-success" data-placement="right" title="راهنمای سامانه">
+                                راهنما
+                            </a>
+                        </div>
+        <hr>
+        <br>
+        <div class="panel-body">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="Id" asp-for="@Model.deleteFactPersonalViewModel.Id" />
+
+                <dl class="dl-horizontal">
+                    <dt>نام : </dt>
+                    <dd style="padding-right:50px">@Model.deleteFactPersonalViewModel.FirstName</dd>
+                    <dd>
+                    <dt>نام خانوادگی : </dt>
+                    <dd style="padding-right:50px">@Model.deleteFactPersonalViewModel.LastName</dd>
+                    <dd>
+                    <dt>کد پرسنلی : </dt>
+                    <dd style="padding-right:50px">@Model.deleteFactPersonalViewModel.PersonalCode</dd>
+                    <dd>
+                    <dt> درخواست: </dt>
+                    <dd style="padding-right:50px">@Model.deleteFactPersonalViewModel.ReqSubTitle</dd>
+                    <dd>
+                        <button class="btn btn-danger" type="submit"><i class="ti-trash mr-2"></i> حذف</button>
+                        <a href="/Visitor/File/PersonalNezami/ListFile" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                    </dd>
+                </dl>
+            </form>
+        </div>
+        <!-- /.panel-body -->
+    </div>
+    <!-- /.panel -->
+</div>

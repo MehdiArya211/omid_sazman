@@ -1,0 +1,139 @@
+﻿@page
+@model VisitorManagment.Web.Pages.OnlineConversation.VideoCallModel
+@{
+    ViewData["Title"] = "مکالمه تصویری";
+}
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>سامانه مکالمات بر خط نزاجا</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="#">سامانه مکالمات بر خط نزاجا</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">ارتباط بر خط</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">برقراری ارتباط تصویری</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="card card-body ">
+
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 style="font-weight:bold">برقراری ارتباط تصویری</h5>
+                </div>
+                <div class="col-md-4" style="float:left">
+                    <p id="connectionStatusMessage" class="navbar-text" style=" color:red; text-align:center">جهت ایجاد جلسه، نام، نشان و یگان خود را وارد کنید.</p>
+                </div>
+            </div>
+
+        </div>
+        <br />
+
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="name">نام و نشان:</label>
+                    <input type="text" id="txtRoomName" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label for="unit">یگان:</label>
+                    <input type="text" id="txtUnitName" class="form-control" />
+                </div>
+            </div>
+            <br />
+            <div style="float:left">
+                <button id="btnCreateRoom" class="btn btn-secondary">ایجاد جلسه</button>
+                <button id="btnExitRoom" disabled class="btn btn-danger">خروج از جلسه</button>
+            </div>
+
+
+            <div>
+                <table id="roomTable" class="display" style="width:100%; ">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>نام و نشان</th>
+                            <th>یگان</th>
+                            <th></th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="borderLine"></div>
+
+            <div>
+                <br />
+
+                <br /><br />
+                <div class="videoArea">
+                    <div class="row">
+                        <div class="col-md-6" style="text-align:center;">
+                            <h5>نام و نشان کاربر جاری</h5>
+                            <br />
+                            <video id="localVideo" class="videoBox" autoplay playsinline></video>
+                            <br />
+
+                            <div style="text-align:center">
+                                <h5>تظیمات بهینه سازی صوت</h5>
+                                <p>قطع اکو صدا: <input type="checkbox" checked="checked" id="chkEchoCancellation"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6" style="text-align:center;">
+                            <h5>نام و نشان مخاطب مکالمه تصویری</h5>
+                            <br />
+                            <video id="remoteVideo" class="videoBox" autoplay playsinline></video>
+                        </div>
+                    </div>
+                    <br />
+
+                    <div style="text-align:center;">
+                        <button id="btnStartCamera" class="btn btn-success">وصل دوربین</button>
+                        <button id="btnRecord" class="btn btn-info">ضبط مکالمه</button>
+                        <button id="btnPlay" disabled class="btn btn-warning">بازپخش مکالمه</button>
+                        <button id="btnDownlaod" disabled class="btn btn-dark">دانلود</button>
+                        <button id="btnStopCamera" class="btn btn-danger">قطع دوربین</button>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-4"></div>
+                        <div class="col-md-4">
+                            <h6 style="float:right;">فرمت ذخیره سازی:</h6>
+                            <select id="codecPreferences" class="form-control" disabled></select>
+                        </div>
+                        <div class="col-md-4"></div>
+
+                    </div>
+                </div>
+                @*<div id="FileSender">
+                        <h5 style="font-weight:bold">انتقال فایل</h5>
+                        <br />
+                        <div id="fileShare">
+                            <input type="file" class="form-control form-control-file" id="fileInput">
+                            <br />
+                            <button id="btnSendFile" class="btn btn-secondary" style="float:left;">ارسال فایل</button>
+                        </div>
+                        <br /><br /><br />
+                        <table id="fileTable" class="form-control">
+                            <thead>
+                                <tr>
+                                    <th>فایل های دریافت شده</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>*@
+            </div>
+        </div>
+    </div>
+</div>

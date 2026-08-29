@@ -1,0 +1,153 @@
+﻿body {
+/*    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+*/    direction: rtl;
+ }
+
+video {
+    max-width: 100%;
+    width: 320px;
+}
+
+.localvideobox {
+    border-radius: 8px;
+    width: 100%;
+    transition: 1s;
+ /*   width : 250px;
+    height :192px;
+  border-radius : 8px;
+ right :1%;
+   bottom : 1rem;
+     z-index : 99;
+    position : fixed;*/
+}
+.remotevideobox {
+    border-radius: 8px;
+    background-color: #222;
+  
+    width:100%;
+    transition: 1s;
+}
+.largevideobox {
+    height: 300px;
+    width: 400px;
+    cursor: pointer;
+    transition: 1s;
+    border: 1px black solid;
+    border-radius: 2px;
+    background-color: #222;
+}
+
+
+h4 {
+    margin: 1em 0;
+}
+
+h5 {
+    margin: 1em 0;
+}
+
+.roomCreate {
+    direction:rtl;
+    float:right;
+ }
+
+.joinButton {
+    width: 100%;
+}
+
+.borderLine {
+    border-top: 1px dotted;
+    margin: 1em 0;
+}
+.connectionStatus{
+    direction:rtl;
+    text-align:right;
+
+}
+.sendFileBtn {
+    display: block;
+    margin-top: 10px;
+}
+
+.fileTable {
+    border: 1px solid;
+    margin: 1em 0;
+    width: 500px;
+}
+
+    .fileTable th {
+        background: #e8eaed;
+        border: 1px solid;
+    }
+
+    .fileTable td {
+        border: 1px dotted;
+    }
+
+
+
+
+.current_user_style {
+    visibility: hidden;
+    position: absolute;
+    background: #ffeb56;
+    color: black;
+    z-index: 999;
+    bottom: 20px;
+    left: 20px;
+    border-radius: 10px;
+}
+
+.current_user_style > p {
+    line-height: 20px;
+    margin-bottom: 0;
+    padding: 6px 12px;
+    font-weight: bold;
+}
+
+.unit_title_group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.unit_title {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 0px;
+}
+
+.unit_collapse_icon {
+    font-size: 20px;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.statusIcon {
+    margin-top: 6px;
+}
+#unit_title_collapse {
+    display: none;
+}
+
+.unit_collapse_icon {
+    user-select: none;
+}
+
+.ansar_meeting_title {
+    visibility: hidden;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 9999;
+    padding: 7px 10px;
+    background-color: #ffeb56;
+    color: black;
+    border-radius: 12px;
+    margin-bottom: 0px;
+    font-weight: bold;
+}

@@ -1,0 +1,187 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Visitor.IndexModel
+@{
+    ViewData["Title"] = "سامانه ملاقات عمومی (امید)";
+}
+
+<div id="Mymodal" style="display: none;">
+    <div class="swal-overlay" tabindex="-1">
+        <div class="swal-modal" role="dialog" aria-modal="true">
+            <div class="swal-icon swal-icon--warning">
+                <span class="swal-icon--warning__body">
+                    <span class="swal-icon--warning__dot"></span>
+                </span>
+            </div>
+            <div class="swal-title text-warning">توجه</div>
+            <div class="swal-text text-dark" id="loginInfo">
+                <span class="text-center" style="color: #109178; font-weight: 400; font-size: 15px;">
+                    @ViewBag.FullName &nbsp;
+                </span>
+                <span>
+                    کلیه فعالیت های شما در سامانه ردگیری و بازیابی میشود و در قبال اطلاعات حساس در دسترس مسولیت دارید.
+                </span>
+                <br><br>
+                <span>آی‌پی: <span id="userIp"></span></span><br>
+                <span>زمان لاگین: <span id="loginTime"></span></span><br>
+                <span>مرورگر: <span id="userBrowser"></span></span>
+            </div>
+            <div class="swal-footer">
+                <div class="swal-button-container">
+                    <button class="swal-button swal-button--confirm" onclick="closeswal()">تایید</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card bg-secondary-gradient">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h4 class=" mb-3">به سامانه ملاقات عمومی (امید) خوش آمدید!</h4>
+
+                            <p style="text-align:right">
+                                سامانه ملاقات عمومی (امید) با اهداف زیر پیاده سازی شده است:
+
+                                1.تحقق شعار عدالت محوری
+                                <br />
+                                2.هوشمند سازی کار ها
+                                <br />
+                                3.تسهیل در روند ثبت درخواست ملاقات
+                                <br />
+                                4.افزایش سرعت در پاسخگویی به در خواست و مشکلات
+                                <br />
+                                5.امکان رصد و پایش درخواست و در صورت لزوم پیگیری آن
+                            </p>
+                        </div>
+
+                        <div class="col-md-5">
+                            <img src="/assets/media/svg/undraw_onboarding_o8mv.svg" alt="..." class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card" id="cardContent">
+                <div class="card-body">
+                    <h6 class="card-title"> آمار کلی ملاقات ها </h6>
+                    <h2 class="mb-3 font-weight-bold">@ViewData["AllFileCount"] عدد</h2>
+                    <div class="progress">
+                        <div class="progress-bar w-25 bg-secondary-gradient" role="progressbar"></div>
+                        <div class="progress-bar w-50 bg-info-gradient" role="progressbar"></div>
+                        <div class="progress-bar w-25 bg-warning-gradient" role="progressbar"></div>
+                    </div>
+                    <div class="card p-3 mt-4">
+                        <h5>تعداد کاربران آنلاین: <span id="onlineCount">0</span></h5>
+                        <ul id="onlineUsersList" class="list-group mt-3"></ul>
+                    </div>
+                    <div class="row">
+
+                        <div class="col">
+                            <p class="mb-0">
+                                <span class="fa fa-circle text-danger mr-1"></span>
+                                اقدام شد
+                            </p>
+                            <h5 class="mt-2 mb-0">@ViewData["EghdamShode"] عدد</h5>
+                        </div>
+
+                        <div class="col">
+                            <p class="mb-0">
+                                <span class="fa fa-circle text-info mr-1"></span>
+                                ثبت نظریه
+                            </p>
+                            <h5 class="mt-2 mb-0">@ViewData["SabteNazariye"] عدد</h5>
+                        </div>
+
+                        <div class="col">
+                            <p class="mb-0">
+                                <span class="fa fa-circle text-warning mr-1"></span>
+                                عودت
+                            </p>
+                            <h5 class="mt-2 mb-0">@ViewData["RadeDarkhastVaAodat"] عدد</h5>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- بخش جدید برای اعلان‌ها و اخبار -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">اعلان‌ها و اطلاعیه ها</h6>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>اطلاعیه ۱:</strong> مشکل خطای ثبت درخواست رفع شد .مورخه 1403/07/01.
+                        </li>
+                        <!-- می‌توانید اعلان‌های بیشتری اضافه کنید -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+@section GetInformationPersonal
+{
+
+    <script>
+
+
+        console.log("📡 Attempting to connect to SignalR hub...");
+
+        window.connection = new signalR.HubConnectionBuilder()
+            .withUrl("/onlineUsersHub")
+            .configureLogging(signalR.LogLevel.Information) // 👈 برای مشاهده لاگ‌ها
+            .build();
+
+        window.connection.on("UpdateOnlineUsers", function (count, users) {
+            console.log("✅ Received update from hub: ", count, users);
+            document.getElementById("onlineCount").innerText = count;
+
+            //const list = document.getElementById("onlineUsersList");
+            //list.innerHTML = "";
+            //users.forEach(function (user) {
+            //    const li = document.createElement("li");
+            //    li.textContent = user;
+            //    list.appendChild(li);
+            //});
+        });
+
+        window.connection.start()
+            .then(() => console.log("✅ Connected to hub successfully!"))
+            .catch(err => console.error("❌ Hub connection failed:", err));
+
+    </script>
+
+
+    <script>
+        function closeswal() {
+            $("#Mymodal").hide();
+        }
+
+        // فرض کنید این اطلاعات از سرور دریافت شده‌اند
+        const userIp = "@ViewBag.FullName"; // آی‌پی کاربر
+        const loginTime = new Date().toLocaleString(); // زمان فعلی به عنوان زمان لاگین
+        const userBrowser = navigator.userAgent; // اطلاعات مرورگر
+
+        document.getElementById('userIp').textContent = userIp;
+        document.getElementById('loginTime').textContent = loginTime;
+        document.getElementById('userBrowser').textContent = userBrowser;
+
+        // نمایش مودال
+        $("#Mymodal").show();
+
+        // بستن مودال بعد از 3 ثانیه
+        setTimeout(closeswal, 3000);
+    </script>
+}

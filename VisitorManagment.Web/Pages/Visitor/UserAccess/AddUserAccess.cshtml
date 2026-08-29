@@ -1,0 +1,135 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Visitor.UserAccess.AddUserAccessModel
+@{
+    ViewData["Title"] = "ایجاد دسترسی";
+}
+
+@*دسترسی با موفقیت داده شد *@
+@if (ViewBag.successcreate == true)
+{
+    //****
+    <div class="swal-overlay swal-overlay--show-modal" tabIndex="-1">
+        <div class="swal-modal" role="dialog" aria-modal="true">
+            <div class="swal-icon swal-icon--success">
+                <span class="swal-icon--success__line swal-icon--success__line--long"></span>
+                <span class="swal-icon--success__line swal-icon--success__line--tip"></span>
+
+                <div class="swal-icon--success__ring"></div>
+                <div class="swal-icon--success__hide-corners"></div>
+            </div><div class="swal-title" style=""></div><div class="swal-text" style="">دسترسی شما با موفقیت ثبت شد!</div><div class="swal-footer">
+                <div class="swal-button-container">
+
+                    <a class="swal-button swal-button--confirm text-white" href="/Visitor/UserAccess/AddUserAccess">تایید</a>
+
+                    <div class="swal-button__loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    //****
+
+}
+else
+{
+    <!-- begin::page-header -->
+    <div class="page-header">
+        <div class="container-fluid d-sm-flex justify-content-between">
+            <h4>لیست اقدامات</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="#">دسترسی</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">ایجاد دسترسی</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- end::page-header -->
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>ایجاد دسترسی</h4>
+                        <hr>
+
+                        <form class="needs-validation" novalidate method="post" enctype="multipart/form-data">
+                            <input type="hidden" id="roleidhidden" name="roleidhidden">
+                            <div class="form-row">
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="rolelist"> انتخاب دسترسی :</label>
+                                    <select asp-items="ViewBag.RoleList" id="rolelist" name="RoleList" class="form-control " required>
+                                        <option value="">نقش را انتخاب کنید</option>
+                                    </select>
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        دسترسی ها  را انتخاب کنید
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="roleListEtayi">دسترسی های اعطا شده :</label>
+                                    <select asp-items="ViewBag.RoleListEtayi" asp-for="createUserAccessViewModel.RoleId" name="RoleListEtayi" id="roleListEtayi" class="form-control  " multiple required>
+                                    </select>
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        دسترسی ها  را انتخاب کنید
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت</button>
+                            <a href="/Visitor/File/PersonalNezami/ListFile" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+@section GetInformationPersonal
+{
+    <script>
+
+
+        $(function () {
+            $("#rolelist").on("change", function () {
+                var rolelistid = $("#rolelist").val();
+                $("#roleidhidden").val(rolelistid);
+            });
+        });
+
+        //edit
+
+        $(function () {
+            $("#rolelist2").on("change", function () {
+                var rolelistid = $("#rolelist2").val();
+                $("#roleidhidden2").val(rolelistid);
+            });
+        });
+
+        @*//multiple select*@
+            $(function () {
+                $("#roleListEtayi").select2({
+                    placeholder: '  دسترسی ها را انتخاب کنید   '
+                });
+            });
+    </script>
+
+}

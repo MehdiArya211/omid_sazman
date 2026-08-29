@@ -1,0 +1,267 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.File.MeetingInfo.EditMeetingModel
+@{
+    ViewData["Title"] = "ویرایش جلسه  ";
+}
+
+
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4></h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ملاقات ها</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">ویرایش جلسه</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- end::page-header -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4>ویرایش جلسه</h4>
+                    <hr>
+
+                    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="@Model.editMeetingViewModel.Id">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+
+                        <div class="form-row">
+                            <div id="" class="col-md-6 mb-3">
+                                <label>عنوان جلسه:</label>
+                                <input type="text" class="form-control" asp-for="@Model.editMeetingViewModel.Title" required />
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    عنوان جلسه را وارد کنید
+                                </div>
+                            </div>
+
+                            <div id="" class="col-md-6 mb-3">
+                                <label>موضوع جلسه:</label>
+                                <input type="text" class="form-control" asp-for="@Model.editMeetingViewModel.Caption" required />
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    موضوع جلسه را وارد کنید
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-row">
+                            <div id="" class="col-md-4 mb-3">
+                                <label>وضعیت جلسه:</label>
+                                <select id="" class="form-control" asp-for="@Model.editMeetingViewModel.MeetingStatusId" asp-items="ViewBag.MeetingStatusList" required>
+                                    <option value="">وضعیت جلسه را انتخاب نمایید</option>
+                                </select>
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    وضعیت جلسه را انتخاب کنید
+                                </div>
+                            </div>
+
+
+                            <div id="" class="col-md-4 mb-3">
+                                <label>تاریخ تشکیل جلسه:</label>
+                                <input id="meetingdate" type="text" class="form-control" asp-for="@Model.editMeetingViewModel.StartMeetingDate" required>
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    تاریخ تشکیل جلسه راانتخاب کنید
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>زمان جلسه:</label>
+
+                                <div class="input-group clockpicker-example">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fa fa-clock-o"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" class="form-control" asp-for="@Model.editMeetingViewModel.StartMeetingTime">
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label for="validationCustom01">محل جلسه:</label>
+                                <select id="" class="form-control"  asp-for="@Model.editMeetingViewModel.MeetingPlaceId" asp-items="ViewBag.MeetingPlaceList" required>
+                                    <option value="">محل جلسه را انتخاب نمایید</option>
+                                </select>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    محل جلسه را انتخاب کنید
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="validationCustom01">رئیس جلسه:</label>
+                                <select id="" class="form-control js-example-basic-single" 
+                                asp-for="@Model.editMeetingViewModel.BoseMeetingId"  
+                                asp-items="ViewBag.BoseMeetingList" required>
+                                    <option value="">رئیس جلسه را انتخاب نمایید</option>
+                                </select>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    رئیس جلسه را انتخاب کنید
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label for="validationCustom01">دبیر جلسه:</label>
+                                <select id="" class="form-control js-example-basic-single"
+                                        asp-items="ViewBag.ClerkMeetingList"
+                                        asp-for="@Model.editMeetingViewModel.ClerkMeetingId"
+                                        required>
+                                    <option value="">دبیر جلسه را انتخاب نمایید</option>
+                                </select>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    دبیر جلسه را انتخاب کنید
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="validationCustom02"> توضیحات :</label>
+                                <textarea id="address" asp-for="@Model.editMeetingViewModel.Description" cols="150" rows="50" class="form-control"></textarea>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    توضیحات را وارد کنید!
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <br>
+
+                        <button id="submitsazmani" class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ویرایش</button>
+                        <a href="/Visitor/Meets/MeetingInfo/Index" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section GetInformationPersonal
+    {
+
+
+    <script>
+        $('#personalno').blur(function (e) {
+
+            getinformation();
+        });
+
+        function getinformation() {
+            var PersonalCodeNo = $("#personalno").val();
+            $("#fname").empty();
+            $("#lname").empty();
+            $("#address").empty();
+            $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
+                if (data.message == "پرسنلی با این مشخصات یافت نشد" || data.message == "این شخص جزء پرسنل یگان شما نمیباشد") {
+                    alert(data.message);
+                }
+
+                else {
+                    $("#fname").val(data.firstName);
+                    $("#lname").val(data.lastName);
+                    $("#codemeli").val(data.melliCode);
+                    $("#darjeh").val(data.rankTitle);
+                    $("#branchtitle").val(data.branchTitle);
+                    $("#yeganekhedmati").val(data.unitDutyTitle);
+                    $("#yeganeomdeh").val(data.unitTitle);
+                    $("#gharargahemantaghei").val(data.codGhaTitle);
+                    $("#address").val(data.addres);
+                }
+
+            });
+        };
+
+
+        @*//multiple select*@
+            $(function () {
+                $("#usermeeting").select2({
+                    placeholder: '  اعضای جلسه را انتخاب کنید   '
+                });
+            });
+
+        @* date persian *@
+
+            $("#meetingdate").persianDatepicker({
+                months: ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
+                dowTitle: ["شنبه", "یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنج شنبه", "جمعه"],
+                shortDowTitle: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+                showGregorianDate: !1,
+                persianNumbers: !0,
+                formatDate: "YYYY/MM/DD",
+                selectedBefore: !1,
+                selectedDate: null,
+                startDate: null,
+                endDate: null,
+                prevArrow: '\u25c4',
+                nextArrow: '\u25ba',
+                theme: 'default',
+                alwaysShow: !1,
+                selectableYears: null,
+                selectableMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                cellWidth: 25, // by px
+                cellHeight: 20, // by px
+                fontSize: 13, // by px
+                isRTL: !1,
+                format: 'YYYY/MM/DD',
+
+
+                calendarPosition: {
+                    x: 0,
+                    y: 0,
+                },
+                onShow: function () { },
+                onHide: function () { },
+                onSelect: function () { },
+                onRender: function () { }
+            });
+        $('.clockpicker-example').clockpicker({
+            autoclose: true
+        });
+
+    </script>
+
+}
+
+

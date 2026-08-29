@@ -1,0 +1,373 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Admin.Users.CreateUsersModel
+
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        /* استایل برای نوار پیشرفت */
+        #password-strength-wrapper {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        #password-strength-bar {
+            height: 10px;
+            width: 0;
+            background-color: red;
+            border-radius: 5px;
+            transition: width 0.4s ease;
+        }
+
+        #password-strength-percentage {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-weight: bold;
+        }
+
+        #password-strength-text {
+            margin-top: 5px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="page-header">
+        <div class="container-fluid d-sm-flex justify-content-between">
+            <h4>افزودن کاربر</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="#">ملاقات عمومی (امید)</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="#"> مدیریت سیستم</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="#">مدیریت کاربران</a>
+                    </li>
+
+                    <li class="breadcrumb-item active" aria-current="page">افزودن کاربر</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container-fluid card card-body">
+
+        <h4>افزودن کاربر جدید</h4>
+        <hr />
+        <br />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+
+        <form class="needs-validation" autocomplete="off" novalidate="" method="post" enctype="multipart/form-data">
+            <div class="form-row">
+
+                <div class="col-md-6 mb-3">
+                    <label for="validationCustom02">
+                        کد پرسنلی :
+                        <span id="loader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+
+
+                    </label>
+
+                    <input id="personalno" asp-for="@Model.CreateUserViewModel.PersonalCode" type="number" autocomplete="off" class="form-control" required />
+
+
+                    <div class="invalid-feedback">
+                        کد پرسنلی را انتخاب کنید
+                    </div>
+                    <span asp-validation-for="CreateUserViewModel.PersonalCode"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="validationCustom02">نام :</label>
+                    <input id="fname" type="text" asp-for="@Model.CreateUserViewModel.FirstName" name="FirstName" class="form-control" readonly required />
+
+                    <span></span>
+
+                    <div class="invalid-feedback">
+                        نام را وارد کنید!
+                    </div>
+
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="validationCustom02">نام خانوادگی :</label>
+                    <input id="lname" asp-for="@Model.CreateUserViewModel.LastName" type="text" class="form-control" readonly required />
+
+                    <span></span>
+
+                    <div class="invalid-feedback">
+                        نام خانوادگی را وارد کنید!
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 mb-3 ">
+                    <label for="validationCustom03">انتخاب نقش کاربر </label>
+                    <select class="form-control  js-example-basic-single" asp-for="@Model.CreateUserViewModel" name="roleId" asp-items="ViewBag.RolesTitle" required>
+                        <option value="">نقش کاربر را انتخاب نمایید</option>
+                    </select>
+
+                    <div class="invalid-feedback">
+                        نقش کاربر را انتخاب کنید
+                    </div>
+                    <span asp-validation-for="CreateUserViewModel"></span>
+                </div>
+
+                <div class="col-md-6 mb-3 ">
+                    <label for="validationCustom03">کلمه عبور :</label>
+                    <input id="password" asp-for="@Model.CreateUserViewModel.Password" type="password" name="password" autocomplete="off" class="form-control" oninput="updatePasswordStrength()" required>
+
+                    <div class="invalid-feedback">
+                        لطفا رمز عبور را وارد کنید
+                    </div>
+                    <span asp-validation-for="CreateUserViewModel.Password"></span>
+                    <div id="password-strength-wrapper">
+                        <div id="password-strength-bar"></div>
+                        <span id="password-strength-percentage">0%</span>
+                    </div>
+                    <span id="password-strength-text">ضعیف</span>
+                </div>
+                <br />
+                <div class="col-md-12 mb-6 ">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            تصویر پروفایل
+                        </div>
+                        <div class="card-img  panel-body">
+                            <img style="border:3px solid; border-radius:20px" width="200" height="200" id="imgAvatar" class="thumbnail" src="/UserAvatar/Default.png" />
+                            <div class="form-group">
+                                <label>انتخاب تصویر</label>
+                                <br />
+                                <input type="file" name="UserAvatar" asp-for="CreateUserViewModel.UserAvatar">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <br />
+            <button id="create" class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت</button>
+            <a href="/Admin/Users" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+
+        </form>
+    </div>
+
+
+
+</body>
+
+</html>
+
+@section Scripts
+{
+    <script src="/vendors/select2/js/select2.min.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            $("#personalno").empty();
+            $("#password").empty();
+            $("#personalno").val('');
+            $("#password").val('');
+            // انتخاب فیلد پسورد و بررسی تغییرات آن
+            $('#password').on('input', function () {
+                var password = $(this).val();
+                var strengthText = checkPasswordStrength(password);
+
+                // نمایش سطح پیچیدگی
+                $('#password-strength-text').text(strengthText);
+            });
+
+            // بررسی سطح پیچیدگی هنگام ارسال فرم
+            $('form').on('submit', function (e) {
+                var password = $('#password').val();
+                var strengthText = checkPasswordStrength(password);
+
+                if (strengthText === 'ضعیف' || strengthText === 'متوسط') {
+                    // جلوگیری از ارسال فرم
+                    e.preventDefault();
+
+                    // نمایش پیام هشدار
+                    alert('رمز عبور شما ضعیف یا متوسط است. لطفاً یک رمز عبور قوی‌تر انتخاب کنید.');
+                }
+            });
+        });
+
+        //  اعتبارسنجی فرم
+        window.addEventListener('load', function () {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+
+        function updatePasswordStrength() {
+            var password = document.getElementById('password').value;
+            var strength = checkPasswordStrength(password);
+            var strengthText = document.getElementById('password-strength-text');
+            var strengthBar = document.getElementById('password-strength-bar');
+            // var strengthPercentageText = document.getElementById('password-strength-percentage');
+
+            // محاسبه درصد پیشرفت بر اساس میزان پیچیدگی
+            var strengthPercentage = (strength / 5) * 100;
+
+            // بروزرسانی نوار پیشرفت و نمایش درصد
+            strengthBar.style.width = strengthPercentage + '%';
+            // strengthPercentageText.textContent = Math.round(strengthPercentage) + '%';
+
+            // تغییر متن نمایش پیچیدگی بر اساس مقدار
+            if (strength <= 1) {
+                strengthText.textContent = 'ضعیف';
+                strengthBar.style.color = 'red';
+            } else if (strength == 2) {
+                strengthText.textContent = 'متوسط';
+                strengthBar.style.backgroundColor = 'orange';
+            } else if (strength == 3) {
+                strengthText.textContent = 'خوب';
+                strengthBar.style.backgroundColor = 'blue';
+            } else if (strength >= 4) {
+                strengthText.textContent = 'قوی';
+                strengthBar.style.backgroundColor = 'green';
+            }
+        }
+
+        function checkPasswordStrength(password) {
+            var strength = 0;
+
+            // بررسی طول رمز عبور
+            if (password.length >= 8) {
+                strength += 1;
+            }
+
+            // بررسی وجود حروف کوچک
+            if (password.match(/[a-z]/)) {
+                strength += 1;
+            }
+
+            // بررسی وجود حروف بزرگ
+            if (password.match(/[A-Z]/)) {
+                strength += 1;
+            }
+
+            // بررسی وجود اعداد
+            if (password.match(/\d/)) {
+                strength += 1;
+            }
+
+            // بررسی وجود کاراکترهای خاص
+            if (password.match(/[\W_]/)) {
+                strength += 1;
+            }
+
+            return strength;
+        }
+
+
+        @*عکس*@
+            function readURL(input) {
+
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        $('#imgAvatar').attr('src', e.target.result);
+                    }
+
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+        $("#CreateUserViewModel_UserAvatar").change(function () {
+            readURL(this);
+        });
+
+
+        $('#personalno').blur(function () {
+            // کد پرسنلی وارد شده توسط کاربر
+            var personalCodeNo = $("#personalno").val();
+
+            // نمایش لودینگ
+            $("#loader").removeClass('d-none');
+
+            // پاک کردن نام و نام خانوادگی قبلی
+            $("#fname").val('');
+            $("#lname").val('');
+
+            // ارسال درخواست به سرور برای دریافت اطلاعات
+            $.ajax({
+                url: `?handler=GetPersonalId&personalno=${personalCodeNo}`, // آدرس درخواست
+                type: 'GET', // نوع درخواست
+                dataType: 'json', // نوع داده مورد انتظار
+                success: function (data) {
+                    if (data.message) {
+                        alert(data.message); // پیام‌های خطا از سرور
+                    } else {
+                        // پر کردن فیلدها با داده‌های دریافتی از سرور
+                        $("#fname").val(data.firstName);
+                        $("#lname").val(data.lastName);
+                    }
+                },
+                error: function () {
+                    alert('کد پرسنلی مورد نظر یافت نشد.');
+                },
+                complete: function () {
+                    // مخفی کردن لودینگ بعد از دریافت پاسخ از سرور
+                    $("#loader").addClass('d-none');
+                }
+            });
+        });
+
+
+        $('.select2-example').select2({
+            placeholder: 'Select'
+        });
+
+
+
+        //validation for upload File
+
+        $("#CreateUserViewModel_UserAvatar").change(function () {
+
+            var ext = this.value.match(/\.([^\.]+)$/)[1];
+            if (this.files[0].size > 2097152) {
+                alert("حجم فایل نمیتواند بیشتر از 2Mb باشد!!!");
+                this.value = '';
+            }
+            switch (ext) {
+
+                case 'png':
+                case 'jpeg':
+                case 'jpg':
+
+                    // readURL(this);
+
+                    break;
+                default:
+                    alert("فرمت فایل انتخاب شده نامعتبر است!!!");
+                    this.value = '';
+            }
+        });
+
+        //end validation Upload FIle
+    </script>
+
+
+}

@@ -1,0 +1,1590 @@
+﻿@page
+@model NVC.Web.Pages.ConfModel
+@{
+    ViewData["Title"] = "مکالمه تصویری";
+}
+
+@*hi*@
+@*hi*@
+<link href="~/onlineconvercsation/css/webrtc.css" rel="stylesheet" />
+<link href="~/onlineconvercsation/css/testserver.css" rel="stylesheet" />
+<link href="~/onlineconvercsation/css/conf.css" rel="stylesheet" />
+@*<link href="~/onlineconvercsation/css/enjoyhint.css" rel="stylesheet" />*@
+
+
+<section>
+    <div class="navBarStyle">
+        <img src="/asset/images/amir_fallah.png" style="width:auto;height:125px;margin-top:15px;margin-right:5px" />
+        <div style="text-align:center">
+            <img src="/asset/images/nezaja.png" style="width:100px;height:90px;margin-bottom:13px" />
+            <p style="color:whitesmoke; font-weight:bold">سامانه ارتباط تصویری امید نزاجا</p>
+
+        </div>
+        <img src="/asset/images/amir_heydari.png" style="width:auto;height:125px;margin-top:15px;margin-left:5px" />
+    </div>
+
+</section>
+<section class="conversationBox">
+
+    <section class="doRight">
+        <div class="listofchat" style="padding:10px; background-color:white; width:100%;height:100%; border-radius:0px">
+
+
+            <div class="cardContent">
+
+
+                <div class="meets">
+                    <select id="requestdescription" class="form-control js-example-basic-single" style="margin-bottom:4px"
+                            asp-for="@Model.listMeetingViewModel" asp-items="ViewBag.Meets" required test="1">
+                        <option value="">  جلسه را انتخاب نمایید</option>
+                    </select>
+
+
+                </div>
+
+
+
+
+            </div>
+            <div class="cardContent">
+
+
+                <div class="listOfChat_userList_title_wrapper">
+
+                    <p class="menu__title" style="border-bottom: 2px solid whitesmoke;font-size: 14px;cursor:pointer;
+    font-weight: 600;" id="userList_btn">لیست افراد</p>
+                    <p class="menu__title" style="border-bottom: 2px solid whitesmoke;font-size: 14px;cursor:pointer;
+    font-weight: 600;" id="chatList_btn">چت روم</p>
+                </div>
+
+
+
+                <div id="userList_content">
+                    <input id="searchInput" class="searchInput" placeholder="جستجو" />
+                    <ul style="margin-bottom: 35px; height: 280px; overflow-x: hidden" id="onlineUsersList"></ul>
+                </div>
+
+                <div id="userList_chat">
+                  <ul class="userList_chat_list">
+                      @*chat elements will be here*@
+                      <p>برای ورود به چت روم جلسه ابتدا یک جلسه را انتخاب کنید</p>
+                  </ul>
+                  <div class="chat_input_wrapper">
+                        <input type="text" class="chat_input_wrapper__input" placeholder="متن پیام را وارد کنید" />
+                        <button class="chat_input_wrapper__btn">ارسال  </button>
+                  </div>
+                  <button id="removeAllChatMessages" style="margin-top: 10px; outline: none; border: none; padding: 10px; border-radius: 11px; color:  white; background: red; width: 100%;">پاک کردن تمام چت ها</button>
+                </div>
+           
+            </div>
+
+
+
+        </div>
+    </section>
+
+    <section class="doLeft">
+
+        <div>
+            <div class="connectionStatus">
+                <p id="connectionStatusMessage" style="color: #007bff;display:none
+">جلسه خود را بسازید و یا به یکی از جلسات موجود بپیوندید</p>
+
+            </div>
+
+            <section>
+
+
+
+
+                <div style="direction:rtl;">
+
+                    <div class="videoWrapper" style="position: relative">
+                        <p id="muteAudioWarning" style="display: none; font-weight: bold;color: red;position: absolute;top: 10px;right: 14px;z-index: 99;background: white;border-radius: 10px;padding: 5px 19px;">میکروفون شما بسته است</p>
+
+                        <div class="videoArea" style="text-align:center; position:relative">
+
+
+                            <div class="cameraBtnWrapper">
+                                <div>
+
+                                    @*   <a href="#" class="btn tour" style="font-size: small;
+                                    height: 44px;
+                                    padding: 10px;
+                                    margin-left:10px;
+
+                                    background-color: rgba(33, 224, 163, 1);color:white
+                                    ">راهنمای استفاده</a>*@
+
+                                </div>
+
+
+                                @*<button id="createNewSession" class="active cameraBtnStyle" data-toggle="modal" data-target="#createConversationModal" title="ایجاد جلسه">
+                                <i class="fa fa-plus"></i>
+                                </button>*@
+
+
+
+                                <button id="muteAudio" class="active cameraBtnStyle" title="قطع موقت صدا">
+                                    <img src="/asset/images/controller/microphone.png"
+                                         style="width:24px ; height:24px" class="fit-parent svg-default-color" />
+                                </button>
+
+                                <button id="muteCamera" class="active cameraBtnStyle" title="قطع لحظه ای تصویر">
+                                    <img src="/asset/images/controller/video.png"
+                                         style="width:24px ; height:24px" class="fit-parent svg-default-color" />
+                                </button>
+
+
+                                <button id="hangup" class="closeBtnStyle" title="قطع ارتباط">
+                                    <img src="/asset/images/phone.png"
+                                         style="width:16px ; height:16px" class="fit-parent svg-default-color" />
+                                </button>
+
+                                <button data-toggle="modal" data-target="#settingModal" class="settingBtnStyle" title="تنظیمات">
+                                    <img src="/asset/images/settingIcon.png"
+                                         style="width:18px ; height:18px" class="fit-parent svg-default-color" />
+                                </button>
+
+
+
+
+                            </div>
+                            <section id="localvideoContainer" style="margin-top: 25px;">
+                                <h1 id="webrtc_loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: black; z-index: 9999">درحال اتصال تماس...</h1>
+                                <div class="current_user_style">
+                                    <p>ستوان دوم امید جهانتیغ</p>
+                                </div>
+
+                                <section style="position:relative">
+                                    <video id="localVideo" class="localvideobox videoStyle" muted autoplay playsinline></video>
+                                </section>
+
+                            </section>
+                            <section id="remotevideoContainer" style="margin-top: 25px;">
+                                <video id="remoteVideo" class="remotevideobox videoStyle" autoplay playsinline></video>
+                            </section>
+                        </div>
+
+
+                        <div class="optionsStyle">
+                        </div>
+
+
+
+                    </div>
+
+                    @*modal*@
+
+                    <div class="modal" tabindex="-1" role="dialog" id="createConversationModal">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background:#1565c0!important;">
+                                    @*                                    <h5 class="modal-title">عنوان جلسه را انتخاب کرده و جلسه را ایجاد کنید</h5>
+                                    *@                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p style="padding: 0px 12px 0px;
+}">نام یگان خود را وارد کرده و جلسه را ایجاد کنید</p>
+
+                                    <section class="roomCreate wrapper">
+                                        <input class="inputStyle" type="text" id="txtRoomName" placeholder="نام یگان" required />
+                                        <button id="btnCreateRoom" class="btn createRoomStyle " style="background-color:#1565c0;color:white" " data-dismiss="modal">اضافه کردن</button>
+
+                                    </section>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    @*setting modal*@
+
+                    <div class="modal" tabindex="-1" role="dialog" id="settingModal">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background:#1565c0!important;">
+                                    @*                                    <h5 class="modal-title">عنوان جلسه را انتخاب کرده و جلسه را ایجاد کنید</h5>
+                                    *@                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <p style="border-bottom: 1px solid whitesmoke;
+    padding: 4px;
+    font-size: 13px;background-color: whitesmoke;
+    border-radius: 5px;
+    color: blueviolet;">شما میتوانید تنظیمات مربوط به اسپیکر - دوربین و میکروفن را از این قسمت تغییر دهید</p>
+                                    <section class=" selectBtnWrapper" style="margin-top:1rem">
+                                        <div style=" direction:rtl;  font-size:x-small ;margin:1rem ">
+                                            <div class="select">
+                                                <label for="audioSource">میکروفن  </label><select id="audioSource" class="selectStyle"></select>
+                                            </div>
+
+                                            <div class="select">
+                                                <label for="audioOutput">اسپیکر  </label><select id="audioOutput" class="selectStyle"></select>
+                                            </div>
+
+                                            <div class="select">
+                                                <label for="videoSource">دوربین  </label><select id="videoSource" class="selectStyle"></select>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <p style="display:none; border-bottom: 1px solid whitesmoke; padding: 4px; font-size: 13px;background-color: whitesmoke; border-radius: 5px; color: blueviolet;">تنظیمات فرمت ضبط</p>
+
+                                    <div style=" text-align:right; font-size:8.25pt;margin-left:22px;display:none;justify-content:space-between">
+                                        <label style="margin-right:18px">فرمت ضبط</label> <select id="codecPreferences" style="border:none;cursor:pointer" disabled></select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    @*end setting modal*@
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+    </section>
+
+
+</section>
+ @*********************مودال خلاصه وضعیت خدمتی نفر و دکمه پایان جلسه ملاقات نفر*****************************@
+
+<section class="hameshContent" style="position:relative; margin-top: -20px; background: white;">
+
+    <div data-label=" اطلاعات تکمیلی " class="demo-code-preview col-md-12 mb-1 ">
+        <div class="row">
+
+
+            <div class="col-md-2">
+                <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@ViewBag.FileId" data-toggle="modal" id="SendId"
+                   data-target="#ModalSpecificationPersonal" class="dutysummery hameshSection2 btn btn-outline-warning " data-placement="right">
+                    خلاصه وضعیت خدمتی
+                </a>
+            </div>
+
+            <div class="col-md-2">
+                <a onclick="DeletePersonFromListMeeting()" id="buttonFinishMeetingPerson"
+                   class="dutysummery hameshSection2 btn btn-outline-danger " data-placement="right">
+                    پایان جلسه ملاقات نفر
+                </a>
+            </div>
+
+                                @*            <div class="col-md-2">
+            <a href="/Visitor/File/PersonalNezami/Specification/SpecificationPersonal/@ViewBag.FileId" data-toggle="modal" id="SendId"
+            data-target="#ModalGardeshDarkhast" class="dutysummery hameshSection3 btn btn-outline-warning" data-placement="right">
+            گردش درخواست ملاقات
+            </a>
+            </div>
+
+            <div class="col-md-2 ">
+
+            <div class="border-radius-1">
+
+            <a data-toggle="modal" id="SendId1" data-target="#ModalShowAttachment" data-placement="right" title="مدارک پیوستی" class="dutysummery hameshSection4 btn btn-outline-warning">
+            نمایش فایل های پیوستی
+            </a>
+
+
+
+
+
+            </div>
+            </div>
+
+            <div class="col-md-2 ">
+
+            <a data-toggle="modal" id="SendId" data-target="#ModalShowFishAttachment" data-placement="right" title="فیش حقوقی" class="dutysummery hameshSection5 btn btn-outline-warning">
+            نمایش فایل فیش حقوقی
+            </a>
+
+
+
+            </div>*@
+
+
+        </div>
+    </div>
+
+
+                        @******************************مودال خلاصه خدمتی نفر*****************************************@
+
+    <div id="ModalSpecificationPersonal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" style="margin:0px">
+
+        <div class="modal-dialog  modal-xl modal-dialog-scrollable" style="margin:2px;max-width:100%;max-height:100vh;height:100vh">
+            <div class=" modal-content" style="max-height:100vh;height:100vh">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">خلاصه وضعیت خدمتی </h5>
+                    <button id="dutySummaryCloseIcon" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="ti-close"></i>
+                    </button>
+                </div>
+                <div class=" modal-body justify-content-sm-around ">
+                    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+
+                        <div class="form-row">
+                            <partial name="_SpecificationPersonal" model="@Model.collectionSpecificationPersonalViewModel" />
+                        </div>
+                        <br>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="dutySummaryCloseBtn" class="btn btn-secondary" data-dismiss="modal">
+                        بستن
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                        @***********************************مودال گردش درخواست پرسنل***********************************@
+
+    <div id="ModalGardeshDarkhast" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class=" modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">گردش درخواست</h5>
+                    <button id="dutySummaryCloseIcon" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="ti-close"></i>
+                    </button>
+                </div>
+                <div id="listHamesh" class=" modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="dutySummaryCloseBtn" class="btn btn-secondary" data-dismiss="modal">
+                        بستن
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div data-label=" اطلاعات تکمیلی " class="demo-code-preview col-md-12 mb-1 ">
+        <div>
+            <div class="col-md-12 mb-6 p-0">
+
+                <label for="validationCustom02">موضوع درخواست متقاضی:</label>
+                <br />
+                <input id="requestSubject" class="form-control" type="text" name="name" readonly />
+
+                <div class="valid-feedback">
+                    عالی!
+                </div>
+                <div class="invalid-feedback">
+                    موضوع در خواست را انتخاب کنید!
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+
+            <div class="col-md-12 mb-6">
+                <label for="validationCustom01">شرح مشکل متقاضی :</label>
+                <textarea id="userProblemDesc" style="min-height:100px" rows="50" cols="110" class="form-control" required readonly></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+
+            <div class="col-md-12 mb-6">
+                <label for="validationCustom01">شرح درخواست متقاضی :</label>
+                <textarea id="userRequestDesc" style="min-height:100px" rows="50" cols="110" class="form-control" required readonly></textarea>
+            </div>
+        </div>
+
+
+        <br />
+        <div data-label="نظریه های سلسله مراتب  " id="hameshSection6" class="demo-code-preview col-md-12 mb-1 ">
+                        @*  نظریه کارشناس قرارگاه انصار نزاجا  *@
+            <div class="form-row">
+                <div class="col-md-12 mb-6">
+                    <label for="validationCustom01">نظریه کارشناس قرارگاه انصار نزاجا:</label>
+                    <textarea id="expertComment" style="min-height:70px" rows="50" cols="110" class="form-control"
+                              required readonly>
+                                                                                                            </textarea>
+                </div>
+
+            </div>
+
+            <br />
+                        @*  نظریه معاونت ها  *@
+            <div class="form-row">
+                <div class="col-md-12 mb-6">
+
+                    <label for="validationCustom01">نظریه معاونت ها:</label>
+
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>معاونت</th>
+                                <th>متن هامش</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moavenatHameshTable">
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+        <br />
+
+        <div class="form-row">
+            <div class="col-md-12 mb-6">
+
+                <label for="validationCustom01">نظریه رئیس دفتر معاون هماهنگ کننده نیرو:</label>
+
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>متن هامش</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daftarHamesh">
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+        <div class="form-row">
+            <div class="col-md-12 mb-6">
+
+                <label for="validationCustom01">نظریه هیئت رئیسه نیرو:</label>
+
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>متن هامش</th>
+                        </tr>
+                    </thead>
+                    <tbody id="heyatRaiseHamesh">
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+                    @*}*@
+
+    </div>
+                @* وام درخواستی و وام محقق شده *@
+                @if (User.FindFirst("RoleTypeId").Value == "5" || User.FindFirst("RoleTypeId").Value == "6" || User.FindFirst("RoleTypeId").Value == "2")
+                {
+        <div data-label="وام درخواستی / وام محقق شده" class="demo-code-preview col-md-12 mb-1 ">
+            <div class="form-row">
+                <div class="col-md-6 mb-6">
+                    <label for="validationCustom01"> مبلغ وام درخواستی :</label>
+                    <input class="form-control " id="MablaghVamDarkhasti" asp-for="@Model.hameshFullInfoViewModel.SumMablaghVamDarkhasti" readonly>
+                </div>
+
+                <div class="col-md-6 mb-6">
+                    <label for="validationCustom01"> مبلغ وام محقق شده:</label>
+                    <input class="form-control " id="MablaghVamDarkhasti" asp-for="@Model.hameshFullInfoViewModel.MablaghVamMohaghaghSode" readonly>
+                </div>
+
+            </div>
+            <label for="validationCustom01">لیست وام های تصویب شده:</label>
+
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>عنوان وام</th>
+                        <th>کد وام </th>
+                        <th> وام </th>
+                        <th> مبلغ وام </th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                                @if (Model.hameshFullInfoViewModel.ListVam.Count() == 0)
+                                {
+                        <tr>
+                            <td style="color:red">موردی یافت نشد!</td>
+                        </tr>
+                                }
+                                else
+                                {
+
+                                    @foreach (var item in @Model.hameshFullInfoViewModel.ListVam)
+                                    {
+                            <tr>
+                                <td>@item.Title</td>
+                                <td>@item.CodeVam</td>
+                                <td>@item.VamCodeTitle</td>
+                                <td>@item.VamPrice.ToString("N0")</td>
+
+                            </tr>
+                                    }
+
+
+
+
+                                }
+                </tbody>
+            </table>
+
+
+        </div>
+                }
+
+</section>
+
+
+<div style="display:flex;justify-content:center">
+    <section id="tableWrapper" style="display:none;">
+        <div class="mainBox">
+            <section class="roomCreate wrapper">
+            </section>
+
+            <table id="tblRooms" class="display" style="width:100%; ">
+                <thead>
+                    <tr>
+                        <th>تعداد جلسات</th>
+                        <th>عنوان جلسه</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+
+    </section>
+</div>
+
+            @section GetInformationPersonal
+                {
+
+    <script>
+
+        //****************************************حذف نفر از لیست اعضای جلسه ****************************************************************** */
+        function DeletePersonFromListMeeting() {
+
+            var fileId = $('#buttonFinishMeetingPerson').val();
+            console.log("error", fileId);
+
+            $.ajax({
+                url: "@Url.Page("index")?handler=DeletePersonFromListMeeting",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { fileId },
+                dataType: "json",
+
+                success: function (data) {
+                    toastr.success(' جلسه پرسنل انتخاب شده با موفقیت به اتمام رسید');
+
+                    var meetingId = data.meetingId;
+
+                    const onlineUsers = localStorage.getItem("onlineUsers");
+                    const onlineUserArray = JSON.parse(onlineUsers);
+                    setTimeout(() => {
+                        setUserStatus(onlineUserArray);
+                    }, 1000)
+                    setTimeout(() => {
+                        $.ajax({
+                            url: "@Url.Page("index")?handler=ListPersonal",
+                            type: "GET",
+                            contentType: "appllication/json; charset=utf-8",
+                            data: { meetingId },
+                            dataType: "json",
+
+                            success: function (data) {
+                                let result;
+                                const debounceRenderHtml = debounce(renderHtml);
+                                const debouonceUpdateRoom = debounce(() => {
+                                    connection.invoke("NotifyRoomInfoAsync", false).catch(function (err) {
+                                        return console.error(err.toString());
+                                    });
+                                }, 500);
+
+                                document.getElementById('searchInput').addEventListener('input', (e) => {
+
+                                    try {
+                                        const val = e.target.value;
+                                        if (e.target.value === "") {
+                                            renderHtml(data);
+                                        } else {
+                                            let filteredData;
+                                            filteredData = data.filter((person) => {
+                                                return person.firstName.includes(val) || person.lastName.includes(val)
+                                                    || person.rankTitle.includes(val) || person.personalCode.includes(val);
+                                            })
+                                            debounceRenderHtml(filteredData);
+                                        }
+                                    } catch (e) { }
+                                    finally {
+                                        debouonceUpdateRoom();
+
+                                    }
+
+                                })
+
+                                renderHtml(data);
+
+                            },
+                            error: function (result) {
+                                toastr.error('عملیات با خطا مواجه شده است');
+
+
+                            }
+                        });
+                    }, 1000)
+
+
+
+
+
+
+
+                },
+                error: function (result) {
+                    alert("موردی یافت نشد");
+
+                }
+            });
+
+        }
+
+        const onlineUserList = document.getElementById("onlineUsersList");
+
+        window.addEventListener("load", () => {
+            const elem = document.getElementById("personalInfo");
+            elem.innerHTML = "<h6>برای مشاهده ی خلاصه وضعیت خدمتی ابتدا یک نفر را از لیست اعضای جلسه انتخاب نمایید</h6>"
+        })
+
+        //****************************************هامش های معاونت ها - هیئت رئیسه - رئیس دفتر هیئت رئیسه ****************************************************************** */
+        function createHameshList(hamesh) {
+            if (hamesh.length === 0) {
+                return `  <tr> <td style="color: red;">موردی یافت نشد!</td> </tr> `
+            }
+
+
+            let row;
+            for (let i = 0; i < hamesh.length; i++) {
+
+                const item = hamesh[i];
+
+                row += ` <tr>
+                        <td>${item.roleTypeTitle} </td>
+                        <td>${item.userDesc}</td>
+                        </tr>`
+
+
+            }
+            return row
+        }
+
+
+
+
+        let prevActiveIndex = null;
+        const current_user_style_element = document.querySelector(".current_user_style");
+        function getUserDetails(fileId, index, length, personalCode, name) {
+            if (name) {
+                current_user_style_element.style.visibility = "visible";
+                current_user_style_element.innerHTML = `<p>${name.split("_").join(" ")}</p>`
+            }
+
+            $('#buttonFinishMeetingPerson').val(fileId);
+
+
+            if (prevActiveIndex !== null) {
+                const previousActiveElement = document.getElementById(`user${prevActiveIndex}`);
+                previousActiveElement.style.background = "transparent";
+                previousActiveElement.style.borderRadius = "0px";
+            }
+
+
+            const currentActive = document.getElementById(`user${index}`);
+            currentActive.style.background = "whitesmoke";
+            currentActive.style.borderRadius = "20px";
+            currentActive.style.transition = "0.2s ease";
+            prevActiveIndex = index;
+
+
+
+            $.ajax({
+                url: "@Url.Page("index")?handler=InfoPersonal",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { fileId },
+                dataType: "json",
+
+                success: function (data) {
+
+                    document.getElementById("requestSubject").value = data.hameshFullInfoViewModel.file.reqSubTitle;
+                    document.getElementById("userProblemDesc").value = data.hameshFullInfoViewModel.file.problemDescription;
+                    document.getElementById("userRequestDesc").value = data.hameshFullInfoViewModel.file.requestDescription;
+                    document.getElementById("expertComment").value = data.hameshFullInfoViewModel.hameshKarshenasGharagahAnsarNezaja;
+
+
+                    // hamesh yegan
+                    const yeganHamesh = createHameshList(data.hameshFullInfoViewModel.hameshAllYegan);
+                    $("#yeganHameshTable").html(yeganHamesh);
+
+                    // moavenat hamesh
+                    const moavenatHamesh = createHameshList(data.hameshFullInfoViewModel.hameshMoavenats);
+                    $("#moavenatHameshTable").html(moavenatHamesh);
+
+                    // daftar moaven
+                    $("#daftarHamesh").html(`
+                                            <tr>
+                                                <td>${data.hameshFullInfoViewModel.hameshKarbarNezaja}</td>
+                                            </tr>
+                                            `)
+
+                    // heyat raiise
+                    $("#daftarHamesh").html(`
+                                            <tr>
+                                                <td>${data.hameshFullInfoViewModel.hameshKarbarNezaja}</td>
+                                            </tr>
+                                            `)
+
+
+                    // heyat raiise
+                    $("#heyatRaiseHamesh").html(`
+                                                    <tr>
+                                                        <td>${data.hameshFullInfoViewModel.hameshHeiatReeise}</td>
+                                                    </tr>
+                                                    `)
+
+                    let row =
+                        `
+                                <table id="myTable" class="table table-striped table-bordered">
+
+                                  <tbody class="">
+
+                                     <tr>
+                                         <td>مشخصات</td>
+                                         <td>
+                                                ${data.factPersonal.rankTitle}     &nbsp;
+                                                ${data.factPersonal.branchTitle}   &nbsp;
+                                                ${data.factPersonal.firstName}     &nbsp;
+                                                ${data.factPersonal.lastName}
+
+                                        </td>
+
+                                        <td>عکس پرسنلی</td>
+                                        <td>
+                                               <img style="border:3px solid; border-radius:20px"
+                                               width="100" height="80" id="imgAvatar"
+                                               class="thumbnail mt-0 ml-0 mb-0"
+                                               src="" />
+                                       </td>
+
+                                    </tr>
+
+                                    <tr>
+
+                                       <td>شماره کارگزینی</td>
+                                       <td>
+                                              ${data.factPersonal.personalCode}
+                                       </td>
+                                       <td>تاریخ استخدام</td>
+                                       <td>
+                                              ${data.factPersonal.employmentDate}
+                                       </td>
+                                   </tr>
+
+                                   <tr>
+                                       <td>محل تولد</td>
+                                       <td>
+                                            ${data.factPersonal.birthPlaceTitle}
+                                       </td>
+                                       <td>تاریخ تولد</td>
+                                       <td>
+                                             ${data.factPersonal.birthDate}
+                                       </td>
+
+                                   </tr>
+
+                                    <tr>
+                                      <td>نوع استخدام</td>
+                                      <td>
+                                            ${data.factPersonal.employmentTitle}
+                                      </td>
+                                      <td>گروه خونی</td>
+                                      <td>
+                                            ${data.factPersonal.bloodTitle}
+                                      </td>
+
+                                    </tr>
+
+                                    <tr>
+                                      <td>وضعیت تاهل</td>
+                                      <td>
+                                           ${data.factPersonal.marridTitle}
+                                      </td>
+                                      <td>مذهب</td>
+                                      <td>
+                                           ${data.factPersonal.religoinTitle}
+                                      </td>
+                                   </tr>
+
+                                   <tr>
+                                       <td>شغل</td>
+                                       <td>
+                                            ${data.factPersonal.jobDes}
+                                       </td>
+                                       <td>وضعیت خدمتی</td>
+                                       <td>
+                                            ${data.factPersonal.statusTitle}
+                                       </td>
+
+                                   </tr>
+
+                                   <tr>
+                                     <td class="">یگان عمده</td>
+                                     <td>
+                                           ${data.factPersonal.unitTitle}
+                                     </td>
+                                     <td class="">یگان</td>
+                                     <td>
+                                           ${data.factPersonal.unitDutyTitle}
+                                     </td>
+
+                                    </tr>
+
+                                    <tr>
+                                      <td class="">موبایل</td>
+                                      <td>
+                                            ${data.factPersonal.phone}
+                                      </td>
+                                    </tr>
+
+                                  </tbody>
+                                </table>
+                               `;
+
+
+                    let rowListFiles =
+                        `
+
+                                 <table id="example1" class="table table-striped table-bordered">
+                                       <thead>
+                                              <tr>
+                                                  <th>ردیف</th>
+                                                  <th>نوع درخوست ملاقات</th>
+                                                           <th>هامش</th>
+                                                  <th>زمان ایجاد</th>
+                                             </tr>
+                                       </thead>
+                                       <tbody>
+                                               ${createListFiles(data.listFile.files)}
+                                       </tbody>
+                                               <tfoot>
+                                               <tr>
+                                               <td colspan="6">تعداد کل ملاقات : <span class="badge">${data.listFile.files.length}</span></td>
+                                               </tr>
+                                               </tfoot>
+                                 </table>
+
+                                 `;
+
+                    $("#personalInfo").html(row);
+                    $("#listFilePersoanl").html(rowListFiles);
+
+
+                },
+                error: function (result) {
+                    alert("خطایی رخ داده است لطفا مجددا تلاش نمایید");
+
+                }
+            });
+
+        }
+
+
+        //taha cut ajax and move to nezrtc line 360
+
+        $("#removeAllChatMessages").click(() => {
+            console.log("clicked");
+            const meetingId = localStorage.getItem("active_meeting_id");
+
+            if (!meetingId) return;
+
+            console.log(meetingId);
+
+            connection.invoke("RemoveAllChats", `${meetingId}_chat`).catch(function (err) {
+                toastr.error("مشکل در ارتباط با چت روم.");
+                console.error(err.toString());
+            });
+        })
+
+        //جلسه رو انتخاب که میکنه اعضای جلسه رو میاره
+        $("#requestdescription").change(function () {
+            var meetingId = this.value;
+
+            // save the current meeting id in the local storage
+            localStorage.setItem("active_meeting_id", meetingId)
+
+            // join to a chatroom with given id
+            connection.invoke("ChatJoin", `${meetingId}_chat`).catch(function (err) {
+                toastr.error("مشکل در ارتباط با چت روم.");
+                console.error(err.toString());
+            });
+
+
+            const onlineUsers = localStorage.getItem("onlineUsers");
+            const onlineUserArray = JSON.parse(onlineUsers);
+            setTimeout(() => {
+                setUserStatus(onlineUserArray);
+            }, 1000)
+
+            $.ajax({
+                url: "@Url.Page("index")?handler=ListPersonal",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { meetingId },
+                dataType: "json",
+
+                success: function (data) {
+                    let result;
+                    const debounceRenderHtml = debounce(renderHtml);
+                    const debouonceUpdateRoom = debounce(() => {
+                        connection.invoke("NotifyRoomInfoAsync", false).catch(function (err) {
+                            return console.error(err.toString());
+                        });
+                    }, 500);
+
+                    document.getElementById('searchInput').addEventListener('input', (e) => {
+
+                        try {
+                            const val = e.target.value;
+                            if (e.target.value === "") {
+                                renderHtml(data);
+                            } else {
+                                let filteredData;
+                                filteredData = data.filter((person) => {
+                                    return person.firstName.includes(val) || person.lastName.includes(val)
+                                        || person.rankTitle.includes(val) || person.personalCode.includes(val);
+                                })
+                                debounceRenderHtml(filteredData);
+                            }
+                        } catch (e) { }
+                        finally {
+                            debouonceUpdateRoom();
+
+                        }
+
+                    })
+
+                    renderHtml(data);
+
+                },
+                error: function (result) {
+                    alert("موردی یافت نشد");
+
+                }
+            });
+
+
+
+
+        });
+
+
+
+        //*******************خلاصه وضعیت پرسنلی نفر*****************************//
+        //گرفتن لیست تمام درخواست های ملاقات نفر
+        function createListFiles(file) {
+            if (file.length === 0) {
+                return `
+                                                        <tr>
+                                                            <td style="color:red">موردی یافت نشد!</td>
+                                                        </tr>
+                                                `
+            }
+
+            const result = file.map((item, index) => {
+
+                return (
+                    `
+
+                                                        <tr>
+                                                            <td>${index + 1}</td>
+                                                            <td>${item.reqSubTitle}</td>
+                                                            <td>${!item.finalHameshDesc ? 'موردی یافت نشد' : item.finalHameshDesc}</td>
+                                                            <td>${item.regDateFa}</td>
+                                                        </tr>
+
+                                                    `
+                )
+
+            })
+
+            return result;
+
+
+        }
+        //Tashvighat
+        function Tashvighat(personalCode) {
+            $('#loderTashvighat').removeClass("d-none");
+
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetTashvighat",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+
+                success: function (data) {
+                    $('#loderTashvighat').addClass("d-none");
+                    var row = "";
+                    if (data != null) {
+
+                    }
+                    $.each(data,
+                        function (index, item) {
+
+                            row += "<tr><td>" + ++index + "</td><td>" + item.rowBeginDate + "</td><td>" + item.encourageTypeTitle + "</td><td>" + item.encourageReasonTitle + "</td></tr>";
+                        });
+                    $("#getTashvighat").html(row);
+
+                },
+                error: function (result) {
+                    alert("موردی یافت نشد");
+
+
+                    $('#loderTashvighat').addClass("d-none");
+                }
+            });
+        }
+        //************************************************
+        //Tanbihat
+        function Tanbihat(personalCode) {
+            $('#loderTanbihat').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetTanbihat",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTanbihat').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+
+                            row += "<tr><td>" + ++index + "</td><td>" + item.rowBeginDate + "</td><td>" + item.convictionTypeTitle + "</td><td>" + item.convictionReasonTitle + "</td></tr>";
+                        });
+                    $("#getTanbihat").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    // $('#loderTanbihat').addClass("d-none");
+                }
+            });
+        }
+        //************************************************
+        //Enteghalat
+        function Enteghal(personalCode) {
+            $('#loderEnteghal').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetEnteghal",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+
+                    $('#loderEnteghal').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+
+
+                            row += "<tr><td>" + ++index + "</td><td>" + item.fromOrgan + "</td><td>" + item.wentDate + "</td><td>" + item.toOrgan + "</td></tr>";
+                        });
+                    $("#getEnteghal").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loderEnteghal').addClass("d-none");
+                }
+            });
+        }
+
+        //************************************************
+        //Aeleh
+        function Aeleh(personalCode) {
+            $('#loderAeleh').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetAeleh",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderAeleh').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.firstName + "</td><td>" + item.lastName + "</td><td>" + item.relativeTitle + "</td><td>" + item.nationalNoFamily + "</td><td>" + item.certificateNumber + "</td></tr>";
+                        });
+                    $("#getAeleh").html(row);
+                },
+
+            });
+        }
+
+        //************************************************
+        //TashilatMaskan
+        function GetTashilatMaskan(personalCode) {
+            $('#loderTashilatMaskan').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("SpecificationPersonal")?handler=GetTashilatMaskan",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTashilatMaskan').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.unitNo + "</td><td>" + item.tavoniName + "</td><td>" + item.projectName + "</td><td>" + item.tashilatTypeDesc + "</td><td>" + item.mablaqTitle + "</td><td>" + item.metraz + "</td><td>" + item.vagozariDate + "</td><td>" + item.cancelDate + "</td></tr>";
+                        });
+                    $("#TashilateMaskan").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderTashilatMaskan').addClass("d-none");
+                }
+            });
+        }
+
+        //************************************************
+        //TashilatDabirKhaneh
+        function TashilatDabirKhaneh(personalCode) {
+            $('#loderTashilatDabirKhaneh').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("SpecificationPersonal")?handler=GetTashilatDabirKhaneh",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTashilatDabirKhaneh').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.tashilatTypeTitle + "</td><td>" + item.vagozariDesc + "</td><td>" + item.confirmMablaqVamTitle + "</td><td>" + item.confirmOrderDate + "</td></tr>";
+                        });
+                    $("#getTashilatDabirKhaneh").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderTashilatDabirKhaneh').addClass("d-none");
+                }
+            });
+        }
+
+        //************************************************
+        //TashilatDastor
+        function TashilatDastor(personalCode) {
+            $('#loderTashilatDastor').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetTashilatDastor",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderTashilatDastor').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.tashilatTypeTitle + "</td><td>" + item.maliTitle + "</td><td>" + item.mablagheVam + "</td><td>" + item.rowBeginDate + "</td></tr>";
+                        });
+                    $("#getTashilatDastor").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loderTashilatDastor').addClass("d-none");
+                }
+            });
+        }
+
+        //Other Tashilat
+        function TashilatOther(personalCode) {
+            $('#loderOtherTashilat').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetTashilatOther",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderOtherTashilat').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.mosaedatTypeDesc + "</td><td>" + item.mosaedatResourceDesc + "</td><td>" + item.mosaedatDate + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getTashilatDastor").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderTashilatDastor').addClass("d-none");
+                }
+            });
+        }
+        //************************************************
+        //Nomarat Arzyabi (Exam)
+        function GetExam(personalCode) {
+            $('#loaderExam').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetExam",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loaderExam').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.examTypeTitle + "</td><td>" + item.rowBeginDate + "</td><td>" + item.rowEndDate + "</td><td>" + item.registerDate + "</td><td>" + item.documentOwnerUnitCode + "</td><td>" + item.mark + "</td><td>" + item.totalMark + "</td></tr>";
+                        });
+                    $("#getExam").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس با خطا مواجه شد ، دقایقی دیگر مراجعه بفرمایید");
+                    $('#loaderExam').addClass("d-none");
+                }
+            });
+        }
+
+        //Other Belaavaz
+        function TashilatBelaavaz(personalCode) {
+            $('#loaderBelaavaz').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetTashilatBelaavaz",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loaderBelaavaz').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.vagozariDesc + "</td><td>" + item.mablaq + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getTashilatBelaavaz").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loaderBelaavaz').addClass("d-none");
+                }
+            });
+        }
+
+        //Fish
+        function TashilatFish(personalCode) {
+            $('#loderFish').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetFish",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderFish').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.deductionDate.substring(0, 4) + "/" + item.deductionDate.substring(4, 6) + "</td><td>" + item.deductionType + "</td><td>" + item.deductionCode + "</td><td>" + item.totalDebtFormat + "</td></tr>";
+                        });
+                    $("#getFish").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderFish').addClass("d-none");
+                }
+            });
+        }
+
+        //Moeeser
+        function TashilatMoeeser(personalCode) {
+            $('#loderMoeeser').removeClass("d-none");
+            $.ajax({
+                url: "@Url.Page("index")?handler=GetMoeeser",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: { personalCode },
+                dataType: "json",
+                success: function (data) {
+                    $('#loderMoeeser').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.moeeserTypeDesc + "</td><td>" + item.unitHelpToMoeeser + "</td><td>" + item.nezajaHelpToMoeeser + "</td><td>" + item.moeeserDesc + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getMoeeser").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loderMoeeser').addClass("d-none");
+                }
+            });
+        }
+
+        //All Hamesh
+        function AllHamesh() {
+            $.ajax({
+                url: "@Url.Page("index")?handler=AllListHamesh",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: {},
+                dataType: "json",
+                success: function (data) {
+
+
+                    $('#loaderAllListHamesh').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            row += "<tr><td>" + ++index + "</td><td>" + item.rankTitlePersonal + ' ' + item.firstNamePersonel + ' ' + item.lastNamePersonel + "</td><td>" + item.rcvrUserName + "</td><td>" + item.actionTypeTitle + "</td><td>" + item.userDesc + "</td><td>" + item.regDate + "</td></tr>";
+                        });
+                    $("#getGardeshDarkhastMolaghat").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loaderAllListHamesh').addClass("d-none");
+                }
+            });
+        }
+
+        function getAttachmentFile() {
+            $.ajax({
+                url: "@Url.Page("index")?handler=AllListHamesh",
+                type: "GET",
+                contentType: "appllication/json; charset=utf-8",
+                data: {},
+                dataType: "json",
+                success: function (data) {
+
+
+                    $('#loaderAllListHamesh').addClass("d-none");
+                    var row = "";
+                    $.each(data,
+                        function (index, item) {
+                            //  row += "<tr><td>" + ++index + "</td><td>" + <a href="/FileAttachment/"item.attachmentFileName target = "_blank" class="btn btn-info btn-pulse" > دانلود < /a> + "</td > </tr>";
+                        });
+                    $("#getGardeshDarkhastMolaghat").html(row);
+                },
+                error: function (result) {
+                    alert("سرویس مورد نظر در دسترس نیست");
+                    $('#loaderAllListHamesh').addClass("d-none");
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $('#myTable').DataTable();
+        });
+        $(document).ready(function () {
+            $('#myTable1').DataTable();
+        });
+
+
+        //*******************پایان وضعیت پرسنلی نفر*****************************//
+
+
+        let once = false
+        window.addEventListener('scroll', (e) => {
+            const currentScroll = window.scrollY;
+            const containerScrollHeight = document.querySelector(".hameshContent").scrollHeight;
+
+
+
+
+
+            if (currentScroll >= 500) {
+
+                if (!once) {
+                    isPicToPic && (localVideo.srcObject = remoteVideo.srcObject);
+                    once = true;
+                }
+            }
+
+
+            if (currentScroll < 500) {
+
+                if (once) {
+
+                    isPicToPic && (localVideo.srcObject = tmpLocalStream);
+                    once = false;
+                }
+
+            }
+
+
+
+        })
+
+        //این تابع برای پردازش و نمایش لیست کاربران آنلاین استفاده می‌شود
+        const renderHtml = (data) => {
+
+
+            if (data.length === 0) {
+                onlineUserList.innerHTML = "<p>موردی یافت نشد</p>";
+                return;
+            }
+
+
+            const grouped_by_unitTitle = data.reduce((acc, current, index) => {
+                const title = current.unitTitle;
+
+                if (!acc[title]) {
+                    acc[title] = [];
+                }
+                acc[title].push(current);
+                return acc;
+            }, {})
+
+            const elements_to_render = [];
+            Object.keys(grouped_by_unitTitle).forEach((key) => {
+
+                const values_for_given_key = grouped_by_unitTitle[key];
+                const rawHtml = values_for_given_key.map((item, index) => {
+
+                    const base64FCode = btoa(item.unitCode);
+                    console.log(item.unitCode);
+                    const fullName = `${item.rankTitle} ${item.firstName} ${item.lastName}`;
+                    // need underlines to send it to the getUSerDetails function
+                    const fullName_Underline = `${item.rankTitle.replace(/ /g, "_")}_${item.firstName.replace(/ /g, "_")}_${item.lastName.replace(/ /g, "_")}`;
+                    return (
+                        `
+                                        <section data-pcode="${base64FCode}" id='user${index}' style="border-bottom:2px solid whitesmoke;padding:6px" class="onlineUsersList__item">
+                                        <div class="userStatus">
+                                                                <div id="handleName"></div>
+                                                                                                                <p class="userDetails" onclick={getUserDetails(${item.fileId},${index},${data.length},${item.personalCode},"${fullName_Underline}")}
+                                                                   style="color: #3b4eaf; font-weight: bold;margin-bottom:0px">
+                                                                                   ${fullName}
+                                                                 </p>
+
+
+                                                             </div>
+
+                                        <p style="color: #3b4eaf; font-weight: bold; margin-top: -3px;margin-right: 22px; color: black">${item.personalCode} </p>
+                                                <p style="color: #3b4eaf; font-weight: bold; margin-top: -14px;margin-right: 22px; color: black">${item.codGhaTitle} </p>
+
+                                        </section>
+                                        `
+                    )
+                })
+                const element =
+                    `
+                            <div>
+                                <div class="unit_title_group">
+                                    <p class="unit_collapse_icon"> + </p>
+                                    <p class="unit_title">${key}</p>
+                                    <span id="statusIcon" style="width:10px;height:10px;min-width: 10px; min-height: 10px;;border:2px solid red; display:inline-block; border-radius:50%;margin-left:6px"></span>
+                                </div>
+                                <div id="unit_title_collapse">
+                                    ${rawHtml.join("")}
+                                </div>
+                            </div>
+                        `
+                elements_to_render.push(element);
+            })
+
+
+            onlineUserList.innerHTML = elements_to_render.join("");
+
+
+            // handling menu collapse
+            const unit_collapse_elements = document.querySelectorAll(".unit_collapse_icon");
+            unit_collapse_elements.forEach((elem) => {
+                elem.addEventListener("click", (e) => {
+                    const currentElement = e.target;
+                    const parent = (e.target.parentElement).parentElement;
+                    const collapsedElement = parent.children[1];
+
+
+                    if (currentElement.innerText === "-") {
+                        // close collapse
+                        currentElement.innerText = "+";
+                        collapsedElement.style.display = "none";
+                    } else {
+                        // open collapse
+                        currentElement.innerText = "-";
+                        collapsedElement.style.display = "block";
+                    }
+                })
+            })
+
+
+
+
+            /*
+            const rawHtml = data.map((item, index) => {
+
+                const base64FCode = btoa(item.unitCode);
+                const fullName = `${item.rankTitle} ${item.firstName} ${item.lastName}`;
+                // need underlines to send it to the getUSerDetails function
+                const fullName_Underline = `${item.rankTitle.replace(/ /g, "_")}_${item.firstName.replace(/ /g, "_")}_${item.lastName.replace(/ /g, "_")}`;
+                return (
+                    `
+                                <section data-pcode="${base64FCode}" id='user${index}' style="border-bottom:2px solid whitesmoke;padding:6px" class="onlineUsersList__item">
+                                <div class="userStatus">
+                                                        <span id="statusIcon" style="width:10px;height:10px;border:2px solid red; border-radius:50%;margin-left:6px"></span>
+                                                        <div id="handleName"></div>
+                                                                                                        <p class="userDetails" onclick={getUserDetails(${item.fileId},${index},${data.length},${item.personalCode},"${fullName_Underline}")}
+                                                           style="color: #3b4eaf; font-weight: bold;margin-bottom:0px">
+                                                                           ${fullName}
+                                                         </p>
+
+
+                                                     </div>
+
+                                <p style="color: #3b4eaf; font-weight: bold; margin-top: -3px;margin-right: 22px; color: black">${item.personalCode} </p>
+                                <p style="color: #3b4eaf; font-weight: bold; margin-top: -14px;margin-right: 22px; color: black">${item.unitTitle} </p>
+
+                                </section>
+                                `
+                )
+            })
+           onlineUserList.innerHTML = rawHtml.join("");
+            */
+
+
+
+
+        }
+
+
+        const debounce = (fn, time = 300) => {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    fn.call(null, ...args)
+                }, time);
+
+            }
+        }
+
+    </script>
+
+    }
+

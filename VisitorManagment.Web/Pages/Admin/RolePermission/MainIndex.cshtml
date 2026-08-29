@@ -1,0 +1,213 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Admin.RolePermission.MainIndexModel
+@{
+    //Layout = "_LayoutPages";
+    var counter1 = 0;
+    var counter2 = 0;
+}
+
+<form>
+    <div class="container-fluid card ">
+        <h3 class="text-info mt-2">ایجاد دسترسی</h3>
+        <hr />
+        <div class="col-md-7 demo-code-preview " style="background-color:rgb(228 222 222 / 0.42);position:relative; bottom:50px">
+            <div class="form-row">
+                <div class="col-md-8">
+                    <label for="validationCustom02"><h5 style="font:bold">سمت ، شغل   : </h5></label>
+
+                    <select id="ComCodeSemat" onchange="this.form.submit()" name="roleId"
+                            asp-items="@ViewBag.RoleList" asp-for="@Model.RoleId"
+                            class="form-control js-example-basic-single" required="">
+
+                        <option value="سمت ، شغل  را انتخاب نمایید">سمت ، شغل   را انتخاب نمایید</option>
+
+                    </select>
+
+                    <div class="invalid-feedback">
+                        سمت ، شغل کاربر   را انتخاب نمایید
+                    </div>
+                </div>
+
+                <div class=" col-md-3 text-center float-left m-t-35" id="errormaxLengthFile">
+
+                    <a href="/Admin/sendaccess/CreateSendAccess" class="btn btn-outline-instagram ml-2">  بازنشانی</a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+@if (ViewBag.ShowForm == true)
+{
+
+    <form method="post" class="row">
+        <input type="hidden" value="@ViewBag.RoleId" name="roleId">
+        @*<div class="row">*@
+
+        <div class="col-md-6 ">
+            <div class="card card-body">
+                <div class="d-flex justify-content-between">
+                    <h4 class="text-danger">  دسترسی ندارد</h4>
+                    <button class="btn btn-success" type="submit" asp-page-handler="AddAccess"><i class="ti-plus mr-2"></i> ایجاد دسترسی</button>
+
+                </div>
+                <hr />
+                <a>
+                    <div class="table-responsive">
+                        <table id="myTable" style="direction:rtl" class="table table-striped table-bordered">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>  ردیف</th>
+                                    <th> مشخصات پرسنل </th>
+                                    <th>
+                                        <a class=" font-italic float-left">
+                                            <label class="" for="customCheckAllUnAcc">انتخاب همه</label>
+                                            <input type="checkbox" class=" btn btn-danger p-10" id="customCheckAllUnAcc">
+                                        </a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var UnPersonal in Model.ListUnAccsessPersonal)
+                                {
+                                    <tr class="text-center">
+                                        <td>@(++counter1)</td>
+                                        <td>@UnPersonal.PermossionTitle</td>
+                                        <td class="d-sm-flex justify-content-center ">
+                                            <div class="custom-control">
+                                                <input type="checkbox" name="permissionIds" class="p-10" id="customCheck4" value="@UnPersonal.Id" multiple>
+                                                <label class="" for="customCheck4"></label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                        </table>
+                    </div>
+
+                </a>
+                <div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 ">
+            <div class="card card-body">
+                <div class="d-flex justify-content-between">
+                    <h4 style="color: #029f55">  دسترسی دارد</h4>
+                    <button class="btn btn-danger" type="submit" asp-page-handler="RemoveAccess"><i class="ti-trash mr-2"></i> حذف دسترسی</button>
+
+                </div>
+                <hr>
+                <a>
+                    <div class="table-responsive">
+                        <table id="myTableAccess" class="table table-striped table-bordered ">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>  ردیف</th>
+                                    <th> مشخصات پرسنل </th>
+                                    <th>
+                                        <a href="#" class=" ml-2 font-italic float-left" style="background-color:rgba(142, 138, 138, 0.31);padding-top:7px;padding-left:5px;padding-right:7px; border-radius:10px;">
+                                            <label class="" for="CheckAllAcc">انتخاب همه</label>
+                                            <input type="checkbox" class=" btn btn-danger p-10" id="CheckAllAcc">
+
+                                        </a>
+
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var Personal in Model.ListAccsessPersonal)
+                                {
+                                    <tr class="text-center">
+                                        <td>@(++counter2)</td>
+                                        <td>@Personal.PermossionTitle</td>
+                                        <td class="d-sm-flex justify-content-center ">
+                                            <div class="custom-control">
+                                                <input type="checkbox" name="permissionIds" class="p-10" id="customCheck4" value="@Personal.PermissionId" multiple>
+                                                <label class="" for="customCheck4"></label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                        </table>
+                    </div>
+
+                </a>
+                <div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+}
+
+
+
+
+
+
+@section Scripts
+{
+
+
+<script>
+    $(document).ready(function () {
+        $('#myTable').DataTable();
+    });
+    $(document).ready(function () {
+        $('#myTableAccess').DataTable();
+    });
+</script>
+<script>
+
+
+    $('#ComCodeSemat').on('change', function () {
+        $(this).closest('form').submit();
+    });
+
+
+    $("#customCheckAllUnAcc").click(function () {
+        var ele = document.getElementsByName('UnAccessRoleId');
+        if (this.checked) {
+            for (var i = 0; i < ele.length; i++) {
+                if (ele[i].type == 'checkbox') {
+                    ele[i].checked = true;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < ele.length; i++) {
+                if (ele[i].type == 'checkbox') {
+                    ele[i].checked = false;
+                }
+            }
+        }
+
+    });
+
+
+    $("#CheckAllAcc").click(function () {
+        var ele = document.getElementsByName('AccessRoleId');
+        if (this.checked) {
+            for (var i = 0; i < ele.length; i++) {
+                if (ele[i].type == 'checkbox') {
+                    ele[i].checked = true;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < ele.length; i++) {
+                if (ele[i].type == 'checkbox') {
+                    ele[i].checked = false;
+                }
+            }
+        }
+
+    });
+
+</script>
+
+
+}

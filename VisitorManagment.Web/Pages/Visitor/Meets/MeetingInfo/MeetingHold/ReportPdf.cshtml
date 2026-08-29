@@ -1,0 +1,275 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.MeetingHold.ReportPdfModel
+@{
+    Layout = "_Layout";
+    var i = 9;
+}
+
+<a href="javascript:window.print()" class="btn btn-outline-warning" style="text-align:right">
+    <i data-feather="printer" class="mr-2"></i> پرینت
+</a>
+<table style="width: 100%; direction: rtl; margin: 0 auto ; font-family:'AP Yekan' ;">
+    <tr>
+        <th colspan="1"></th>
+        <th colspan="1" class="title">درجه</th>
+        <th>نام</th>
+        <th>نشان</th>
+        <th>شک</th>
+        <th>یگان</th>
+        <th>شغل</th>
+        <th colspan="99">وضعیت سکونت</th>
+    </tr>
+    <tr>
+        <td></td>
+        <td>@Model.reportTestInfoViewModel.RankTitle</td>
+        <td>@Model.reportTestInfoViewModel.FirstName</td>
+        <td>@Model.reportTestInfoViewModel.LastName</td>
+        <td>@Model.reportTestInfoViewModel.PersonalCode</td>
+        <td>@Model.reportTestInfoViewModel.UnitTitle</td>
+        <td>@Model.reportTestInfoViewModel.JobDes</td>
+        <td colspan="99">-</td>
+    </tr>
+    <tr>
+        <th rowspan="9">1</th>
+        <th rowspan="9" class="title">
+            وضعیت عمومی
+        </th>
+        <th>حقوق کل</th>
+        <th>میزان دریافتی</th>
+        <th>تعداد وام</th>
+        <th>اقساط ماهیانه</th>
+        <th>شماره همراه</th>
+        <th colspan="99">تاریخ جلسه</th>
+    </tr>
+    <tr>
+        <td>@Model.reportTestInfoViewModel.TotalMoney.ToString("N0")</td>
+        <td>@Model.reportTestInfoViewModel.ReciveMoney.ToString("N0")</td>
+        <td>@Model.reportTestInfoViewModel.CountVam</td>
+        <td>@Model.reportTestInfoViewModel.SumAghsatVamMahiyaneh.ToString("N0")</td>
+        <td>@Model.reportTestInfoViewModel.Phone</td>
+        <td colspan="99">@Model.reportTestInfoViewModel.MeetingDate</td>
+    </tr>
+    <tr>
+        <th colspan="3">آدرس</th>
+        <td colspan="99" style="background-color: whitesmoke;">
+            <table class="tableChild" style="width: 100%">
+                <tr>
+                    <th style="width: 25%; padding: 2px;">تشویقات</th>
+                    <th style="width: 25%;">تنبیهات</th>
+                    <th style="width: 25%;">نهست</th>
+                    <th style="width: 25%;">فرار</th>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">@Model.reportTestInfoViewModel.Address</td>
+        <td colspan="99">
+            <table class="tableChild" style="width: 100%">
+                <tr>
+                    <td style="width: 25%;">@Model.reportTestInfoViewModel.TashvighatCount</td>
+                    <td style="width: 25%;">@Model.reportTestInfoViewModel.TanbihatCount</td>
+                    <td style="width: 25%;">@Model.reportTestInfoViewModel.NahastCount</td>
+                    <td style="width: 25%;">@Model.reportTestInfoViewModel.FararCount</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="1">وضعیت تاهل</th>
+        <th colspan="2">درصد جانبازی</th>
+        <th colspan="99">مدت خدمت عملیاتی</th>
+    </tr>
+    <tr>
+        <td colspan="1" rowspan="2">@Model.reportTestInfoViewModel.MarridTitle</td>
+        <th colspan="1">ارتش</th>
+        <th colspan="1">بنیاد</th>
+        <th colspan="2">قبل از قطعنامه</th>
+        <th colspan="2">بعداز قطعنامه</th>
+    </tr>
+    <tr>
+        <td colspan="1">@Model.reportTestInfoViewModel.DrsadJa</td>
+        <td colspan="1">@Model.reportTestInfoViewModel.DrsadJb</td>
+        <td colspan="2">@Model.reportTestInfoViewModel.TotAml</td>
+        <td colspan="2">@Model.reportTestInfoViewModel.TotAml2</td>
+    </tr>
+    <tr>
+        @*            <th colspan="1" rowspan="2">محل های خدمت</th>
+        <th colspan="2">یگان مبدا</th>
+        <th colspan="2">یگان مقصد</th>
+        <th colspan="1">تاریخ</th>*@
+    </tr>
+    <tr>
+        @*            <td colspan="2">@Model.reportTestInfoViewModel.FromOrgan</td>
+        <td colspan="2">@Model.reportTestInfoViewModel.ToOrgan</td>
+        <td colspan="1">@Model.reportTestInfoViewModel.WentDate</td>*@
+    </tr>
+    <tr>
+        <th>2</th>
+        <th class="title">
+            بیماری صعب العالج
+            و معسر
+        </th>
+        <th colspan="2">نوع بیماری:</th>
+        <th colspan="3">شدت بیماری:</th>
+        <th colspan="2"> نوع اعسار :</th>
+    </tr>
+    <tr>
+        <th rowspan="3">3</th>
+        <th rowspan="2" class="title">
+            کمک های
+            بالعوض
+            امتیازات و
+            تسهیلات
+            دریافتی دیگر
+        </th>
+        <th colspan="2">شرح وام</th>
+        <th colspan="3">بلغ وام</th>
+        <th colspan="2"> تاریخ</th>
+    </tr>
+    <tr>
+        <td colspan="2">@Model.reportTestInfoViewModel.TashilatBelaavazMaliTitle</td>
+        <td colspan="3">@Model.reportTestInfoViewModel.TashilatBelaavazMablagheVam</td>
+        <td colspan="2">@Model.reportTestInfoViewModel.TashilatBelaavazRowBeginDate</td>
+    </tr>
+    <tr>
+        @*            <td colspan="2">-</td>
+        <td colspan="3">-</td>
+        <td colspan="3">-</td>*@
+    </tr>
+    <tr>
+        <th>4</th>
+        <th class="title">شرح مشکلات</th>
+        <td colspan="99">@Model.reportTestInfoViewModel.ProblemDescription</td>
+    </tr>
+    <tr>
+        <th>5</th>
+        <th class="title">
+            خلاصه درخواست
+            متقاضی
+        </th>
+        <td colspan="99">@Model.reportTestInfoViewModel.RequestDescription</td>
+    </tr>
+
+    <tr>
+        <th>6</th>
+        <th class="title">
+            اقدامات و
+            مساعدت های
+            به عمل آمده
+            یگان عمده
+        </th>
+        <td colspan="99">-</td>
+    </tr>
+    <tr>
+        <th rowspan="2">7</th>
+        <th rowspan="2" class="title">نظریه بایگانی</th>
+        <th colspan="3">نظریه یگان سازمانی</th>
+        <th colspan="4">نظریه ف قرارگاه منطقه ای/نظریه ف ارشد نظامی</th>
+    </tr>
+    <tr>
+        <td colspan="3">@Model.reportTestInfoViewModelv2.HameshUnit</td>
+        <td colspan="4">@Model.reportTestInfoViewModelv2.HameshGharagah</td>
+    </tr>
+
+    <tr>
+        <th>8</th>
+        <th class="title">
+            نظریه کارشناس ق انصار نزاجا
+        </th>
+
+        <td colspan="99">@Model.reportTestInfoViewModel.HameshKarshenasGharagahAnsarNezaja</td>
+
+
+    </tr>
+
+    <tr >
+        <th>9</th>
+        <th>نظریه معاونت ها</th>
+        <td colspan="99">
+        @foreach (var item in @Model.reportTestInfoViewModel.HameshMoavenat)
+        {
+
+
+                <div>
+                    @item.RoleTypeTitle : @item.UserDesc
+                    <div style="height:1px; background-color: gray;margin-top: 6px; margin-bottom: 6px;"></div>
+                </div>
+            }
+        </td>
+    </tr>
+
+    <tr>
+        <th>10</th>
+        <th class="title" style="height:150px">
+            نظریه  @Model.reportTestInfoViewModel.RolePersonLogin
+        </th>
+        <td colspan="99"></td>
+    </tr>
+
+
+    @*    <tr>
+    <th>10</th>
+    <th class="title">
+    نظریه / اوامر
+    امیر جانشین
+    محترم نزاجا
+    </th>
+    <td colspan="99"></td>
+    </tr>
+    <tr>
+    <th>11</th>
+    <th class="title">
+    نظریه / اوامر
+    امیر فرماندهی
+    محترم نزاجا
+    </th>
+    <td colspan="99"></td>
+    </tr>*@
+</table>
+
+
+<style>
+
+    body {
+        /* font-family: system-ui;*/
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid rgba(0, 0, 0, 0.281);
+        border-collapse: collapse;
+        padding: 6px;
+        font-size:15px;
+    }
+
+    .tableChild > tbody > tr > th:last-child,
+    .tableChild > tbody > tr > td:last-child {
+        border: 1px solid transparent;
+    }
+
+
+    th {
+        background-color: whitesmoke;
+        color: rgb(46, 44, 44);
+        font-size: 15px !important;
+    }
+
+
+    .title {
+        width: 120px;
+    }
+
+
+    .tableChild > tbody > tr > th:not(:last-child),
+    .tableChild > tbody > tr > td:not(:last-child) {
+        border: 1px solid transparent;
+        border-left: 1px solid rgba(0, 0, 0, 0.281);
+    }
+
+    .title {
+        font-weight: bold;
+    }
+</style>
+

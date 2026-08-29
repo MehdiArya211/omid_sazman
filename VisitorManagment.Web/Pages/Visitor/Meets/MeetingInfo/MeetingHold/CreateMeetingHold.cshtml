@@ -1,0 +1,181 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.File.MeetingHold.CreateMeetingHoldModel
+@{
+    ViewData["Title"] = "برگزاری جلسه  ";
+}
+
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4></h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">جلسه</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">برگزاری جلسه</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- end::page-header -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4>برگزاری جلسه</h4>
+                    <hr>
+
+                    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+                        <input id="personid" type="hidden" name="personId">
+                        <input id="meetingid" type="hidden" name="meetingId">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+                        <div class="form-row">
+
+                            <div id="" class="col-md-6 mb-3">
+                                <label>موضوع جلسه:</label>
+                                <select id="titlemeetingid" class="form-control js-example-basic-single" asp-items="ViewBag.MeetingForHold" required>
+                                    <option value="">@ViewBag.MeetingForHold</option>
+                                </select>
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    جلسه را انتخاب کنید
+                                </div>
+                            </div>
+
+                            <div id="" class="col-md-6 mb-3">
+                                <label>شرکت کنندگان جلسه:</label>
+                                <select id="membermeetingid" class="form-control js-example-basic-single" asp-items="ViewBag.PersonalMemberForMeetingList" required>
+                                    <option value=""> شرکت کنندگان جلسه را انتخاب نمایید</option>
+                                </select>
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    شرکت کنندگان جلسه را انتخاب کنید
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 mb-6">
+                                <label for="validationCustom02"> هامش های قبلی :</label>
+                                <textarea id="hameshghabli" class="form-control" cols="350" rows="350" readonly></textarea>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    توضیحات را وارد کنید!
+                                </div>
+                            </div>
+                            <br>
+                            <div class="col-md-12 mb-6">
+                                <label for="validationCustom02">هامش نهایی:</label>
+                                <textarea id="address" cols="150" rows="50" class="form-control" asp-for="meetingHoldViewModel.UserDesc"></textarea>
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    هامش نهایی را وارد کنید!
+                                </div>
+                            </div>
+                            <div id="" class="col-md-6 mb-3">
+                                <label>وضعیت :</label>
+                                <select id="" class="form-control" name="ActionTypeId" asp-items="ViewBag.ActionType" required>
+                                    <option value="">وضعیت  را انتخاب نمایید</option>
+                                </select>
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    وضعیت  را انتخاب کنید
+                                </div>
+                            </div>
+
+                            <div id="" class="col-md-6 mb-3">
+                                <label>ارسال به:</label>
+                                <select id="" class="form-control" name="rcvrId" required>
+                                    <option value="30">پیگیری ویژه دبیرخانه</option>
+                                </select>
+                                <span></span>
+
+                                <div class="valid-feedback">
+                                    عالی!
+                                </div>
+                                <div class="invalid-feedback">
+                                    انتخاب کنید
+                                </div>
+                            </div>
+
+                        </div>
+                        <br>
+
+                        <button id="submitsazmani" class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت و ارسال</button>
+                        <a href="/Visitor/Meets/MeetingInfo/Index" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section GetInformationPersonal
+{
+    <script>
+        $(function () {
+            $("#selectmeeting").select2({
+                placeholder: '   جلسه را انتخاب کنید   '
+            });
+        });
+
+        $(function () {
+            $("#membermeeting").select2({
+                placeholder: '   اعضای جلسه را انتخاب کنید   '
+            });
+        });
+
+    </script>
+
+    <script>
+
+
+        $("#membermeetingid").change(function () {
+
+            var membermeetingid = $("#membermeetingid").val();
+            var titlemeetingid = $("#titlemeetingid").val();
+            //input hidden
+            $("#personid").val(membermeetingid);
+            $("#meetingid").val(titlemeetingid);
+
+            $.getJSON(`?handler=GetHamesh&membermeetingid=${membermeetingid}&titlemeetingid=${titlemeetingid}`, (data) => {
+                var res;
+
+                $.each(data, function (i, item) {
+
+                    res += item.userDesc + "  **  " + "\n ";
+
+                });
+                $("#hameshghabli").val(res);
+
+            })
+
+        });
+    </script>
+
+}
+

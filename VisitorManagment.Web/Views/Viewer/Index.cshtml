@@ -1,0 +1,30 @@
+﻿@using Stimulsoft.Report.Mvc;
+
+@{
+    ViewBag.Title = "Index";
+    var Id = ViewData["Id"];
+}
+
+<h2 style="text-align:right;">گزارش درخواست ملاقات</h2>
+
+<table >
+    <tr>
+        <td class="reports" valign="top">
+            <div style="width: 150px;">
+                @Html.ActionLink("", "Index", new { id = Id })
+                @*<br />Report Snapshot*@
+
+            </div>
+        </td>
+        <td style="width: 100%;" valign="top">
+            @Html.StiNetCoreViewer(new StiNetCoreViewerOptions()
+                {
+                    Actions =
+                    {
+                        GetReport = "GetReport",
+                        ViewerEvent = "ViewerEvent"
+                    }
+                })
+        </td>
+    </tr>
+</table>

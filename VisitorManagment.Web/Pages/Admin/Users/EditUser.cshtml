@@ -1,0 +1,238 @@
+﻿@page "{id}"
+@using VisitorManagment.DataLayer.Entities.User
+@model VisitorManagment.Web.Pages.Admin.Users.EditUserModel
+@{
+    ViewData["Title"] = "ویرایش کاربر";
+    List<Role> Roles = ViewData["Roles"] as List<Role>;
+}
+<link rel="stylesheet" href="/vendors/select2/css/select2.min.css" type="text/css">
+
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>ویرایش کاربر</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="#">کتابخانه</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#"> مدیریت سیستم</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت کاربران</a>
+                </li>
+
+
+                <li class="breadcrumb-item active" aria-current="page">ویرایش کاربر</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="card card-body ">
+    <h4 class="card-title">ویرایش کاربر</h4>
+    <hr />
+    <br />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="userId" asp-for="@Model.editUserViewModel.UserId" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.AvatarName" />
+        @**@
+        <input type="hidden" asp-for="@Model.editUserViewModel.BranchTitle" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.BranchCode" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.JobDes" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.RankTitle" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.RankCode" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.UnitDutyCode" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.UnitCode" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.UnitDutyTitle" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.UnitTitle" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.CodGhaTitle" />
+        <input type="hidden" asp-for="@Model.editUserViewModel.CodGha" />
+
+        <div class="form-row">
+
+            <div class="col-md-6 mb-3">
+                <label style="font-size:medium">کد پرسنلی</label>
+                <input type="text" id="personalno" asp-for="@Model.editUserViewModel.UserName" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>نام</label>
+                <input id="fname" type="text" asp-for="@Model.editUserViewModel.FirstName" class="form-control" readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label> نام خانوادگی </label>
+                <input id="lname" type="text" asp-for="@Model.editUserViewModel.LastName" class="form-control" readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>درجه</label>
+                <input id="rankTitle" type="text" asp-for="@Model.editUserViewModel.RankTitle" name="rankTitle" class="form-control">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label>انتخاب نقش کاربر</label>
+
+                <select id="listRoles" class="form-control  js-example-basic-single" asp-for="@Model.editUserViewModel.UserRolesId"
+                        asp-items="ViewBag.RolesTitle">
+                   @* <option>@Model.editUserViewModel.UserRolesTitle</option>*@
+                </select>
+
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label>کلمه عبور </label>
+                <input type="password" name="password" class="form-control">
+                <p class="help-block">در صورت وارد کردن کلمه عبور ، کلمه عبور کاربر تغییر خواهد کرد</p>
+            </div>
+
+            <div class="col-md-12 mb-6 ">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        تصویر پروفایل
+                    </div>
+                    <!-- /.panel-heading -->
+                    <div class="panel-body">
+                        <img style="border:3px solid; border-radius:20px" width="200" height="200" id="imgAvatar" class="thumbnail" src="/UserAvatar/@Model.editUserViewModel.AvatarName" />
+                        <div class="form-group">
+                            <label>انتخاب تصویر</label>
+                            <br />
+                            <input type="file" asp-for="@Model.editUserViewModel.UserAvatar">
+                        </div>
+                    </div>
+                    <!-- /.panel-body -->
+                </div>
+
+            </div>
+        </div>
+        <br />
+        <button class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت</button>
+        <a href="/Admin/Users" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+
+    </form>
+    <!-- Javascript -->
+    <script src="/vendors/select2/js/select2.min.js"></script>
+</div>
+
+@section Scripts
+    {
+    <script>
+
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#imgAvatar').attr('src', e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $("#editUserViewModel_UserAvatar").change(function () {
+            readURL(this);
+        });
+    </script>
+
+    <script>
+        $('#personalno').on('keydown', function (e) {
+            if (e.key == 'Tab') {
+                getinformation();
+            }
+        });
+
+
+        function getinformation0() {
+            var PersonalCodeNo = $("#personalno").val();
+            $("#fname").empty();
+            $("#lname").empty();
+            $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
+
+                if (data.message == "پرسنلی با این مشخصات یافت نشد" || data.message == "این شخص جزء پرسنل یگان شما نمیباشد") {
+                    alert(data.message);
+
+                }
+
+                if (data.message == "سرویس با خطا مواجه شد .دقایقی دیگر مجددا امتحان کنید") {
+
+                    alert(data.message);
+                }
+
+                else {
+                    //var name = $("#fname").val(data.firstName);
+                    //alert(name);
+                    $("#fname").val(data.firstName);
+                    $("#lname").val(data.lastName);
+                    //$("#codemeli").val(data.melliCode);
+                    //$("#darjeh").val(data.rankTitle);
+                }
+            });
+        };
+
+        function getinformation() {
+            var personalCodeNo = $("#personalno").val();
+
+            $("#fname").val('');
+            $("#lname").val('');
+
+            $.getJSON(`?handler=GetPersonalId&personalno=${personalCodeNo}`, function (res) {
+
+                if (!res.success) {
+                    alert(res.message || "پرسنلی با این مشخصات یافت نشد");
+                    return;
+                }
+
+                var data = res.data;
+
+                $("#fname").val(data.firstName || "");
+                $("#lname").val(data.lastName || "");
+                $("#rankTitle").val(data.rankTitle || "");
+            });
+        }
+
+        //function getinformation() {
+        //    var PersonalCodeNo = $("#personalno").val();
+        //    $("#fname").empty();
+        //    $("#lname").empty();
+        //    $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
+        //        $("#fname").val(data.firstName);
+        //        $("#lname").val(data.lastName);
+        //    });
+        //};
+    </script>
+
+    <script>
+        $('.select2-example').select2({
+            placeholder: 'Select'
+        });
+
+
+        //validation for upload File
+
+        $("#editUserViewModel_UserAvatar").change(function () {
+
+            var ext = this.value.match(/\.([^\.]+)$/)[1];
+            if (this.files[0].size > 2097152) {
+                alert("حجم فایل نمیتواند بیشتر از 2Mb باشد!!!");
+                this.value = '';
+            }
+            switch (ext) {
+
+                case 'png':
+                case 'jpeg':
+                case 'jpg':
+
+                    // readURL(this);
+
+                    break;
+                default:
+                    alert("فرمت فایل انتخاب شده نامعتبر است!!!");
+                    this.value = '';
+            }
+        });
+
+                        //end validation Upload FIle
+    </script>
+
+    }

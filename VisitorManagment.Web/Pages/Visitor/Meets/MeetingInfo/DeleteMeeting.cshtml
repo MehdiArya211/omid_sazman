@@ -1,0 +1,52 @@
+﻿@page "{id}"
+@model VisitorManagment.Web.Pages.Visitor.File.MeetingInfo.DeleteMeetingModel
+@{
+}
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>جلسه </h4>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+
+                <li class="breadcrumb-item">
+                    <a href="/Library">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">جلسات</a>
+                </li>
+
+                <li class="breadcrumb-item active" aria-current="page">حذف جلسه </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+
+<div class=" col-md-12">
+    <div class="card card-body">
+        <h4> حذف جلسه</h4>
+        <hr>
+        <br>
+        <div class="panel-body">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="Id" asp-for="@Model.deleteMeetingViewModel.Id" />
+
+                <dl class="dl-horizontal">
+                    <dt>عنوان : </dt>
+                    <dd style="padding-right:50px">@Model.deleteMeetingViewModel.Title</dd>
+                    <dd>
+                    <dt>موضوع : </dt>
+                    <dd style="padding-right:50px">@Model.deleteMeetingViewModel.Caption</dd>
+                    <dd>
+                        <button class="btn btn-danger" type="submit"><i class="ti-trash mr-2"></i> حذف</button>
+                        <a href="/Visitor/Meets/MeetingInfo/Index" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                    </dd>
+                </dl>
+            </form>
+        </div>
+        <!-- /.panel-body -->
+    </div>
+    <!-- /.panel -->
+</div>

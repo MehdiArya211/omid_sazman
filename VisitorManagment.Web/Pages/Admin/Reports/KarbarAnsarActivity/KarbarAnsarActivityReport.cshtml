@@ -1,0 +1,497 @@
+﻿@page
+@using Newtonsoft.Json;
+@using System.Linq;
+@model VisitorManagment.Web.Pages.Admin.Reports.KarbarAnsarActivity.KarbarAnsarActivityReportModel
+@{
+
+
+    var XLabels = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstModel.Select(x => x.DimensionOne).ToList());
+    var YValues = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstModel.Select(x => x.Quantity).ToList());
+
+    var XLabelsBar = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstModel1.Select(x => x.DimensionOne).ToList());
+    var YValuesBar = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstModel1.Select(x => x.Quantity).ToList());
+
+}
+
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>گزارش مدیریتی</h4>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ملاقات</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">گزارش مدیریتی</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div data-label="گزارش نحوه کارکرد کرشناسان قرارگاه انصار" class="demo-code-preview col-md-12 mb-1 ">
+   
+    <form method="post">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-control-label">از تاریخ </label>
+
+                    <input onclick="showStartDate()" id="startDate" class="form-control pwt-datepicker-input-element" placeholder=" تاریخ را انتخاب نمایید"
+                           value="" name="startDateSearch">
+                    <span>@Model.searchPageReportViewModel.StartDate</span>
+
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-control-label">تا تاریخ </label>
+
+                    <input onclick="showEndDate()" id="endDate" class="form-control pwt-datepicker-input-element" placeholder=" تاریخ را انتخاب نمایید"
+                           value="" name="endDateSearch">
+
+                    <span>@Model.searchPageReportViewModel.EndDate</span>
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-1">
+                <div class="form-group">
+                    <label class="form-control-label">فرمانده / کارشناس مورد نظر را انتخاب کنید</label>
+                    <select name="PrsnCd" id="FarmandehName" asp-items="ViewBag.FarmandehInfo" asp-for="@Model.searchPageReportViewModel.PrsnCd"
+                            class="form-control js-example-basic-single" required oninvalid="setCustomValidity('کارشناس  مورد نظر را انتخاب کنید')">
+                        <option value="">فرمانده / کارشناس مورد نظر را انتخاب نمایید</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <input class="btn btn-primary " type="submit" value="نمایش گزارش" />
+        <a href="javascript:window.print()" class="btn btn-success">
+            <i data-feather="printer" class="mr-2"></i> پرینت
+        </a>
+    </form>
+
+
+
+    <br />
+    <hr />
+    <div class="row">
+        <div class="col-md-9">
+            <br />
+            <br />
+            <div class="row">
+                <div class="col-6"><h4>درجه : <span style="color:blue;font-size:19px">@Model.dto.Rank</span></h4></div>
+                <div class="col-6"><h4>نام : <span style="color:blue;font-size:19px">@Model.dto.FullName</span></h4></div>
+                <br />
+                <br />
+                <div class="col-6"><h4>رسته : <span style="color:blue;font-size:19px">@Model.dto.BranchTitle</span></h4></div>
+                <div class="col-6"><h4>شغل : <span style="color:blue;font-size:19px">@Model.dto.Job</span></h4></div>
+                <br />
+                <br />
+                <div class="col-6"><h4>شماره کارگزینی : <span style="color:blue;font-size:19px">@Model.dto.PrsnCd</span></h4></div>
+                <div class="col-6"><h4>یگان : <span style="color:blue;font-size:19px">@Model.dto.Organ</span></h4></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="col-md-12 mb-1 ">
+                <div class="panel panel-default">
+                    <div class="card-img  panel-body">
+                        <img style="border:3px solid; border-radius:20px" width="165" height="180" id="imgAvatar" class="thumbnail" src="/UserAvatar/@ViewBag.avatar" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <hr />
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div style="margin-top:6px;margin-bottom:25px;text-align:center" class="col-md-8">
+                <br />
+                <div class="row">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>کل در خواست ها</th>
+                                <th>اقدام شده</th>
+                                <th>ارجاع شده به رده بالاتر</th>
+                                <th>عودت شده</th>
+                                <th>بررسی نشده</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>@Model.dto.TotalRequest</td>
+                                <td>@Model.dto.TotalResolveRequest</td>
+                                <td>@Model.dto.TotalNazarieh</td>
+                                <td>@Model.dto.TotalReturnRequest</td>
+                                <td>@Model.dto.TotalWaitingRequest</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div class="col-md-2"></div>
+            <div class="col-md-12">
+
+                <div class="box-body">
+
+                    <div class="chart-container">
+                        <canvas id="chart" style="width:100%; height:500px"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <br />
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            @*<div class="border-info" style="font-size:17px;color:blue;text-align:center">فراوانی مشکلات یگان @Model.dto.Organ</div>*@
+            <br />
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>وام</th>
+                        <th>مساعدت مالی</th>
+                        <th>انتقال</th>
+                        <th>رهایی</th>
+                        <th>ابقا</th>
+                        <th>مسکن سازمانی</th>
+                        <th>امتیاز پروژه مسکن</th>
+                        <th>استخدام</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model.dto.VamCount</td>
+                        <td>@Model.dto.MosaedatCount</td>
+                        <td>@Model.dto.TransferCount</td>
+                        <td>@Model.dto.RahaeiCount</td>
+                        <td>@Model.dto.EbghaCount</td>
+                        <td>@Model.dto.MaskanCount</td>
+                        <td>@Model.dto.RankMaskanCount</td>
+                        <td>@Model.dto.EastekhtamCount</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>اعاده به خدمت</th>
+                        <th>شکایات</th>
+                        <th>محکومیت ها</th>
+                        <th>مدارک تحصیلی</th>
+                        <th>دوره های نظامی</th>
+                        <th>مرخصی استفاده نشده</th>
+                        <th>مساعدت غیرمالی</th>
+                        <th>سایر موارد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model.dto.EadehBeKhetmatCount</td>
+                        <td>@Model.dto.ShekaiatCount</td>
+                        <td>@Model.dto.MahkomiatCount</td>
+                        <td>@Model.dto.MadrakTahsiliCount</td>
+                        <td>@Model.dto.CourseCount</td>
+                        <td>@Model.dto.MorakhasiNoUseCount</td>
+                        <td>@Model.dto.MoseadatAnyMoneyCount</td>
+                        <td>@Model.dto.OtherCount</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="box-body">
+
+                <div class="chart-container">
+                    <canvas id="chartBar" style="height:500px;width:100% "></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section Scripts{
+
+
+    <script type="text/javascript">
+
+
+        //=============================تاریخ تقویم =============================//
+        function showStartDate() {
+            $("#startDate").persianDatepicker({
+                months: ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
+                dowTitle: ["شنبه", "یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنج شنبه", "جمعه"],
+                shortDowTitle: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+                /*showGregorianDate: !1,*/
+                persianNumbers: !0,
+                selectedBefore: !1,
+                selectedDate: null,
+                startDate: null,
+                endDate: null,
+                prevArrow: '\u25c4',
+                nextArrow: '\u25ba',
+                theme: 'default',
+                alwaysShow: !1,
+                selectableYears: null,
+                selectableMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                cellWidth: 25, // by px
+                cellHeight: 20, // by px
+                fontSize: 13, // by px
+                isRTL: !1,
+                format: 'YYYY/MM/DD',
+                initialValue: true,
+                initialValueType: 'persian',
+
+                calendarPosition: {
+                    x: 0,
+                    y: 0,
+                },
+                onShow: function () { },
+                onHide: function () { },
+                onSelect: function () { },
+                onRender: function () { }
+            });
+        }
+
+
+        function showEndDate() {
+            $("#endDate").persianDatepicker({
+                months: ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
+                dowTitle: ["شنبه", "یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنج شنبه", "جمعه"],
+                shortDowTitle: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+                showGregorianDate: !1,
+                persianNumbers: !0,
+                formatDate: "YYYY/MM/DD",
+                selectedBefore: !1,
+                selectedDate: null,
+                startDate: null,
+                endDate: null,
+                prevArrow: '\u25c4',
+                nextArrow: '\u25ba',
+                theme: 'default',
+                alwaysShow: !1,
+                selectableYears: null,
+                selectableMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                cellWidth: 25, // by px
+                cellHeight: 20, // by px
+                fontSize: 13, // by px
+                isRTL: !1,
+                format: 'YYYY/MM/DD',
+
+
+                calendarPosition: {
+                    x: 0,
+                    y: 0,
+                },
+                onShow: function () { },
+                onHide: function () { },
+                onSelect: function () { },
+                onRender: function () { }
+            });
+        }
+        //=============================چاپ گزارش =============================//
+        function printdiv() {
+
+            var printContents = document.getElementById('print_this').innerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+
+        }
+
+            $(function () {
+        var chartName = "chart";
+            var ctx = document.getElementById(chartName).getContext('2d');
+            var data = {
+                 labels: @Html.Raw(XLabels),
+
+                    datasets: [{
+                        label: "Drinks Chart",
+                        backgroundColor: [
+                            'rgba(255, 26, 26)',
+                            'rgba(51, 204, 51)',
+                            'rgba(0, 115, 230)',
+                            'rgba(255, 206, 86)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 0, 0)',
+                            'rgba(0, 255, 0)',
+                            'rgba(0, 0, 255)',
+                            'rgba(192, 192, 192)',
+                            'rgba(255, 255, 0)',
+                            'rgba(255, 0, 255)'
+                        ],
+                        borderColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 0, 0)',
+                            'rgba(0, 255, 0)',
+                            'rgba(0, 0, 255)',
+                            'rgba(192, 192, 192)',
+                            'rgba(255, 255, 0)',
+                            'rgba(255, 0, 255)'
+                        ],
+                        borderWidth: 1,
+                        data: @Html.Raw(YValues)
+        }]
+                };
+
+    var options = {
+                    maintainAspectRatio: true,
+                };
+
+           var myChart = new  Chart(ctx, {
+                    options: options,
+                    data: data,
+                    type:'pie'
+
+                });
+            });
+
+            $(function () {
+        var chartName = "chartBar";
+            var ctx = document.getElementById(chartName).getContext('2d');
+            var data = {
+                    labels: @Html.Raw(XLabelsBar),
+                    datasets: [{
+                        label: "چارت عملکرد کارشناسان قرارگاه انصار",
+                        backgroundColor: [
+                            'rgba(255, 26, 26)',
+                            'rgba(51, 204, 51)',
+                            'rgba(0, 115, 230)',
+                            'rgba(255, 206, 86)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 0, 0)',
+                            'rgba(0, 255, 0)',
+                            'rgba(0, 0, 255)',
+                            'rgba(192, 192, 192)',
+                            'rgba(255, 255, 0)',
+                            'rgba(255, 0, 255)'
+                        ],
+                        borderColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 0, 0)',
+                            'rgba(0, 255, 0)',
+                            'rgba(0, 0, 255)',
+                            'rgba(192, 192, 192)',
+                            'rgba(255, 255, 0)',
+                            'rgba(255, 0, 255)'
+                        ],
+                        borderWidth: 1,
+                        data: @Html.Raw(YValuesBar)
+        }]
+                };
+
+    var options = {
+                    maintainAspectRatio: false,
+    };
+
+           var myChart = new  Chart(ctx, {
+                    options: options,
+                    data: data,
+                    type:'bar'
+
+                });
+            });
+
+
+      $('#personalno').blur(function (e) {
+
+        getinformation();
+
+        $('#loderPersonalCode').removeClass("d-none");
+    });
+
+    function getinformation() {
+        var PersonalCodeNo = $("#personalno").val();
+        if (PersonalCodeNo == "") {
+            alert("کد پرسنلی را وارد نمایید");
+            location.href = "/admin/reprot/farmandehactivityreport";
+        }
+        $("#fname").empty();
+        $("#lname").empty();
+        $("#address").empty();
+        //$("img").empty("#imgAvatar");
+
+        $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
+
+                $("#fname").val(data.firstName);
+                $("#lname").val(data.lastName);
+                $("#darjeh").val(data.rankTitle);
+
+
+            $('#loderPersonalCode').addClass("d-none");
+        });
+    };
+
+     //chart
+    function showReport() {
+
+        var PersonalCode = $("#personalno").val();
+        $.getJSON(`?handler=ShowReport&personalCode=${PersonalCode}`, (data) => {
+
+           // alert("g");
+        });
+    const lineChartDiv = document.getElementById("line");
+    const data = @Html.Raw(JsonConvert.SerializeObject(Model.BarLineDataSet));
+    const lineChart = new Chart(lineChartDiv,
+        {
+            type: "line",
+            data: {
+                labels: [" درخواست های بررسی شده", "درخواست های حل شده", "درخواست های ارجاع داده شده"],
+                datasets: data
+            },
+            options: {
+                elements: {
+                    bar: {
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    };
+
+    </script>
+
+}

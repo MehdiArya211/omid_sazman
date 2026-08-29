@@ -1,0 +1,168 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>1a42ded5-fa04-4b1f-bbac-c3e515261448</UserSecretsId>
+    <Nullable>annotations</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>false</Optimize>
+    <FileAlignment>512</FileAlignment>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors></WarningsAsErrors>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <DefineConstants />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\js\webrtc.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\AnsarMeeting.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\connection.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\site.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\steps.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\webdriver.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\webrtc.js" />
+    <Content Remove="wwwroot\onlineconvercsation\js\webrtcclient.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Pages\OnlineConversation\asset\fonts\Shabnam-Bold.woff" />
+    <Content Include="Pages\OnlineConversation\asset\fonts\Shabnam-Bold.woff2" />
+    <Content Include="Pages\OnlineConversation\asset\fonts\Shabnam-Light.woff" />
+    <Content Include="Pages\OnlineConversation\asset\fonts\Shabnam-Light.woff2" />
+    <Content Include="Pages\OnlineConversation\asset\fonts\Shabnam.woff" />
+    <Content Include="Pages\OnlineConversation\asset\fonts\Shabnam.woff2" />
+    <Content Include="Pages\OnlineConversation\asset\images\admin.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\attachment.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\circle.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\eraser.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\marker1.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\marker2.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\marker3.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\rectangle.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\textfield.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\canvas\thickness.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\chat.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\closeShare.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\chat_audio.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\close_circle.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\microphone.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\microphone_mute.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\more_filled.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\record.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\screenshot.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\video.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\controller\video_off.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\dashboard_items\calendar.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\dashboard_items\settings.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\dashboard_items\text-files.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\dashboard_items\user.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\file.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\grid\all-in-one-small.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\grid\all-in-one.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\grid\default.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\header.png" />
+    <Content Include="Pages\OnlineConversation\asset\images\illustration.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\admin.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\attachment.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\chat.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\chat_audio.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\close_circle.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\microphone.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\microphone_mute.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\more_filled.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\record.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\screenshot.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\video.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\controller\video_off.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\file.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\illustration.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\logo.png" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\people.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\resize.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\send.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\images\teacher.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\IRI.Army_Ground_Force_Seal.svg.png" />
+    <Content Include="Pages\OnlineConversation\asset\images\logo.png" />
+    <Content Include="Pages\OnlineConversation\asset\images\notification-box.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\notification.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\people.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\phone.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\portraits\1.jpg" />
+    <Content Include="Pages\OnlineConversation\asset\images\resize.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\resizeScreen.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\send.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\teacher.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\user.svg" />
+    <Content Include="Pages\OnlineConversation\asset\images\vue.svg" />
+    <Content Include="wwwroot\.vscode\settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Stimulsoft.Reports.Web.NetCore" Version="2019.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VisitorManagment.Core\VisitorManagment.Core.csproj" />
+    <ProjectReference Include="..\VisitorManagment.DataLayer\VisitorManagment.DataLayer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\Admin\UserPanel\" />
+    <Folder Include="Pages\Visitor\Poshtibani\Ticket\" />
+    <Folder Include="Pages\Visitor\Poshtibani\SoalatMotadavel\" />
+    <Folder Include="Pages\Visitor\Poshtibani\PanelChatRoom\" />
+    <Folder Include="wwwroot\FileAttachment\" />
+    <Folder Include="wwwroot\AttachDastor\" />
+    <Folder Include="wwwroot\FishAttachment\" />
+    <Folder Include="wwwroot\LBK\Attachment\" />
+    <Folder Include="wwwroot\LBK\FishAttachment\" />
+    <Folder Include="wwwroot\LBK\AttachDastor\" />
+    <Folder Include="wwwroot\VoiceRecords\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Admin\Users\DeleteUser.cshtml" />
+    <None Include="Pages\Admin\Users\EditUser.cshtml" />
+    <None Include="Pages\Admin\Users\Index.cshtml" />
+    <None Include="Pages\Admin\Users\Logout.cshtml" />
+    <None Include="Pages\Visitor\File\PersonalNezami\CreateFile.cshtml" />
+    <None Include="Pages\Visitor\File\PersonalNezami\DeleteFile.cshtml" />
+    <None Include="Pages\Visitor\File\PersonalNezami\EditFile.cshtml" />
+    <None Include="Pages\Visitor\File\PersonalNezami\ListFile.cshtml" />
+    <None Include="Pages\Visitor\Meets\MeetingInfo\HameshInfoMeetingHold\ListPervHamesh.cshtml" />
+    <None Include="Pages\Visitor\Meets\MeetingInfo\CreateMeeting.cshtml" />
+    <None Include="Pages\Visitor\Meets\MeetingInfo\DeleteMeeting.cshtml" />
+    <None Include="Pages\Visitor\Meets\MeetingInfo\EditMeeting.cshtml" />
+    <None Include="Pages\Visitor\Meets\MeetingInfo\Index.cshtml" />
+    <None Include="Pages\Visitor\Meets\MeetingInfo\MeetingHold\CreateMeetingHold.cshtml" />
+    <None Include="Pages\Visitor\Meets\ReferenceToMeeting\AddMorePersonToMeetingHold.cshtml" />
+    <None Include="Pages\Visitor\Meets\ReferenceToMeeting\CreateReferenceToMeeting.cshtml" />
+    <None Include="Pages\Visitor\Meets\ReferenceToMeeting\EditReferenceToMeeting.cshtml" />
+    <None Include="Pages\Visitor\Meets\ReferenceToMeeting\FinalApprovalMeeting.cshtml" />
+    <None Include="Pages\Captcha\CaptchaService.cs" />
+    <None Include="wwwroot\assets\Datepiker\persian-date.js" />
+    <None Include="wwwroot\assets\Datepiker\persian-datepicker.js" />
+  </ItemGroup>
+
+</Project>

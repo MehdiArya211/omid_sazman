@@ -1,0 +1,49 @@
+﻿@model VisitorManagment.Core.DTOs.ListHameshViewModel
+
+@using VisitorManagment.Core.Convertors
+@{
+    var j = 0;
+}
+
+<table id="dataTable" class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ردیف</th>
+            <th>فرستنده</th>
+            <th>گیرنده</th>
+            <th>عملیات انجام شده(نوع اقدام)</th>
+            <th>متن هامش</th>
+            <th>زمان ایجاد</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.hameshes != null)
+        {
+            @foreach (var hamesh in Model.hameshes)
+            {
+
+                <tr>
+                    <td>@(j+=1)</td>
+                    <td>@hamesh.RankTitlePersonal @hamesh.FirstNamePersonel @hamesh.LastNamePersonel</td>
+                    <td>@hamesh.RcvrUserName</td>
+                    <td>@hamesh.ActionTypeTitle</td>
+                    <td>@hamesh.UserDesc</td>
+                    <td>@hamesh.RegDate.ToShamsi()</td>
+
+                </tr>
+            }
+        }
+
+        else
+        {
+            <tr>
+                <td>1</td>
+                <td>موردی یافت نشد</td>
+
+            </tr>
+        }
+
+
+    </tbody>
+</table>
+

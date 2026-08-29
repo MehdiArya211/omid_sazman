@@ -1,0 +1,155 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+    <partial name="_MetaTags" />
+    <title>سامانه ملاقات عمومی (امید)</title>
+
+    <partial name="_Styles" />
+</head>
+<body>
+    <!-- begin::preloader-->
+    <div class="preloader">
+        <div class="preloader-icon"></div>
+    </div>
+    <!-- end::preloader -->
+    <!-- begin::header -->
+    <div class="header">
+
+        <div>
+            <ul class="navbar-nav">
+
+                <!-- begin::navigation-toggler -->
+                <li class="nav-item navigation-toggler">
+                    <a href="#" class="nav-link" title="بستن منو">
+                        <i data-feather="arrow-left"></i>
+                    </a>
+                </li>
+                <li class="nav-item navigation-toggler mobile-toggler">
+                    <a href="#" class="nav-link" title="نمایش منو ">
+                        <i data-feather="menu"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <!-- end::header -->
+    <!-- begin::main -->
+    <div id="main">
+
+        <!-- begin::navigation -->
+        <div class="navigation">
+
+            <div class="navigation-menu-tab">
+                <div>
+                    <div class="navigation-menu-tab-header" data-toggle="tooltip" title="@User.Identity.Name" data-placement="right">
+                        <a href="/#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
+                            <figure class="avatar avatar-sm">
+                                <img src="/UserAvatar/@User.FindFirst("UserAvatar").Value??/useravatar/Default.jpg" class="rounded-circle" alt="avatar">
+                            </figure>
+                        </a>
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <ul>
+                        <li>
+                            <a class="active" href="#" data-toggle="tooltip" data-placement="right" title="صفحات"
+                               data-nav-target="#dashboards">
+                                <i data-feather="bar-chart-2"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li>
+                            <div>
+                                <div class="navigation-menu-tab-header" data-toggle="tooltip" title="سازمان فناوری اطلاعات نزاجا" data-placement="right">
+                                    <a href="/#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
+                                        <figure class="avatar avatar-sm">
+                                            <img src="/assets/media/image/sazeman.png" class="rounded-circle" alt="avatar">
+                                        </figure>
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="/Admin/Users/Logout" data-toggle="tooltip" data-placement="right" title="خروج">
+                                <i data-feather="log-out"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- begin::navigation menu -->
+            <div class="navigation-menu-body">
+
+                <!-- begin::navigation-logo -->
+                <div>
+                    <div id="navigation-logo">
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+
+                            <div class="loggein ">
+                                <i class="zmdi zmdi-account"></i><a href="#"> @User.Identity.Name  <br> <p style="text-align:center"> خوش آمدید </p> </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <!-- end::navigation-logo -->
+
+                <div class="navigation-menu-group">
+                    <div class="open" id="dashboards">
+                        <ul>
+                            @await Component.InvokeAsync("Permission", int.Parse(User.FindFirst("Id").Value))
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- end::navigation menu -->
+
+        </div>
+        <div class="main-content">
+            @RenderBody()
+        </div>
+
+    </div>
+
+    <div class="colors">
+        <!-- To use theme colors with Javascript -->
+        <div class="bg-primary"></div>
+        <div class="bg-primary-bright"></div>
+        <div class="bg-secondary"></div>
+        <div class="bg-secondary-bright"></div>
+        <div class="bg-info"></div>
+        <div class="bg-info-bright"></div>
+        <div class="bg-success"></div>
+        <div class="bg-success-bright"></div>
+        <div class="bg-danger"></div>
+        <div class="bg-danger-bright"></div>
+        <div class="bg-warning"></div>
+        <div class="bg-warning-bright"></div>
+    </div>
+
+
+    
+    <partial name="_Script">
+        @RenderSection("Scripts", false)
+        <!-- date picker-->
+        @RenderSection("DatePicker", required: false)
+        <!--end date picker-->
+        <!-- search auto complete-->
+        @RenderSection("autocompletesearch", required: false)
+        <!--end date picker-->
+        <!-- GetInformationPersonal-->
+        @RenderSection("GetInformationPersonal", required: false)
+        <!--end GetInformationPersonal-->
+
+
+
+</body>
+
+</html>

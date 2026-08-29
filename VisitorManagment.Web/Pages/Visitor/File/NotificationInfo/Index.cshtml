@@ -1,0 +1,78 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Visitor.File.NotificationInfo.IndexModel
+
+@{
+    ViewData["Title"] = "لیست اطلاعیه‌ها";
+}
+
+
+<!-- begin::main -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>لیست اطلاعیه ها</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="#"> مدیریت درخواست ملاقات</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت اطلاعیه ها</a>
+                </li>
+
+
+                <li class="breadcrumb-item active" aria-current="page">لیست اطلاعیه ها</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="col-md-12" style="margin: 10px 0;">
+                        <a style="color:white" asp-page="CreateUsers" class="btn btn-success btn-pulse">
+                            <i class="ti-plus mr-2"></i>  افزودن اطلاعیه جدید
+                        </a>
+                        <br>
+                    </div>
+                    <hr />
+
+
+
+                    <div class="table-responsive">
+                        <table id="dataTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ردیف</th>
+                                    <th>عنوان</th>
+                                    <th>تاریخ انتشار</th>
+
+                                    <th class="amaliat">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var notification in Model.model)
+                                {
+                                    <tr>
+                                        <td>@notification.Title</td>
+                                        <td>@notification.PublishDate.ToShortDateString()</td>
+                                        <td>
+                                            <form method="post" asp-page-handler="MarkAsRead" asp-route-notificationId="@notification.Id">
+                                                <button type="submit">مشاهده</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <a asp-page="./AllNotifications">مشاهده تمام اطلاعیه‌ها</a>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

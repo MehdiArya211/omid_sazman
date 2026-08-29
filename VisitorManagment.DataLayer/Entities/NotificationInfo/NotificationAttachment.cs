@@ -1,0 +1,16 @@
+﻿using VisitorManagment.DataLayer.Entities.NotificationInfo;
+
+namespace VisitorManagment.DataLayer.Entities
+{
+    public class NotificationAttachment
+    {
+        public int Id { get; set; }
+        public int NotificationId { get; set; }
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
+        public string FileType { get; set; }
+        public long FileSize { get; set; }
+
+        public Notification Notification { get; set; }
+    }
+}

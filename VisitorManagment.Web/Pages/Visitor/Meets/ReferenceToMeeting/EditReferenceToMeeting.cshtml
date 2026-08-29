@@ -1,0 +1,234 @@
+﻿@page "{id}"
+@using VisitorManagment.Core.Convertors
+@model VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting.EditReferenceToMeetingModel
+@{
+    var i = 0;
+}
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4></h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">جلسات</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">نمایش شرکت کنندگان در جلسه</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- end::page-header -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4> لیست شرکت کنندگان در جلسه</h4>
+                    <hr>
+                    <a href="/Visitor/Meets/MeetingInfo/Index" style="color:white ; float:left" class="ml-2 btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+
+                    <a href="javascript:window.print()" class="btn btn-outline-warning m-l-10">
+                        <i data-feather="printer" class="mr-2"></i> پرینت
+                    </a>
+
+                    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+                        @{
+                            if (Model.listviewmodel.IsOkayMeeting == false)
+                            {
+                                <h4 class="text-danger">این جلسه هنوز به تایید نهایی نرسیده است.</h4>
+                            }
+
+                        }
+                        <br>
+                        @if ((User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "2") && (Model.listviewmodel.IsOkayMeeting == false))
+                        {
+                            if (Model.listviewmodel.IsOkayMeeting == false)
+                            {
+                                <a href="/Visitor/Meets/ReferenceToMeeting/AddMorePersonToMeetingHold/@Model.listviewmodel.MeetingId" style="color:white" class="btn btn-success btn-pulse" data-placement="right"><i class="ti-plus mr-2"></i>اضافه کردن به جلسه </a>
+                                <a href="/Visitor/Meets/ReferenceToMeeting/FinalApprovalMeeting/@Model.listviewmodel.MeetingId" data-placement="right" style="color:white" class="btn btn-primary ml-2"><i class="ti-check-box mr-2"></i>تایید نهایی شرکت کنندگان در جلسه</a>
+                            }
+                            else
+                            {
+
+                                <h4 class="text-success">این جلسه  توسط @Model.listviewmodel.FullName  به تایید نهایی رسیده است.</h4><br>
+                            }
+                        }
+
+
+
+                        <div style="overflow:auto" id="print_this">
+
+                            <table id="dataTable" class="table table-striped table-bordered">
+
+                                <thead>
+                                    <tr>
+
+                                        <th>ردیف</th>
+                                        <th>مشخصات</th>
+                                        <th>کد پرسنلی</th>
+                                        <th>یگان عمده</th>
+                                        <th>یگان خدمتی</th>
+                                        <th>وضعیت خدمت</th>
+                                        <th>موضوع درخواست</th>
+                                        <th>اولویت</th>
+                                        <th>زمان ایجاد</th>
+                                        <th>تلفن</th>
+                                        @{
+                                            if (Model.listviewmodel.IsOkayMeeting == false)
+                                            {
+                                                <th>عملیات</th>
+                                            }
+                                        }
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    @foreach (var file in Model.listviewmodel.files)
+                                    {
+                                        <tr>
+                                            <td>@(i+=1)</td>
+                                            <td>@file.RankTitle  @file.BranchTitle  @file.FirstName @file.LastName</td>
+                                            <td>@file.PersonalCode</td>
+                                            <td>@file.UnitTitle</td>
+                                            <td class="text-width-align">@file.UnitDutyTitle</td>
+                                            <td>@file.StatuseTitle</td>
+                                            <td>@file.ReqSubTitle</td>
+                                            <td>@file.PriorityTitle</td>
+                                            <td>@file.RegDate.ToShamsi()</td>
+                                            <td>@file.Phone</td>
+                                            @{
+                                                if ((User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "2") && (Model.listviewmodel.IsOkayMeeting == false))
+                                                {
+                                                    <td class="text-center">
+                                                        <button asp-page-handler="DeletePersonFromMeeting" value="@file.Id" name="FileId" title="حذف از جلسه"><i class="fa fa-trash text-danger"></i></button>
+                                                    </td>
+                                                }
+                                            }
+
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <br />
+
+                    </form>
+                    <br />
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*modal Send*@
+<div class="modal fade" id="ModalSend" tabIndex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class=" modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">ارسال درخواست ملاقات</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <div class=" modal-body justify-content-sm-around ">
+                <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+
+                    <div class="form-row">
+
+                        <div class="mr-md-4" id="gridsendlist">
+                            @*users=>view model in Handler=>public List<Users> users { get; set; }*@
+                            <partial name="_GridSendListToFarmandeNezaja" model="@Model.users" />
+                        </div>
+
+
+                    </div>
+                    <br>
+
+                    <button class="btn btn-success" type="submit" asp-page-handler="SendFileToFarmandehiNezaja"><i class="ti-check-box mr-2"></i> ارسال</button>
+
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    بستن
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@*end modal*@
+
+
+@section Scripts
+{
+
+    <script>
+        function printdiv() {
+
+            var printContents = document.getElementById('print_this').innerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+
+        }
+
+        function Sendfiles() {
+
+
+           // alert("hello");
+
+            $(function () {
+               // alert("hello2");
+
+                //*********************
+
+
+                //$.getJSON(`?handler=GetListFileForSendToMethodPost`, (data) => {
+
+                //    alert("hello");
+                //    alert(data);
+                //});
+
+
+                @*$.ajax({
+                    url: "@Url.Page("EditReferenceToMeeting")?handler=GetListFileForSendToMethodPost",
+                method: "Get",
+                     data: {},
+                success: function (data) {
+
+                    //$('#gridsendlist').html('');
+                    //$('#gridsendlist').html(data);
+
+                    }
+                });*@
+
+
+            //*********************
+
+                 $.ajax({
+                     url: "@Url.Page("EditReferenceToMeeting")?handler=GetRecieverUser",
+                method: "Get",
+                     data: {},
+                success: function (data) {
+
+                    $('#gridsendlist').html('');
+                    $('#gridsendlist').html(data);
+
+                    }
+                });
+            });
+        }
+
+    </script>
+
+}

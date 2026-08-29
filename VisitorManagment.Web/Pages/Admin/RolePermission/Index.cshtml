@@ -1,0 +1,95 @@
+﻿@page
+@model VisitorManagment.Web.Pages.Admin.RolePermission.IndexModel
+@{
+     Layout = "_Layout";
+}
+    <!-- begin::page-header -->
+    <div class="page-header">
+        <div class="container-fluid d-sm-flex justify-content-between">
+            <h4>لیست اقدامات</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="#">دسترسی</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">ایجاد دسترسی</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- end::page-header -->
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>ایجاد دسترسی</h4>
+                        <hr>
+
+                        <form class="needs-validation" novalidate method="post" enctype="multipart/form-data">
+                            
+                            <div class="form-row">
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="rolelist"> انتخاب نقش :</label>
+                                    <select asp-items="ViewBag.RoleList" id="Rolelist" name="RoleListId"  
+                                    class="form-control js-example-basic-single" required="" multiple>
+                                        <option value="">نقش را انتخاب کنید</option>
+                                    </select>
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        دسترسی ها  را انتخاب کنید
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="roleListEtayi">دسترسی های اعطا شده :</label>
+                                    <select asp-items="ViewBag.PermissionList" asp-for="createUserAccessViewModel.RoleId" name="PermissionListId"
+                                    id="PermissionList" class="form-control  " multiple>
+                                    </select>
+                                    <div class="valid-feedback">
+                                        عالی!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        دسترسی ها  را انتخاب کنید
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-success" type="submit"><i class="ti-check-box mr-2"></i> ثبت</button>
+                            <a href="/Visitor/File/PersonalNezami/ListFile" style="color:white" class="btn btn-outline btn-warning"><i class="ti-back-left mr-2"></i> بازگشت</a>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    
+@section GetInformationPersonal
+{
+    <script>
+
+
+
+        @*//multiple select*@
+            $(function () {
+                $("#RoleList").select2({
+                    placeholder: '  نقش ها را انتخاب کنید   '
+                });
+            });
+
+                    @*//multiple select*@
+            $(function () {
+                $("#PermissionList").select2({
+                    placeholder: '  دسترسی ها را انتخاب کنید   '
+                });
+            });
+    </script>
+
+}

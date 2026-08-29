@@ -1,0 +1,258 @@
+﻿@page
+@using Newtonsoft.Json;
+@using System.Linq;
+@model VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllGha.ComparisonGhaModel
+@{
+
+    var XLabelsFproblem = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstChartModel.Select(x => x.DimensionOne).ToList());
+    var YValuesFproblem = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstChartModel.OrderBy(x=>x.Quantity).Select(x => x.Quantity).ToList());
+
+}
+
+<!-- begin::page-header -->
+<div class="page-header">
+    <div class="container-fluid d-sm-flex justify-content-between">
+        <h4>گزارش مدیریتی</h4>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+
+                <li class=" breadcrumb-item">
+                    <a href="/Visitor/Index">صفحه اصلی</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">مدیریت درخواست ملاقات</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">گزارش مدیریتی</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div data-label="گزارش نحوه کارکرد فرماندهان" class="demo-code-preview col-md-12 mb-1 ">
+
+    <form method="post">
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-control-label">از تاریخ </label>
+
+                    <input onclick="showStartDate()" id="startDate" class="form-control pwt-datepicker-input-element"
+                           placeholder=" تاریخ را انتخاب نمایید" asp-for="@Model.searchPageReportViewModel.StartDate"
+                           value="" name="startDateSearch">
+                    <span>@Model.searchPageReportViewModel.StartDate</span>
+
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-control-label">تا تاریخ </label>
+
+                    <input onclick="showEndDate()" id="endDate" class="form-control pwt-datepicker-input-element"
+                           placeholder=" تاریخ را انتخاب نمایید" asp-for="@Model.searchPageReportViewModel.EndDate"
+                           value="" name="endDateSearch">
+                    <span>@Model.searchPageReportViewModel.EndDate</span>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 mb-1">
+                <div class="form-group">
+                    <label class="form-control-label">  قرارگاه را انتخاب کنید</label>
+                    <select name="listGha" asp-for="@Model.searchPageReportViewModel.CodeGha" id="AllListGha" asp-items="ViewBag.AllListGha"
+                            class="form-control js-example-basic-single" multiple required>
+                        <option value="">  قرارگاه را انتخاب نمایید</option>
+                    </select>
+
+
+                </div>
+                <div class="form-group">
+                    <select id="filestatusid" asp-items="ViewBag.ActionType" asp-for="@Model.searchPageReportViewModel.ActionTypeId"
+                            name="actionTypeId" class="form-control " required
+                            oninvalid="this.setCustomValidity('لطفا نوع اقدام را انتخاب فرمایید')"
+                            oninput="this.setCustomValidity('')">
+
+                        <option value="" selected disabled> نوع اقدام را انتخاب نمایید</option>
+
+                    </select>
+
+                </div>
+            </div>
+
+        </div>
+
+        <input class="btn btn-primary " type="submit" value="نمایش گزارش" />
+        <a href="javascript:window.print()" class="btn btn-success">
+            <i data-feather="printer" class="mr-2"></i> پرینت
+        </a>
+    </form>
+
+    <br />
+    <hr />
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="box-body">
+
+                <div class="chart-container">
+                    <canvas id="chartBar" style="width:100%"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section Scripts{
+
+
+    <script type="text/javascript">
+
+
+        //=============================تاریخ تقویم ===================================//
+        function showStartDate() {
+            $("#startDate").persianDatepicker({
+                months: ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
+                dowTitle: ["شنبه", "یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنج شنبه", "جمعه"],
+                shortDowTitle: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+                /*showGregorianDate: !1,*/
+                persianNumbers: !0,
+                selectedBefore: !1,
+                selectedDate: null,
+                startDate: null,
+                endDate: null,
+                prevArrow: '\u25c4',
+                nextArrow: '\u25ba',
+                theme: 'default',
+                alwaysShow: !1,
+                selectableYears: null,
+                selectableMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                cellWidth: 25, // by px
+                cellHeight: 20, // by px
+                fontSize: 13, // by px
+                isRTL: !1,
+                format: 'YYYY/MM/DD',
+                initialValue: true,
+                initialValueType: 'persian',
+
+                calendarPosition: {
+                    x: 0,
+                    y: 0,
+                },
+                onShow: function () { },
+                onHide: function () { },
+                onSelect: function () { },
+                onRender: function () { }
+            });
+        }
+
+        function showEndDate() {
+            $("#endDate").persianDatepicker({
+                months: ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
+                dowTitle: ["شنبه", "یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنج شنبه", "جمعه"],
+                shortDowTitle: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+                showGregorianDate: !1,
+                persianNumbers: !0,
+                formatDate: "YYYY/MM/DD",
+                selectedBefore: !1,
+                selectedDate: null,
+                startDate: null,
+                endDate: null,
+                prevArrow: '\u25c4',
+                nextArrow: '\u25ba',
+                theme: 'default',
+                alwaysShow: !1,
+                selectableYears: null,
+                selectableMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                cellWidth: 25, // by px
+                cellHeight: 20, // by px
+                fontSize: 13, // by px
+                isRTL: !1,
+                format: 'YYYY/MM/DD',
+
+
+                calendarPosition: {
+                    x: 0,
+                    y: 0,
+                },
+                onShow: function () { },
+                onHide: function () { },
+                onSelect: function () { },
+                onRender: function () { }
+            });
+        }
+        //=============================چاپ گزارش =====================================//
+        function printdiv() {
+
+            var printContents = document.getElementById('print_this').innerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+
+        }
+
+        //=============================   نمودار میله ای =============================//
+
+        $(function () {
+        var chartName = "chartBar";
+            var ctx = document.getElementById(chartName).getContext('2d');
+            var data = {
+                    labels: @Html.Raw(XLabelsFproblem),
+                    datasets: [{
+                        label: "چارت ارزیابی ",
+                        backgroundColor: [
+                            'rgba(255, 26, 26)',
+                            'rgba(51, 204, 51)',
+                            'rgba(0, 115, 230)',
+                            'rgba(255, 206, 86)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 0, 0)',
+                            'rgba(0, 255, 0)',
+                            'rgba(0, 0, 255)',
+                            'rgba(192, 192, 192)',
+                            'rgba(255, 255, 0)',
+                            'rgba(255, 0, 255)'
+                        ],
+                        borderColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 0, 0)',
+                            'rgba(0, 255, 0)',
+                            'rgba(0, 0, 255)',
+                            'rgba(192, 192, 192)',
+                            'rgba(255, 255, 0)',
+                            'rgba(255, 0, 255)'
+                        ],
+                        borderWidth: 2,
+                        data: @Html.Raw(YValuesFproblem)
+        }]
+                };
+
+    var options = {
+                    maintainAspectRatio: false,
+    };
+
+            var myChart = new Chart(ctx, {
+                    options: options,
+                    data: data,
+                    type:'bar'
+                });
+            });
+
+    </script>
+
+}

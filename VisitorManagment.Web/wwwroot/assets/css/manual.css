@@ -1,0 +1,60 @@
+﻿.AllIcon 
+{
+    text-align: center;
+    padding: 2px;
+    margin-right:5px;
+}
+
+.AllIcon1 {
+    margin-right: 15px;
+}
+.AllIcon2 {
+    margin-right: 15px;
+    margin-top:5px;
+}
+.Icon3 {
+    margin-top: 5px;
+}
+
+.status1
+{
+    color:red;
+}
+.status2
+{
+    color:green;
+}
+.status3
+{
+    color:darkorange;
+}
+.amaliat
+{
+    width:100px;
+}
+.buttonchangstatus
+{
+    width:120px;
+    font-size:15px;
+    text-align:center;
+}
+
+.divChangestatus
+{
+    text-align:center;
+}
+
+.divtamdid
+{
+   padding-right:10px;
+}
+
+.divtamdidall {
+    border-radius: 20px;
+    padding-right: 10px;
+    padding-bottom:20px;
+}
+label{
+    font-weight:500;
+}
+

@@ -1,0 +1,195 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+    Layout = "";
+}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>سامانه امید (رسیدگی به درخواست ها و مشکلات کارکنان نزاجا)</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/LOGO.png" />
+
+    <!-- Plugin styles -->
+    <link rel="stylesheet" href="/vendors/bundle.css" type="text/css">
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="/assets/css/app.min.css" type="text/css">
+</head>
+<body class="form-membership" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <style>
+
+
+        canvas {
+            pointer-events: none;
+        }
+    </style>
+    <div class="form-wrapper ">
+
+        <!-- logo -->
+        <div id="logo">
+            <img class="logo" src="/LOGO.png" width="100" height="110" alt="image">
+            <img class="logo-dark" src="/assets/media/image/logo-dark.html" alt="image">
+        </div>
+        <!-- ./ logo -->
+
+        <h5>سامانه ملاقات عمومی(امید)</h5>
+
+        <!-- form -->
+        <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
+            <div class="form-group">
+                <input asp-for="LoginViewModel.UserName" type="text" class="form-control" placeholder="نام کاربری " required autofocus>
+                @*<span style="color:red" asp-validation-for="LoginViewModel.UserName"></span>*@
+                <div class="valid-feedback">
+                </div>
+                <div class="invalid-feedback">
+                    نام کاربری را وارد کنید!
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input asp-for="LoginViewModel.Password" type="password" class="form-control" placeholder="رمزعبور" required>
+                <div class="valid-feedback">
+                </div>
+                <div class="invalid-feedback">
+                    کلمه عبور را وارد کنید!
+                </div>
+            </div>
+
+            @*********************************************************** Captcha ***************************************@
+@*            <div id="blkCaptcha" style="display:block;">
+                <div id="captcha"></div>
+                <div class="row">
+                    <div class="col-md-9">
+                        <input type="text" id="txtCaptcha" class="form-control" required placeholder="کد امنیتی را وارد کنید" />
+                    </div>
+                    <div class="col-md-2">
+                        <input type="button" onclick="validateCaptcha()" class="btn btn-danger" value="تأیید"/>
+                    </div>
+                </div>
+            </div>*@
+            @*<label for="email" class="input-label">لطفا کد امنیتی را وارد کنید</label>*@
+            @*<div class="form-group">*@
+            @*<img src="~/Captcha" style="float:left;" />*@
+            @*id="img-captcha"*@
+            @*src="~/Captcha"*@
+            @*<div class="col-6">*@
+            @*<input type="text" class="form-control" placeholder="Captcha Code" asp-for="LoginViewModel.CaptchaCode" maxlength="4" required>*@
+            @*</div>*@
+            @*</div>*@
+            @************************************************************************************************************@
+
+            <div id="blkLoginButton" >
+                <div class="form-group d-flex justify-content-between">
+                    <div class="custom-control custom-checkbox">
+                        <input asp-for="LoginViewModel.RemmemberMe" type="checkbox" class="custom-control-input" checked="" id="customCheck1">
+                        <label class="custom-control-label" for="customCheck1">مرا به خاطر بسپار</label>
+                    </div>
+                    @* <a asp-page="ForgetPassword">بازگردانی رمزعبور</a>*@
+                </div>
+
+                <div class="form-group">
+                    <button style="padding: 15px;" class="btn btn-primary btn-block ">ورود</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="bold" style="padding: 8px; border:1px solid gray ; border-radius:10px">
+            <a href="/downloadapp/Chrome.exe" target="_blank" title="دانلود گوگل کروم">
+                <img width="30" height="30" src="/downloadapp/chrome-1.png" alt="Google_Chrome">
+                <span style="color:blue">  برای استفاده از سامانه مرورگر را دانلود کنید</span>
+            </a>
+        </div>
+        <br>
+        <div class="bold">
+            <span style="margin:0px">سازمان فناوری اطلاعات م فاوا نزاجا</span>
+            <br />
+            <span style="font-size:12px">Copy Right 2022-2023 ITO</span>
+            <br />
+            @* <span>توسعه دهنده مهدی آریانژاد</span>*@
+        </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- Plugin scripts -->
+    <script src="/vendors/bundle.js"></script>
+
+    <!-- App scripts -->
+    <script src="/assets/js/app.min.js"></script>
+
+    <script>
+        //var code;
+        //function createCaptcha() {
+        //    document.getElementById('captcha').innerHTML = "";
+        //    var charsArray = "0123456789";
+        //    var lenghtOtp = 6;
+        //    var captcha = [];
+
+        //    for (var i = 0; i < lenghtOtp; i++) {
+
+        //        var index = Math.floor(Math.random() * charsArray.length + 1);
+
+        //        if (captcha.indexOf(charsArray[index]) == -1)
+        //            captcha.push(charsArray[index]);
+        //        else
+        //            i--;
+        //    }
+
+        //    var canv = document.createElement("canvas");
+        //    canv.id = "captcha";
+        //    canv.width = 100;
+        //    canv.height = 50;
+        //    var ctx = canv.getContext("2d");
+        //    ctx.font = "25px Georgia";
+        //    ctx.strokeText(captcha.join(""), 0, 30);
+
+        //    code = captcha.join("");
+        //    document.getElementById("captcha").appendChild(canv);
+        //}
+
+        //function validateCaptcha() {
+        //    var blkLoginButton = document.getElementById("blkLoginButton");
+        //    var blkCaptcha = document.getElementById("blkCaptcha");
+        //    var btnLogin = document.getElementById("btnLogin");
+        //    event.preventDefault();
+            
+        //    var txtCaptcha = document.getElementById("txtCaptcha");
+        //    if (txtCaptcha.value == code) {
+        //        blkLoginButton.style = "display:block";
+        //        blkCaptcha.style = "display:none";
+        //        btnLogin.removeAttribute("disabled");
+        //    }
+        //    else {
+        //        blkLoginButton.style = "display:none";
+        //        blkCaptcha.style = "display:block";
+        //        btnLogin.attributes["disabled"] = "disabled";
+        //        createCaptcha();
+        //    }
+        //}
+
+
+
+                                //$("#img-captcha").click(function () {
+                                //    alert("")
+                                //    resetCaptchaImage();
+                                //});
+
+                                //function resetCaptchaImage() {
+                                //    $("#img-captcha").attr("src", "~/Captcha");
+                                //}
+    </script>
+</body>
+
+</html>

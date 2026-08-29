@@ -1,0 +1,578 @@
+﻿@model VisitorManagment.Core.DTOs.CollectionSpecificationPersonalViewModel
+
+@using VisitorManagment.Core.Convertors
+@{
+    var j = 0;
+}
+@*@if (Model != null)
+    {*@
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-body">
+
+
+            <ul class="nav nav-tabs  mb-4 modal-title" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#PrsnInfo" role="tab"
+                       aria-controls="clasic" aria-selected="true">مشخصات پرسنلی</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link " data-toggle="tab" href="#infoFile" role="tab"
+                       aria-controls="articles" aria-selected="true">سوابق ملاقات قبل</a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="Tashvighat(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Tashviq" role="tab"
+                       aria-controls="articles" aria-selected="false">
+                        تشویقات
+                        <span id="loderTashvighat" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="Tanbihat(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Tanbih" role="tab"
+                       aria-controls="photos" aria-selected="false">
+                        تنبیهات
+                        <span id="loderTanbihat" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="Enteghal(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Enteghal" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        انتقالات
+                        <span id="loderEnteghal" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="Aeleh(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Aeleh" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        عائله
+                        <span id="loderAeleh" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="GetTashilatMaskan(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Maskan" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        تسهیلات مسکن
+                        <span id="loderTashilatMaskan" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#Manazel" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        منزل سازمانی
+                        @*<span id="loderTashvighat" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>*@
+                    </a>
+                </li>
+
+
+
+                @*<li class="nav-item">
+                <a class="nav-link " data-toggle="tab" href="#PrsnInfo" role="tab"
+                aria-controls="clasic" aria-selected="true">جانبازی</a>
+                </li>*@
+
+                <li class="nav-item">
+                    <a onclick="TashilatDabirKhaneh(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Dabirkhaneh" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        تسهیلات دبیرخانه
+                        <span id="loderTashilatDabirKhaneh" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="TashilatBelaavaz(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Belaavaz" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        تسهیلات بلاعوض
+                        <span id="loaderBelaavaz" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="TashilatDastor(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#TashilatDastor" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        سایر تسهیلات(سامانه دستور)
+                        <span id="loderTashilatDastor" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="TashilatOther(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#TashilatOther" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        سایر مساعدتها
+                        <span id="loderOtherTashilat" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="TashilatFish(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#Fish" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        فیش حقوقی
+                        <span id="loderFish" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="TashilatMoeeser(@ViewBag.PersonalCode)" class="nav-link" data-toggle="tab" href="#moeeser" role="tab" aria-controls="users"
+                       aria-selected="false">
+                        معسرین
+                        <span id="loderMoeeser" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="GetExam(@ViewBag.PersonalCode)" class="nav-link " data-toggle="tab" href="#arzyabi" role="tab"
+                       aria-controls="clasic" aria-selected="true">
+                        نمره ارزیابی
+                        <span id="loaderBelaavaz" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+                    <a onclick="AllHamesh()" class="nav-link " data-toggle="tab" href="#allListHamesh" role="tab"
+                       aria-controls="clasic" aria-selected="true">
+                        گردش درخواست ملاقات
+                        <span id="loaderAllListHamesh" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+
+                </li>
+
+                                <li class="nav-item">
+                    <a onclick="getAttachmentFile()" class="nav-link " data-toggle="tab" href="#fileAttachment" role="tab"
+                       aria-controls="clasic" aria-selected="true">
+                          فایل پیوستی
+                        <span id="loaderfileAttachment" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </a>
+
+                </li>
+            </ul>
+
+
+
+            <div class="tab-content " id="myTabContent">
+                @* مشخصات پرسنلی *@
+                <div class="tab-pane fade show active" id="PrsnInfo" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="personalInfo" class="card-body">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* سوابق ملاقات قبل *@
+                <div class="tab-pane fade  " id="infoFile" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="listFilePersoanl" class="card-body">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*تشویقات*@
+                <div class="tab-pane fade" id="Tashviq" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped  table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>تاریخ</th>
+                                                <th>علت تشویق</th>
+                                                <th>شرح</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getTashvighat" style="overflow-y:scroll">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*تنبیهات*@
+                <div class="tab-pane fade dataTables_scroll" id="Tanbih" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead><tr><th>ردیف</th><th>تاریخ</th><th>علت تنبیه</th><th>شرح</th></tr></thead>
+
+                                        <tbody id="getTanbihat">
+                                        </tbody>
+                                        @*<tfoot><tr><td colspan="5">تعداد کل تنبیهات : <span class="badge">@Model.tanbihatInfoViewModel.Count()</span></td></tr></tfoot>*@
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*انتقالات*@
+                <div class="tab-pane fade" id="Enteghal" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead><tr><th>ردیف</th><th>منتقل از</th><th>تاریخ</th><th>منتقل به</th></tr></thead>
+                                        <tbody id="getEnteghal"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*عائله*@
+                <div class="tab-pane fade" id="Aeleh" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead><tr><th>ردیف</th><th>نام</th><th>نام خانوادگی</th><th>نسبت</th><th>کدملی</th><th>ش ش</th></tr></thead>
+                                        <tbody id="getAeleh"></tbody>
+                                        @*<tfoot><tr><td colspan="6">تعداد کل عائله : <span class="badge">@Model.personFamilyInfoViewModel.Count()</span></td></tr></tfoot>*@
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*تسهیلات مسکن*@
+                <div class="tab-pane fade" id="Maskan" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead><tr><th>ردیف</th><th>یگان</th><th>نام تعاونی</th><th>نام پروژه</th><th>نوع تسهیلات</th><th>مبلغ</th><th>متراژ</th><th>تاریخ واگذاری</th><th>تاریخ انصراف</th></tr></thead>
+                                        <tbody id="TashilateMaskan">
+                                            @*@foreach (var title in Model.tashilatMaskanInfoViewModel)
+                                            {
+                                            <tr>
+                                            <td>@(n+=1)</td>
+                                            <td>@title.YeganDesc</td>
+                                            <td>@title.TavoniName</td>
+                                            <td>@title.ProjectName</td>
+                                            <td>@title.TashilatTypeDesc</td>
+                                            <td>@title.Mablaq</td>
+                                            <td>@title.Metraz</td>
+                                            <td>@title.VagozariDate</td>
+                                            <td>@title.CancelDate</td>
+                                            </tr>
+                                            }*@
+                                        </tbody>
+                                        @*<tfoot><tr><td colspan="8">تعداد کل تسهیلات : <span class="badge">@Model.tashilatMaskanInfoViewModel.Count()</span></td></tr></tfoot>*@
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* منازل سازمانی *@
+                <div class="tab-pane fade  " id="Manazel" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card-body">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th width="50px">ردیف</th>
+                                                <th>تاریخ تحویل</th>
+                                                <th> آدرس</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+
+
+                                            @if (@Model.FactPersonal.Addres == "")
+                                            {
+                                                <tr>
+                                                    <td style="color:red">موردی یافت نشد!</td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td>@(j += 1)</td>
+                                                    <td>@Model.FactPersonal.HomDat</td>
+                                                    <td>@Model.FactPersonal.Addres</td>
+                                                </tr>
+                                            }
+
+
+
+
+
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* پایان منازل سازمانی *@
+
+                @*  تسهیلات بلاعوض *@
+                <div class="tab-pane fade" id="Belaavaz" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>شرح واگذاری</th>
+                                                <th>مبلغ پرداخت شده</th>
+                                                <th>تاریخ  </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getTashilatBelaavaz"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* پایان تسهیلات بلاعوض *@
+
+                @*تسهیلات دبیرخانه*@
+                <div class="tab-pane fade" id="Dabirkhaneh" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>نوع تسهیلات</th>
+                                                <th>شرح واگذاری</th>
+                                                <th>مبلغ پرداخت شده</th>
+                                                <th>تاریخ  </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getTashilatDabirKhaneh"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*سامانه دستور*@
+                <div class="tab-pane fade" id="TashilatDastor" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="overflow-auto table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>نوع تسهیلات</th>
+                                                <th>شرح</th>
+                                                @*<th>تسهیلات</th>
+                                                <th>نسبت تسهیلات</th>
+                                                <th>رفاهی</th>
+                                                <th>کد رفاهی</th>
+                                                <th>خدماتی</th>
+                                                <th>کد خدماتی</th>
+                                                <th>ورزشی</th>
+                                                <th>کد ورزشی</th>
+                                                <th>نسبت</th>*@
+                                                <th>مبلغ وام</th>
+                                                <th>تاریخ شروع</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getTashilatDastor"></tbody>
+                                        @*<tfoot><tr><td colspan="8">مجموع کل تسهیلات : <span class="badge">@Model.tashilatDastorInfoViewModel.Count()</span></td></tr></tfoot>*@
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* سایر مساعدت ها *@
+                <div class="tab-pane fade" id="TashilatOther" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>نوع مساعدت</th>
+                                                <th>شرح مساعدت</th>
+                                                <th>مبدا مساعدت</th>
+                                                <th>مبلغ</th>
+                                                <th>تاریخ مساعدت</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* سایر مساعدت ها *@
+                <div class="tab-pane fade" id="Fish" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>تاریخ واریز</th>
+                                                <th>شرح</th>
+                                                <th>کد </th>
+                                                <th>مبلغ(ریال)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getFish">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* معسرین *@
+                <div class="tab-pane fade" id="moeeser" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>نوع اعسار	</th>
+                                                <th> کمک یگان	</th>
+                                                <th> کمک نزاجا	</th>
+                                                <th> توضیحات</th>
+                                                <th>تاریخ </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getMoeeser">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* نمره ارزیابی *@
+                <div class="tab-pane fade" id="arzyabi" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>نوع آزمون</th>
+                                                <th> تاریخ شروع</th>
+                                                <th>تاریخ اتمام</th>
+                                                <th>تاریخ ثبت</th>
+                                                <th>یگان ثبت کننده</th>
+                                                <th>نمره</th>
+                                                <th>سقف نمره</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getExam">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*  گردش درخواست ملاقات *@
+                <div class="tab-pane fade" id="allListHamesh" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th>فرستنده</th>
+                                                <th>گیرنده</th>
+                                                <th>عملیات انجام شده(نوع اقدام)</th>
+                                                <th>متن هامش</th>
+                                                <th>زمان ایجاد</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getGardeshDarkhastMolaghat">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* فایل پیوستی *@
+                <div class="tab-pane fade" id="fileAttachment" role="tabpanel">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div style="position: relative; overflow: auto; max-height: 400px; width: 100%;">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>ردیف</th>
+                                                <th> فایل</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="getFileAttachment">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+@*}*@
+
+@section GetInformationPersonal
+    {
+
+
+            <script src="~/areas/onlineconversation/webapi.js"></script>
+
+
+}

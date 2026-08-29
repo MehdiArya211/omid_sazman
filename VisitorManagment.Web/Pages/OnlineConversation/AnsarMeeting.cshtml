@@ -1,0 +1,266 @@
+﻿@page
+@model NVC.Web.Pages.ConfModel
+@{
+    ViewData["Title"] = "مکالمه تصویری";
+}
+
+
+<link href="~/onlineconvercsation/css/webrtc.css" rel="stylesheet" />
+<link href="~/onlineconvercsation/css/testserver.css" rel="stylesheet" />
+<link href="~/onlineconvercsation/css/conf.css" rel="stylesheet" />
+@*<link href="~/onlineconvercsation/css/enjoyhint.css" rel="stylesheet" />*@
+
+
+
+<section>
+    <div class="navBarStyle">
+        <img src="/asset/images/amir_fallah.png" style="width:auto;height:125px;margin-top:15px;margin-right:5px" />
+        <div style="text-align:center">
+            <img src="/asset/images/nezaja.png" style="width:100px;height:90px;margin-bottom:13px" />
+            <p style="color:whitesmoke; font-weight:bold">سامانه ارتباط تصویری امید نزاجا</p>
+
+        </div>
+        <img src="/asset/images/amir_heydari.png" style="width:auto;height:125px;margin-top:15px;margin-left:5px" />
+    </div>
+
+</section>
+<section class="conversationBox">
+
+    <section class="doRight">
+        <div class="listofchat" style="padding:10px; background-color:white; width:100%;height:600px; border-radius:0px">
+            <div style="background-color:white; padding:4px;">
+                <p style="font-size:18px;color:cornflowerblue" id="roomNametext"> </p>
+            </div>
+            <div class="cardContent">
+                <p class="menu__title" style="border-bottom: 2px solid whitesmoke;font-size: 14px;
+    font-weight: 600;">لیست نفرات آنلاین</p>
+
+                <div class="users" id="ansarUsersContent">
+
+                </div>
+                <div id="userList_chat">
+                    <ul class="userList_chat_list">
+                        @*chat elements will be here*@
+                        <p>برای ورود به چت روم جلسه ابتدا یک جلسه را انتخاب کنید</p>
+                    </ul>
+                    <div class="chat_input_wrapper">
+                        <input type="text" class="chat_input_wrapper__input" placeholder="متن پیام را وارد کنید" />
+                        <button class="chat_input_wrapper__btn">ارسال  </button>
+                    </div>
+                    <button id="removeAllChatMessages" style="margin-top: 10px; outline: none; border: none; padding: 10px; border-radius: 11px; color:  white; background: red; width: 100%;">پاک کردن تمام چت ها</button>
+                </div>
+
+
+
+            </div>
+
+
+        </div>
+    </section>
+
+    <section class="doLeft">
+
+        <div>
+            <div class="connectionStatus">
+                <p id="connectionStatusMessage" style="color: #007bff;display:none
+">جلسه خود را بسازید و یا به یکی از جلسات موجود بپیوندید</p>
+
+            </div>
+
+            <section>
+
+
+
+
+                <div style="direction:rtl;">
+
+                    <div class="videoWrapper" style="position: relative">
+                        <p id="muteAudioWarning" style="display: none; font-weight: bold;color: red;position: absolute;top: 10px;right: 14px;z-index: 99;background: white;border-radius: 10px;padding: 5px 19px;">میکروفون شما بسته است</p>
+
+                        <div class="videoArea" style="text-align:center; position:relative">
+
+                            <div class="cameraBtnWrapper">
+                                <div>
+
+                                    @*   <a href="#" class="btn tour" style="font-size: small;
+                                    height: 44px;
+                                    padding: 10px;
+                                    margin-left:10px;
+
+                                    background-color: rgba(33, 224, 163, 1);color:white
+                                    ">راهنمای استفاده</a>*@
+
+                                </div>
+
+                                <button id="muteAudio" class="active cameraBtnStyle" title="قطع موقت صدا">
+                                    <img src="/asset/images/controller/microphone.png"
+                                         style="width:24px ; height:24px" class="fit-parent svg-default-color" />
+                                </button>
+
+                                <button id="muteCamera" class="active cameraBtnStyle" title="قطع لحظه ای تصویر">
+                                    <img src="/asset/images/controller/video.png"
+                                         style="width:24px ; height:24px" class="fit-parent svg-default-color" />
+                                </button>
+
+                                <button id="hangupansar" class="closeBtnStyle" title="قطع ارتباط">
+                                    <img src="/asset/images/phone.png"
+                                         style="width:16px ; height:16px" class="fit-parent svg-default-color" />
+                                </button>
+                                @*      <button id="record" class="cameraBtnStyle" onclick="recordPage()">
+                                <img src="/asset/images/controller/record.svg" style="width:24px ; height:24px"
+                                class="fit-parent svg-default-color" />
+                                </button>*@
+                                @*id="toggleOptions"*@
+                                <button data-toggle="modal" data-target="#settingModal" class="settingBtnStyle" title="تنظیمات">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                </button>
+
+
+                            </div>
+
+                            <section id="localvideoContainer">
+                                <section style="position:relative">
+                                    @*                                    <div class="videoCover"><div class="camName"></div><h3 class="coverText"></h3></div>*@
+                                    <video id="localVideo" class="localvideobox videoStyle" muted autoplay playsinline></video>
+                                </section>
+
+                            </section>
+                            <section id="remotevideoContainer">
+                                <p class="ansar_meeting_title"></p>
+                                <video id="remoteVideo" class="remotevideobox videoStyle" autoplay playsinline></video>
+                            </section>
+                        </div>
+
+
+                        <div class="optionsStyle">
+
+
+
+                            <button class="btn btn-primary btn-pulse" style="height:40px;margin-left:4px;background-color:#1565c0;color:white" type="button" class="btn mr-2 mb-2" data-toggle="modal" data-target="#createConversationModal">
+                                ایجاد جلسه
+                            </button>
+
+
+                        </div>
+
+
+
+                    </div>
+
+                    @*modal*@
+
+                    <div class="modal" tabindex="-1" role="dialog" id="createConversationModal">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background:#1565c0!important;">
+                                    @*                                    <h5 class="modal-title">عنوان جلسه را انتخاب کرده و جلسه را ایجاد کنید</h5>
+                                    *@                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p style="font-size: 16px; font-weight: bold; padding: 0px 12px 0px;
+}">لطفا نام و یگان خود را وارد کنید</p>
+
+                                    <section class="roomCreate wrapper">
+                                        <input class="inputStyle" style="padding: 10px" type="text" id="txtRoomName" placeholder="نام و یگان" required />
+                                        <button id="btnCreateRoom" class="btn createRoomStyle " style="padding: 20px; width: 100%; background-color:#1565c0;color:white" " data-dismiss="modal">اضافه کردن</button>
+
+                                    </section>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    @*setting modal*@
+
+                    <div class="modal" tabindex="-1" role="dialog" id="settingModal">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background:#1565c0!important;">
+                                    @*                                    <h5 class="modal-title">عنوان جلسه را انتخاب کرده و جلسه را ایجاد کنید</h5>
+                                    *@                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <p style="border-bottom: 1px solid whitesmoke;
+    padding: 4px;
+    font-size: 13px;background-color: whitesmoke;
+    border-radius: 5px;
+    color: blueviolet;">شما میتوانید تنظیمات مربوط به اسپیکر - دوربین و میکروفن را از این قسمت تغییر دهید</p>
+                                    <section class=" selectBtnWrapper" style="margin-top:1rem">
+                                        <div style=" direction:rtl;  font-size:x-small ;margin:1rem ">
+                                            <div class="select">
+                                                <label for="audioSource">میکروفن  </label><select id="audioSource" class="selectStyle"></select>
+                                            </div>
+
+                                            <div class="select">
+                                                <label for="audioOutput">اسپیکر  </label><select id="audioOutput" class="selectStyle"></select>
+                                            </div>
+
+                                            <div class="select">
+                                                <label for="videoSource">دوربین  </label><select id="videoSource" class="selectStyle"></select>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <p style="display:none; border-bottom: 1px solid whitesmoke; padding: 4px; font-size: 13px;background-color: whitesmoke; border-radius: 5px; color: blueviolet;">تنظیمات فرمت ضبط</p>
+
+                                    <div style=" text-align:right; font-size:8.25pt;margin-left:22px;display:none;justify-content:space-between">
+                                        <label style="margin-right:18px">فرمت ضبط</label> <select id="codecPreferences" style="border:none;cursor:pointer" disabled></select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+
+    </section>
+
+
+
+
+</section>
+
+
+
+
+<div style="display:flex;justify-content:center">
+    <section id="tableWrapper" style="display:none;">
+        <div class="mainBox">
+
+            <section class="roomCreate wrapper">
+                @*                    <label for="name" class="createRoomLabelStyle">عنوان جلسه</label>
+                *@                  @*  <input class="inputStyle" type="text" id="txtRoomName" placeholder="عنوان جلسه" required />
+                <button id="btnCreateRoom" class="btn btn-primary bg-primary-gradient createRoomStyle "><i class="fa fa-plus"></i></button>*@
+
+            </section>
+
+            @*                <button id="toggleTable" class="btn btn-primary bg-primary-gradient showTableStyle"> مشاهده جلسات  </button>
+            *@
+            <table id="tblRooms" class="display" style="width:100%; ">
+                <thead>
+                    <tr>
+                        <th>تعداد جلسات</th>
+                        <th>عنوان جلسه</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+
+    </section>
+
+</div>z

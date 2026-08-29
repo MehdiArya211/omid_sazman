@@ -1,0 +1,77 @@
+﻿@model VisitorManagment.Core.DTOs.ListMeetingForHameshFormViewModel
+@using VisitorManagment.Core.Convertors
+<table id="myTable" class="table table-striped table-bordered reciverlisterja">
+    <thead>
+        <tr>
+            <th>ردیف </th>
+            <th>عنوان </th>
+            <th>موضوع</th>
+            <th>وضعیت</th>
+            <th>تاریخ تشکیل جلسه</th>
+            <th>محل قرارگرفتن نفر</th>
+            <th>رئیس جلسه</th>
+            <th style="min-width:100px">عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model.Meetings)
+        {
+            <tr>
+                <td>@(++Model.skip)</td>
+                <td>@item.Title</td>
+                <td>@item.Caption</td>
+                <td>@item.MeetingStatusTitle</td>
+                <td>@item.StartMeetingDate</td>
+                <td>
+
+
+                    <select asp-items="ViewBag.ListUnit" class="form-control js-example-basic-single filestatusidTest selectCategory"
+                        name="actionTypeId">
+
+                        <option value="" selected disabled> نوع اقدام را انتخاب نمایید</option>
+
+                    </select>
+
+                    @*<select id="filestatusid" asp-items="ViewBag.ActionType"
+                        name="actionTypeId" class="form-control " required
+                        oninvalid="this.setCustomValidity('لطفا نوع اقدام را انتخاب فرمایید')"
+                        oninput="this.setCustomValidity('')">
+
+                        <option value="" selected disabled> نوع اقدام را انتخاب نمایید</option>
+
+                    </select>*@
+                </td>
+                <td>@item.BoseMeetingTitle</td>
+                <td class="text-center">
+
+                    <div class="">
+                        <input id="meetingRadioButton1" class="btn-success meetingRadio" type="radio" name="meetingId" value="@item.Id" required />
+                        <input type="hidden" name="fileId" value="@Model.FileId" />
+                    </div>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Meetings.Count == 0)
+{
+    <td style="color:red">جلسه فعالی یافت نشد ، لطفا با ادمین(پشتیبان) سامانه مهدی آریانژاد (021-29722686***09376540664)  تماس بگیرید</td>
+
+}
+
+<script>
+
+//چک میکنیم وقتی تیک یکی از موارد خورد یا بیشتر دکمه ارسال فعال بشه
+    $('#ErjaBeMeetingSubmitButton').prop('disabled', true);
+        $('table.reciverlisterja input[type=radio]').on('change' , function(){
+           // alert("کلیک شد");
+        let checked = $(this).closest('table').find('input[type=radio]:checked').length === 0;
+           // alert(checked);
+        $('#ErjaBeMeetingSubmitButton').prop('disabled', checked);
+        });
+
+
+</script>

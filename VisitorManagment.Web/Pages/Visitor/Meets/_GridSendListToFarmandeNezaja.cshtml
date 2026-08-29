@@ -1,0 +1,40 @@
+﻿
+@model List<VisitorManagment.DataLayer.Entities.User.Users>
+
+<table id="dataTable" class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>درجه</th>
+            <th>رسته</th>
+            <th>نام</th>
+            <th>نام خانوادگی</th>
+            <th>کد پرسنلی</th>
+            <th>یگان خدمتی</th>
+            <th>شغل</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody id="tabletbody">
+
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.RankTitle</td>
+                <td>@user.BranchTitle</td>
+                <td>@user.FirstName</td>
+                <td>@user.LastName</td>
+                <td>@user.UserName</td>
+                <td>@user.UnitDutyTitle</td>
+                <td>@user.JobDes</td>
+
+                <td class="text-center">
+                    <div class="">
+                        <input class="btn-success" type="checkbox" name="rcvrUserId" value="@user.Id" />
+                    </div>
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+</table>
