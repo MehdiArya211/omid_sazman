@@ -69,8 +69,18 @@ namespace VisitorManagment.Core.Services
         {
             var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
 
+            if (editHamesh == null)
+            {
+                return new BaseResult(false, "هامش در انتظار اقدام برای این کاربر یافت نشد.");
+            }
+
+            if (actionTypeId <= 0 || string.IsNullOrWhiteSpace(userDesc))
+            {
+                return new BaseResult(false, "نوع اقدام و متن نظریه/هامش الزامی است.");
+            }
+
             editHamesh.ActionTypeId = actionTypeId;
-            editHamesh.UserDesc = userDesc;
+            editHamesh.UserDesc = userDesc.Trim();
             editHamesh.RoleTypeId = roleTypeId;
             editHamesh.RoleTypeTitle = roleTypeTitle;
             editHamesh.RoleTypeFinalId = roleTypeIdFinal;
@@ -175,10 +185,36 @@ namespace VisitorManagment.Core.Services
         }
         public BaseResult AddToHameshWhenSendFileToCartable(int userId, int fileId, List<int> rcvrUserId, int RoleTypeId, string RoleTypeTitle, int RoleTypeIdFinal, string RoleTypeTitleFinal)
         {
-            Hamesh hamesh = _context.Hameshes.Where(c => c.UserId == userId && c.FileId == fileId).OrderBy(x => x.RegDate).LastOrDefault();
+            var hamesh = _context.Hameshes
+                .Where(c => c.UserId == userId && c.FileId == fileId)
+                .OrderByDescending(x => x.RegDate)
+                .ThenByDescending(x => x.Id)
+                .FirstOrDefault();
 
-            foreach (int rcvrId in rcvrUserId)
+            if (hamesh == null)
             {
+                return new BaseResult(false, "هامش مبدأ برای ایجاد گردش جدید یافت نشد.");
+            }
+
+            var receiverIds = (rcvrUserId ?? new List<int>())
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (!receiverIds.Any())
+            {
+                return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
+            }
+
+            foreach (var rcvrId in receiverIds)
+            {
+                var hasPendingHamesh = _context.Hameshes.Any(x =>
+                    x.FileId == fileId && x.UserId == rcvrId && x.UserDesc == "");
+                if (hasPendingHamesh)
+                {
+                    continue;
+                }
+
                 _context.Hameshes.Add(new Hamesh()
                 {
                     FileId = fileId,
@@ -942,12 +978,31 @@ namespace VisitorManagment.Core.Services
 
         public BaseResult RegHamesh(int actionTypeId, int roleTypeId, string roleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal, string userDesc, int userId, int fileId, double? mablaghVamDarkhasti, double? mablaghVamMohaghaghShode, List<int> rcvrUserId)
         {
+            var receiverIds = (rcvrUserId ?? new List<int>())
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (actionTypeId <= 0)
+                return new BaseResult(false, "نوع اقدام انتخاب نشده است.");
+            if (string.IsNullOrWhiteSpace(userDesc))
+                return new BaseResult(false, "متن نظریه/هامش الزامی است.");
+            if (userId <= 0 || fileId <= 0)
+                return new BaseResult(false, "اطلاعات کاربر یا درخواست معتبر نیست.");
+            if (!receiverIds.Any())
+                return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
+
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
                     // عملیات ویرایش هامش
-                    var resultHamesh = EditHamesh(actionTypeId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal, userDesc, userId, fileId, mablaghVamDarkhasti, mablaghVamMohaghaghShode);
+                    var resultHamesh = EditHamesh(actionTypeId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal, userDesc.Trim(), userId, fileId, mablaghVamDarkhasti, mablaghVamMohaghaghShode);
+                    if (!resultHamesh.Status)
+                    {
+                        transaction.Rollback();
+                        return resultHamesh;
+                    }
 
                     // عملیات ویرایش فایل
                     var resFile = _fileService.EditFileWhenSendHamesh(fileId, actionTypeId, mablaghVamDarkhasti, mablaghVamMohaghaghShode, roleTypeId);
@@ -963,7 +1018,13 @@ namespace VisitorManagment.Core.Services
 
                     // ارسال به کارتابل
                     var file = _context.Files.FirstOrDefault(f => f.Id == fileId);
-                    foreach (int rcvrId in rcvrUserId)
+                    if (file == null)
+                    {
+                        transaction.Rollback();
+                        return new BaseResult(false, "درخواست ملاقات یافت نشد.");
+                    }
+
+                    foreach (var rcvrId in receiverIds)
                     {
                         _context.Cartables.Add(new Cartable()
                         {
@@ -981,8 +1042,8 @@ namespace VisitorManagment.Core.Services
                     var resCartable = _context.SaveChanges();
 
                     //هامش خالی به گیرنده
-                    var resEmptyHamesh = AddToHameshWhenSendFileToCartable(userId, fileId, rcvrUserId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal);
-                    if (resultHamesh.Status && resFile.Status && resCartable != 0)
+                    var resEmptyHamesh = AddToHameshWhenSendFileToCartable(userId, fileId, receiverIds, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal);
+                    if (resultHamesh.Status && resFile.Status && resCartable > 0 && resEmptyHamesh.Status)
                     {
                         transaction.Commit();
 
@@ -1206,9 +1267,8 @@ namespace VisitorManagment.Core.Services
                 return new BaseResult
                 {
                     Message = " عملیات ناموفق",
-                    Status = true
+                    Status = false
                 };
-                throw;
             }
         }
     }
