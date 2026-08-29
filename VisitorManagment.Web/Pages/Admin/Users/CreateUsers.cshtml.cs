@@ -110,6 +110,22 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
                 ViewData["RolesTitle"] = new SelectList(roles, "RoleId", "Title");
 
+                if (roleId <= 0)
+                {
+                    ModelState.AddModelError("", "انتخاب نقش کاربر الزامی است.");
+                    return Page();
+                }
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    ModelState.AddModelError("", "رمز عبور الزامی است.");
+                    return Page();
+                }
+                if (password.Length > 200)
+                {
+                    ModelState.AddModelError("", "رمز عبور نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد.");
+                    return Page();
+                }
+
                 // بازیابی اطلاعات کاربر از سشن
                 var user = HttpContext.Session.GetObjectFromJson<CreateUserViewModel>("result");
                 if (user == null)
@@ -161,6 +177,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 }
 
                 // هدایت به صفحه اصلی
+                TempData["OperationTitle"] = "ثبت موفق";
+                TempData["OperationMessage"] = "کاربر با موفقیت ثبت شد.";
+                TempData["OperationIcon"] = "success";
                 return RedirectToPage("Index");
             }
             catch (Exception ex)
