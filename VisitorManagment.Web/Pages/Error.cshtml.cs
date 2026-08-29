@@ -24,6 +24,9 @@ namespace VisitorManagment.Web.Pages
             _logger = logger;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
