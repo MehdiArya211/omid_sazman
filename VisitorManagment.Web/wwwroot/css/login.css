@@ -1,0 +1,131 @@
+:root {
+    --omid-primary: #123f68;
+    --omid-primary-dark: #0b2947;
+    --omid-accent: #c89b3c;
+    --omid-surface: rgba(255, 255, 255, .96);
+    --omid-text: #17283a;
+    --omid-muted: #66788a;
+    --omid-danger: #b42318;
+}
+
+* { box-sizing: border-box; }
+
+body.omid-login-page {
+    min-height: 100vh;
+    margin: 0;
+    direction: rtl;
+    color: var(--omid-text);
+    font-family: Shabnam, Tahoma, sans-serif;
+    background:
+        radial-gradient(circle at 10% 15%, rgba(200, 155, 60, .2), transparent 30%),
+        radial-gradient(circle at 90% 85%, rgba(52, 125, 173, .25), transparent 34%),
+        linear-gradient(135deg, #071b2e 0%, #123f68 52%, #1c5d88 100%);
+}
+
+.omid-login-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(390px, .85fr);
+    align-items: stretch;
+}
+
+.omid-login-intro {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(42px, 7vw, 110px);
+    overflow: hidden;
+    color: #fff;
+}
+
+.omid-login-intro::after {
+    content: "";
+    position: absolute;
+    inset: auto -80px -130px auto;
+    width: 360px;
+    height: 360px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 50%;
+    box-shadow: 0 0 0 55px rgba(255,255,255,.04), 0 0 0 110px rgba(255,255,255,.025);
+}
+
+.omid-brand { display: flex; align-items: center; gap: 18px; margin-bottom: 48px; }
+.omid-brand img { width: 92px; height: 102px; object-fit: contain; filter: drop-shadow(0 12px 22px rgba(0,0,0,.2)); }
+.omid-brand-name { font-size: 1.65rem; font-weight: 800; }
+.omid-brand-subtitle { margin-top: 7px; color: rgba(255,255,255,.75); }
+.omid-login-intro h1 { max-width: 680px; margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.55; font-weight: 900; }
+.omid-login-intro p { max-width: 620px; margin: 24px 0 0; color: rgba(255,255,255,.8); font-size: 1.05rem; line-height: 2; }
+
+.omid-login-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(22px, 5vw, 70px);
+    background: rgba(4, 18, 31, .18);
+    backdrop-filter: blur(10px);
+}
+
+.omid-login-card {
+    width: min(100%, 480px);
+    padding: clamp(28px, 4vw, 48px);
+    background: var(--omid-surface);
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 28px;
+    box-shadow: 0 28px 80px rgba(0,0,0,.28);
+}
+
+.omid-login-card h2 { margin: 0; font-size: 1.75rem; font-weight: 900; }
+.omid-login-card > p { margin: 10px 0 30px; color: var(--omid-muted); line-height: 1.9; }
+.omid-field { margin-bottom: 20px; }
+.omid-field label { display: block; margin-bottom: 9px; font-weight: 700; }
+.omid-input-wrap { position: relative; }
+.omid-input-wrap i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #71869a; }
+.omid-input {
+    width: 100%;
+    height: 54px;
+    padding: 0 48px 0 46px;
+    color: var(--omid-text);
+    background: #f7f9fb;
+    border: 1px solid #dce4eb;
+    border-radius: 14px;
+    outline: none;
+    transition: .2s ease;
+}
+.omid-input:focus { background: #fff; border-color: var(--omid-primary); box-shadow: 0 0 0 4px rgba(18,63,104,.1); }
+.omid-password-toggle { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: #71869a; cursor: pointer; padding: 8px; }
+.field-validation-error, .validation-summary-errors { color: var(--omid-danger); font-size: .86rem; }
+.validation-summary-errors { margin-bottom: 18px; padding: 12px 14px; background: #fff1f0; border: 1px solid #ffccc7; border-radius: 12px; }
+.validation-summary-errors ul { margin: 0; padding-right: 18px; }
+.omid-options { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 24px; color: var(--omid-muted); }
+.omid-remember { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; }
+.omid-submit { width: 100%; height: 55px; border: 0; border-radius: 14px; color: #fff; background: linear-gradient(135deg, var(--omid-primary), #1d6596); font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 12px 24px rgba(18,63,104,.24); transition: .2s ease; }
+.omid-submit:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(18,63,104,.3); }
+.omid-submit:disabled { opacity: .7; cursor: wait; transform: none; }
+.omid-browser { margin-top: 22px; padding: 13px 16px; border: 1px solid #e1e7ed; border-radius: 13px; background: #fafbfc; }
+.omid-browser a { display: flex; align-items: center; gap: 10px; color: var(--omid-primary); text-decoration: none; font-size: .9rem; }
+.omid-browser img { width: 26px; height: 26px; }
+.omid-footer { margin-top: 25px; text-align: center; color: #7a8998; font-size: .8rem; line-height: 1.8; }
+
+@media (max-width: 900px) {
+    .omid-login-shell { grid-template-columns: 1fr; }
+    .omid-login-intro { min-height: 260px; padding: 34px 28px; justify-content: flex-start; }
+    .omid-brand { margin-bottom: 18px; }
+    .omid-brand img { width: 64px; height: 72px; }
+    .omid-login-intro h1 { font-size: 1.65rem; }
+    .omid-login-intro p { display: none; }
+    .omid-login-panel { padding: 24px 16px 40px; margin-top: -28px; background: transparent; position: relative; z-index: 2; }
+    .omid-login-card { border-radius: 22px; }
+}
+
+@media (max-width: 480px) {
+    .omid-login-intro { min-height: 220px; }
+    .omid-brand-name { font-size: 1.25rem; }
+    .omid-brand-subtitle { font-size: .82rem; }
+    .omid-login-intro h1 { font-size: 1.35rem; }
+    .omid-login-card { padding: 26px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}
