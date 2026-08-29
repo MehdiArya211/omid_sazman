@@ -20,6 +20,9 @@ namespace VisitorManagment.Core.Services.Reports
 
         #region گزارش عملکرد قرارگاه و یگان
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<HameshRequestGhaModel> GetTotalHelpAmountForServiceType(int GharargahId, int RoleId, DateTime? startDateEnglish, DateTime? endDateEnglish)
         {
 
@@ -148,6 +151,9 @@ namespace VisitorManagment.Core.Services.Reports
 
         #endregion
         #region سرویس فراوانی مشکلات ViwFiles
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemAllNez> GetPeroblemAllNez()
         {
             var strAnd = " AND ";
@@ -180,6 +186,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemGhaReport> GetPeroblemGhaNez()
         {
             var strAnd = " AND ";
@@ -210,6 +219,9 @@ namespace VisitorManagment.Core.Services.Reports
                 CodGhaTitle = c.CodGhaTitle,
             }).ToList();
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemOmdOrganReport> GetPeroblemOmdOrganNez(int OmdOrganId, int YeganId)
         {
             var strAnd = " AND ";
@@ -254,6 +266,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ChartProblemOmdOrgan GetProblemCountOmdOrganInfo(int OmdOrganId, int YeganId)
         {
             var model = new ChartProblemOmdOrgan();
@@ -313,6 +328,9 @@ namespace VisitorManagment.Core.Services.Reports
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<HameshActionTypeModel> GetNomrehArzyabiGharargah(int actionTypeId, DateTime? startDateEnglish, DateTime? endDateEnglish)
         {
             var strAnd = " AND ";
