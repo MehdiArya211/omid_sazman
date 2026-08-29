@@ -32,6 +32,12 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         public List<PermissionViewModel> ListUnAccsessPersonal { get; set; }
 
         public int? RoleId;
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet(int? roleId = 0)
         {
@@ -60,6 +66,9 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         }
 
 
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostAddAccess(int roleId , List<int> permissionIds)
         {
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
@@ -79,6 +88,9 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
             return Redirect("/Admin/rolepermission/mainindex?roleId=" + roleId);
         }
 
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostRemoveAccess(int roleId, List<int> permissionIds)
         {
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
@@ -97,5 +109,6 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
             ViewData["RoleId"] = roleId;
             return Redirect("/Admin/rolepermission/mainindex?roleId=" + roleId) ;
         }
+        #endregion
     }
 }
