@@ -42,6 +42,9 @@ namespace VisitorManagment.Web.Pages.Visitor.ViewRequestCirculation
         /// </summary>
         public ListHameshViewModel listHameshViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int pageId = 1, string filterCaption = "", int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0 , string startDateSearch = "", string endDateSearch = "")
         {
 
@@ -100,6 +103,9 @@ namespace VisitorManagment.Web.Pages.Visitor.ViewRequestCirculation
             return Page();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             var result = _webApiService.GetOrganByGharargahId(id).Data;
@@ -107,6 +113,9 @@ namespace VisitorManagment.Web.Pages.Visitor.ViewRequestCirculation
             return new JsonResult(result);
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetFileInfo(int fileid)
         {
             var fileId = _fileService.GetFile(fileid);
