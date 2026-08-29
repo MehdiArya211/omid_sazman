@@ -26,6 +26,9 @@ namespace VisitorManagment.Web.Pages.Visitor.ViewRequestCirculation
         [BindProperty]
         public ListHameshViewModel listHameshViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int id, int pageId = 1, int filterMeetingStatus = 1, string filterCaption = "" , string returnUrl="")
         {
             listHameshViewModel = _hameshService.GetHameshIdByFileId(id, pageId, filterMeetingStatus, filterCaption);
