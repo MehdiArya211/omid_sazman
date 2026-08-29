@@ -134,6 +134,9 @@ namespace VisitorManagment.Core.Services
             return person;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultPersonalInfoDto GetPersonalByPersonalNo0(string personalCode)
         {
             if (string.IsNullOrEmpty(personalCode) || !Regex.IsMatch(personalCode, @"^\d{1,9}$"))
@@ -171,6 +174,9 @@ namespace VisitorManagment.Core.Services
             return person;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultPersonalInfoDto GetPersonalByPersonalNo2(string personalCode)
         {
             if (string.IsNullOrWhiteSpace(personalCode) || !Regex.IsMatch(personalCode.Trim(), @"^\d{1,9}$"))
@@ -225,6 +231,9 @@ namespace VisitorManagment.Core.Services
                 };
             }
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultPersonalInfoDto GetPersonalByPersonalNo(string personalCode)
         {
             personalCode = ConvertDigitsToEnglish(personalCode);
@@ -321,6 +330,9 @@ namespace VisitorManagment.Core.Services
 
         #region Organ
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultOrganInfoDto GetGhararghahByOmdOrgCode(int UnitCode)
         {
             SetBearerToken();
@@ -332,6 +344,9 @@ namespace VisitorManagment.Core.Services
             return gharargah;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultOrganInfoDto GetOmdOrgan(int UnitCode)
         {
             SetBearerToken();
@@ -343,6 +358,9 @@ namespace VisitorManagment.Core.Services
             return gharargah;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultOrganDto GetGharargah()
         {
             SetBearerToken();
@@ -354,6 +372,9 @@ namespace VisitorManagment.Core.Services
             return gharargah;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultOrganDto GetOrganByGharargahId(int gharargahId)
         {
             SetBearerToken();
@@ -365,6 +386,9 @@ namespace VisitorManagment.Core.Services
             return unitCode;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultOrganIdWithTitleDto GetAllOrgan()
         {
             SetBearerToken();
@@ -376,6 +400,9 @@ namespace VisitorManagment.Core.Services
             return unit;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultAllOrganDto GetAllOrgan1()
         {
             SetBearerToken();
@@ -402,6 +429,9 @@ namespace VisitorManagment.Core.Services
             return result1;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultAllOrganDto GetAllOrganNezaja()
         {
             SetBearerToken();
@@ -417,6 +447,9 @@ namespace VisitorManagment.Core.Services
 
         #region Personal
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public FactSpecificationPersonalViewModel GetPersonalByPersonalId(int personalId)
         {
             var personalCode = _context.Personals
@@ -437,6 +470,9 @@ namespace VisitorManagment.Core.Services
 
         #region Tashvighat
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultTashvighatDto GetTashvighatByPersonalNo(string personalCode)
         {
             SetBearerToken();
@@ -448,6 +484,9 @@ namespace VisitorManagment.Core.Services
             return tashvighat;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetCountTashvighat(string prnsNo)
         {
             SetBearerToken();
@@ -468,6 +507,9 @@ namespace VisitorManagment.Core.Services
 
         #region Tanbihat
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultTanbihatDto GetTanbihatByPersonalNo(string personalCode)
         {
             SetBearerToken();
@@ -479,6 +521,9 @@ namespace VisitorManagment.Core.Services
             return tanbihat;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetCountTanbihat(string prnsNo)
         {
             SetBearerToken();
@@ -499,6 +544,9 @@ namespace VisitorManagment.Core.Services
 
         #region Enteghalat
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultEnteghalDto GetEnteghalByPersonNo(string personalCode)
         {
             SetBearerToken();
@@ -510,6 +558,9 @@ namespace VisitorManagment.Core.Services
             return enteghalat;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResulMaskanDto GetPTashilatMaskan(string personalCode)
         {
             SetBearerToken();
@@ -539,6 +590,9 @@ namespace VisitorManagment.Core.Services
 
         #region Tashilat Dabirkhane
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResulDabirKhanehDto GetPTashilatDabirkhaneh(string personalCode)
         {
             SetBearerToken();
@@ -554,6 +608,9 @@ namespace VisitorManagment.Core.Services
 
         #region Person Family
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultPersonFamilyDto GetPFamilyInfo(string personalCode)
         {
             SetBearerToken();
@@ -569,11 +626,17 @@ namespace VisitorManagment.Core.Services
 
         #region Fajr Log
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ItoLogInfoViewModel GetLogForLogInfo()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddLogInfo()
         {
             SetBearerToken();
@@ -615,6 +678,9 @@ namespace VisitorManagment.Core.Services
             return 0;
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddLog(string userId, string userName, string url)
         {
             SetBearerToken();
@@ -662,6 +728,9 @@ namespace VisitorManagment.Core.Services
 
         #region Dastoor
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResulDastorDto GetTashilatDastor(string personalCode)
         {
             SetBearerToken();
@@ -673,6 +742,9 @@ namespace VisitorManagment.Core.Services
             return tashilatDastor;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<TashilatDastorInfoViewModel> GetTashilatDastorForStimul(string personalCode)
         {
             string result = string.Empty;
@@ -697,6 +769,9 @@ namespace VisitorManagment.Core.Services
 
         #region TashilatOther
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultOtherDto GetTashilatOther(string personalCode)
         {
             SetBearerToken();
@@ -708,6 +783,9 @@ namespace VisitorManagment.Core.Services
             return tashilatOther;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultBelaavazDto GetTashilatBelaavaz(string personalCode)
         {
             SetBearerToken();
@@ -723,6 +801,9 @@ namespace VisitorManagment.Core.Services
 
         #region Nomarat Arzyabi
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResulExamDto GetExam(string personalCode)
         {
             SetBearerToken();
@@ -738,16 +819,25 @@ namespace VisitorManagment.Core.Services
 
         #region گرفتن تعداد تشویقات و تنبیهات و نهست و فرار نفر
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetCountFarar(string prnsNo)
         {
             return null;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetCountNahast(string prnsNo)
         {
             return null;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetStatusMarrid(string prnsNo)
         {
             var result = GetPersonalByPersonalNo(prnsNo);
@@ -755,6 +845,9 @@ namespace VisitorManagment.Core.Services
             return result.Data.MarridTitle;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetEmployDate(string prnsNo)
         {
             var result = GetPersonalByPersonalNo(prnsNo);
@@ -766,6 +859,9 @@ namespace VisitorManagment.Core.Services
 
         #region فیش حقوقی
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultFishDto GetFishByPrsnCode(string prsnCd)
         {
             SetBearerToken();
@@ -781,6 +877,9 @@ namespace VisitorManagment.Core.Services
 
         #region معسرین
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ApiResultMoeeserDto GetMoeeserByPrsnCode(string prsnCd)
         {
             SetBearerToken();
