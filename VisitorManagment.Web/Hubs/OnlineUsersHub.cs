@@ -12,6 +12,9 @@ namespace VisitorManagment.Web.Hubs
     {
         private static readonly ConcurrentDictionary<string, string> OnlineUsers = new();
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override async Task OnConnectedAsync()
         {
             var userName = Context.User?.Identity?.Name ?? $"مهمان-{Context.ConnectionId.Substring(0, 5)}";
@@ -21,6 +24,9 @@ namespace VisitorManagment.Web.Hubs
             await base.OnConnectedAsync();
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override async Task OnDisconnectedAsync(System.Exception exception)
         {
             OnlineUsers.TryRemove(Context.ConnectionId, out _);
@@ -28,6 +34,9 @@ namespace VisitorManagment.Web.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         private Task NotifyAllClients()
         {
             var users = OnlineUsers.Values;
@@ -40,6 +49,9 @@ namespace VisitorManagment.Web.Hubs
     {
         private static HashSet<string> ConnectedUsers = new();
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override Task OnConnectedAsync()
         {
             ConnectedUsers.Add(Context.ConnectionId);
@@ -50,6 +62,9 @@ namespace VisitorManagment.Web.Hubs
             return base.OnConnectedAsync();
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override Task OnDisconnectedAsync(Exception exception)
         {
             ConnectedUsers.Remove(Context.ConnectionId);
