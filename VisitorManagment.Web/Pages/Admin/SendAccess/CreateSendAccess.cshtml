@@ -22,14 +22,15 @@
             </select>
             <small>نقشی را انتخاب کنید که می‌خواهید مقصدهای مجاز آن را تنظیم کنید.</small>
         </div>
+        <button type="submit" class="access-reset"><i class="ti-search"></i> نمایش دسترسی‌ها</button>
         <a asp-page="./CreateSendAccess" class="access-reset"><i class="ti-reload"></i> بازنشانی</a>
     </form>
 
     @if (ViewBag.ShowForm == true)
     {
-        <form method="post" class="access-board" data-access-board>
-            <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
-            <section class="access-panel access-panel--available" data-access-panel>
+        <div class="access-board" data-access-board>
+            <form method="post" class="access-panel access-panel--available" data-access-panel>
+                <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
                 <div class="access-panel__header">
                     <div><span class="access-panel__status"><i class="ti-close"></i> غیرمجاز</span><h2>نقش‌های قابل افزودن</h2></div>
                     <span class="access-count">@Model.ListUnAccsessPersonal.Count مورد</span>
@@ -55,9 +56,10 @@
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
                     <button type="submit" asp-page-handler="RegAccess" class="access-action access-action--add" data-requires-selection data-confirm="نقش‌های انتخاب‌شده به مسیر ارسال اضافه شوند؟"><i class="ti-plus"></i> افزودن به مسیر</button>
                 </footer>
-            </section>
+            </form>
 
-            <section class="access-panel access-panel--granted" data-access-panel>
+            <form method="post" class="access-panel access-panel--granted" data-access-panel>
+                <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
                 <div class="access-panel__header">
                     <div><span class="access-panel__status"><i class="ti-check"></i> مجاز</span><h2>مقصدهای فعال ارسال</h2></div>
                     <span class="access-count">@Model.ListAccsessPersonal.Count مورد</span>
@@ -83,8 +85,8 @@
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
                     <button type="submit" asp-page-handler="UnAccess" class="access-action access-action--remove" data-requires-selection data-confirm="نقش‌های انتخاب‌شده از مسیر ارسال حذف شوند؟"><i class="ti-trash"></i> حذف از مسیر</button>
                 </footer>
-            </section>
-        </form>
+            </form>
+        </div>
     }
     else
     {
