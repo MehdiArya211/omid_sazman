@@ -30,11 +30,20 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
         [BindProperty]
         public ListFileReferenceViewModel listviewmodel { get; set; }
         public ListSMSInfoViewModel listSMSInfoViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet(int id)
         {
             listviewmodel = _meetingService.GetFileForFinalApprovalMeeting(id);
         }
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int MeetingId)
         {
             //listSMSInfoViewModel = _smsService.GetFileForSMSInfo(MeetingId);
@@ -59,5 +68,6 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
             return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
           
         }
+        #endregion
     }
 }
