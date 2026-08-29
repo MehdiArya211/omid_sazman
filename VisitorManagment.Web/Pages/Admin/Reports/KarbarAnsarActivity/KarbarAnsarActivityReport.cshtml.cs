@@ -42,6 +42,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.KarbarAnsarActivity
 
         public SearchPageReportKarbarAnsarReportViewModel searchPageReportViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
             ViewData["FarmandehInfo"] = new SelectList(_personService.GetKarshenashAnsarInfos(), "Id", "Title");
@@ -86,6 +89,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.KarbarAnsarActivity
 
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int PrsnCd, string startDateSearch = "", string endDateSearch = "")
         {
             ViewData["FarmandehInfo"] = new SelectList(_personService.GetKarshenashAnsarInfos(), "Id", "Title");
