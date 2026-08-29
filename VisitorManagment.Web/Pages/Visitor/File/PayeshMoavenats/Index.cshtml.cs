@@ -38,6 +38,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PayeshMoavenats
 
         public ListHameshViewModel listHameshViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet( int filterMoavenat = 0)
         {
             listHameshViewModel = new ListHameshViewModel();
@@ -59,6 +62,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PayeshMoavenats
 
         #region هامش های ثبت شده برای درخواست ملاقات
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetHamesh(int fileId)
         {
             ViewData["ListMoavenatHa"] = new SelectList(_fileService.GetRolesJustMooavenatHa(), "RoleId", "Title");
