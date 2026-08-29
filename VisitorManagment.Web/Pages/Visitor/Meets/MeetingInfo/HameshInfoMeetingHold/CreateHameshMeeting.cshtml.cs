@@ -67,6 +67,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         public ListHameshViewModel listHameshViewModel { get; set; }
         #endregion
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int id)
         {
             ViewData["ActionType"] = new SelectList(_hameshService.GetActionType(), "Id", "Title");
@@ -112,6 +115,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
 
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetCreateVam(int vamCode, string title, int fileId)
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
@@ -125,6 +131,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
             return new JsonResult(true);
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetDeleteVam(int vamId)
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
@@ -139,6 +148,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
             return new JsonResult(false);
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
             var fileId = HttpContext.Session.GetObjectFromJson<int>("fileId");
@@ -167,6 +179,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
 
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         private void AddModelError(string message)
         {
             ModelState.AddModelError(string.Empty, message);
@@ -176,6 +191,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #region سرویس ها
 
         #region Tashvighat
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashvighat(string personalCode)
         {
             //لازمه که تو هر هندلر ویو مدل برای مودالامون رو اینیشیال کنیم!!!
@@ -209,6 +227,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region Tanbihat
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTanbihat(string personalCode)
         {
             collectionSpecificationPersonalViewModel = new CollectionSpecificationPersonalViewModel();
@@ -239,6 +260,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
 
         #region Entegalat
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetEnteghal(string personalCode)
         {
             collectionSpecificationPersonalViewModel = new CollectionSpecificationPersonalViewModel();
@@ -269,6 +293,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region Aele
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetAeleh(string personalCode)
         {
 
@@ -296,6 +323,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region Maskan
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatMaskan(string personalCode)
         {
 
@@ -333,6 +363,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region Tashilat DabirKhaneh
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatDabirKhaneh(string personalCode)
         {
 
@@ -371,6 +404,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region TashilatDastor
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatDastor(string personalCode)
         {
 
@@ -403,6 +439,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region تسهیلات دیگر
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatOther(string personalCode)
         {
 
@@ -434,6 +473,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region تسهیلات بلاعوض
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatBelaavaz(string personalCode)
         {
 
@@ -471,6 +513,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region Exam
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetExam(string personalCode)
         {
 
@@ -505,6 +550,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region فیش 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetFish(string personalCode)
         {
 
@@ -535,6 +583,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeeting
         #endregion
 
         #region معسرین 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetMoeeser(string personalCode)
         {
 
