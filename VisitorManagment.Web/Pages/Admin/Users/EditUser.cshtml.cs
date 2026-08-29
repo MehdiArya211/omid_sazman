@@ -32,6 +32,12 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         [BindProperty]
         //public CreateUserViewModel CreateUserViewModel { get; set; }
         public EditUserViewModel editUserViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public IActionResult OnGet(int id)
         {
@@ -52,6 +58,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return Page();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalId0(string personalno)
         {
             var result = new FactPersonalViewModel();
@@ -140,6 +149,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalId(string personalno)
         {
             if (string.IsNullOrWhiteSpace(personalno))
@@ -172,6 +184,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(string password, int userId, string fname, string lname, string rankTitle)
         {
             var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
@@ -213,5 +228,6 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
         }
 
+        #endregion
     }
 }
