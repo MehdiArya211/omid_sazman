@@ -23,6 +23,7 @@
                     <div class="omid-logo-frame"><img src="~/LOGO.png" alt="نشان سامانه امید" /></div>
                     <h1>ورود به سامانه امید</h1>
                     <p>سامانه ملاقات عمومی کارکنان نزاجا</p>
+                    <span class="omid-secure-badge"><i class="fa fa-shield"></i> ورود امن سازمانی</span>
                 </header>
 
                 <form id="login-form" method="post" autocomplete="on">
@@ -31,8 +32,8 @@
                         <label asp-for="LoginViewModel.UserName">نام کاربری</label>
                         <div class="omid-input-wrap">
                             <i class="fa fa-user omid-input-icon" aria-hidden="true"></i>
-                            <input asp-for="LoginViewModel.UserName" class="omid-input" inputmode="numeric"
-                                   autocomplete="username" maxlength="10"
+                            <input asp-for="LoginViewModel.UserName" class="omid-input"
+                                   autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="10"
                                    placeholder="نام کاربری خود را وارد کنید" autofocus />
                         </div>
                         <span asp-validation-for="LoginViewModel.UserName"></span>
