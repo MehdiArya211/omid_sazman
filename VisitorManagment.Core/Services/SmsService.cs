@@ -44,6 +44,9 @@ namespace VisitorManagment.Core.Services
         #region SMS
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListSMSInfoViewModel GetFileForSMSInfo(int? meetingId)
         {
             IQueryable<Files> result = _context.Files.Where(f => f.MeetingId == meetingId);
@@ -68,6 +71,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddSMSInfo(SMSInfoViewModel smsInfo)
         {
             var token=_webApiService.GetToken();
@@ -83,6 +89,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public SMSInfoViewModel GetFileIdForSendSmsInEachProcess(int id, int fileId, string roleTypeTitle, int? actionTypeId)
         {
 
@@ -188,6 +197,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public void SendSmsToSelseleMaratebYeganNafar(int fileId)
         {
             //وقتی درخواست ملاقات نفر تو جلسه توسط هیئت رییسخ دستور داده میشه ما یه لیستی از سلسه مراتب برمیداریم تا بهشون پیام بدیم
@@ -215,6 +227,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public void SendSmsToMemberAddToMeeting(int meetingId)
         {
 
