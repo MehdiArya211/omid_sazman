@@ -50,6 +50,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.RankingAllUnit
         public List<AllOrganViewModelDto> listOrganViewModel { get; set; }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int filterGharargah = 0)
         {
             ViewData["Orgns"] = new SelectList(_webApiService.GetAllOrgan1().Data, "Id", "Title");
@@ -122,6 +125,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.RankingAllUnit
             #endregion
 
         }
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(List<int> unitCode, string startDateSearch = "", string endDateSearch = "")
         {
             ViewData["Orgns"] = new SelectList(_webApiService.GetAllOrgan().Data, "Id", "Title");
