@@ -31,7 +31,16 @@ namespace VisitorManagment.Core.Services
             apiUrlTanbihat = _configuration.GetSection("ItoWebApiUrl").GetSection("TanbihatUrl").Value;
             _client = new HttpClient();
         }
+        #region اعضا و متدهای کلاس
 
+
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
+
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public FactSpecificationPersonalViewModel GetPersonalByPersonalNo(int fileId)
         {
             var personalCode = _context.Files.Find(fileId).PersonalCode.ToString();
@@ -43,6 +52,9 @@ namespace VisitorManagment.Core.Services
             return person;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<TashvighatInfoViewModel> GetTashvighatByPersonalNo(int fileId)
         {
             var personalCode = _context.Files.Find(fileId).PersonalCode.ToString();
@@ -56,6 +68,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<TanbihatInfoViewModel> GetTanbihatByPersonalNo(int fileId)
         {
             var personalCode = _context.Files.Find(fileId).PersonalCode.ToString();
@@ -66,6 +81,9 @@ namespace VisitorManagment.Core.Services
 
             return Tanbihat;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListFileViewModel GetFile(int FileId)
         {
             var personalCode = _context.Files.Find(FileId).PersonalCode.ToString();
@@ -84,5 +102,6 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        #endregion
     }
 }
