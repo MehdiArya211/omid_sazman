@@ -33,7 +33,7 @@
         <br />
         <p style="color:red;font-size:20px">آیا مطمئن هستید میخواهید حذف کنید؟</p>
         <div class="panel-body">
-            <form method="post">
+            <form method="post" data-confirm="آیا از حذف این کاربر مطمئن هستید؟">
                 <input type="hidden" name="UserId" value="@ViewData["UserId"].ToString()" />
 
                 <dl class="m-5 d-lg-table-cell">
@@ -60,5 +60,4 @@
     </div>
     <!-- /.panel -->
 </div>
-
 
