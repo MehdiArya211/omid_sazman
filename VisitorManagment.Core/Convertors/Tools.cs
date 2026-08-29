@@ -10,8 +10,17 @@ namespace _0_Framework.Application
 
         public static string[] DayNames = {"شنبه", "یکشنبه", "دو شنبه", "سه شنبه", "چهار شنبه", "پنج شنبه", "جمعه"};
         public static string[] DayNamesG = {"یکشنبه", "دو شنبه", "سه شنبه", "چهار شنبه", "پنج شنبه", "جمعه", "شنبه"};
+        #region اعضا و متدهای کلاس
 
 
+
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
+
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToFarsi(this DateTime? date)
         {
             try
@@ -26,6 +35,9 @@ namespace _0_Framework.Application
             return "";
         }
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToFarsi(this DateTime date)
         {
             if (date == new DateTime()) return "";
@@ -33,17 +45,26 @@ namespace _0_Framework.Application
             return $"{pc.GetYear(date)}/{pc.GetMonth(date):00}/{pc.GetDayOfMonth(date):00}";
         }
         
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToDiscountFormat(this DateTime date)
         {
             if (date == new DateTime()) return "";
             return $"{date.Year}/{date.Month}/{date.Day}";
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public static string GetTime(this DateTime date)
         {
             return $"_{date.Hour:00}_{date.Minute:00}_{date.Second:00}";
         }
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToFarsiFull(this DateTime date)
         {
             var pc = new PersianCalendar();
@@ -54,6 +75,9 @@ namespace _0_Framework.Application
         private static readonly string[] Pn = {"۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"};
         private static readonly string[] En = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToEnglishNumber(this string strNum)
         {
             var cash = strNum;
@@ -62,6 +86,9 @@ namespace _0_Framework.Application
             return cash;
         }
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToPersianNumber(this int intNum)
         {
             var chash = intNum.ToString();
@@ -70,6 +97,9 @@ namespace _0_Framework.Application
             return chash;
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public static DateTime? FromFarsiDate(this string InDate)
         {
             if (string.IsNullOrEmpty(InDate))
@@ -92,6 +122,9 @@ namespace _0_Framework.Application
         }
 
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static DateTime ToGeorgianDateTime(this string persianDate)
         {
             persianDate = persianDate.ToEnglishNumber();
@@ -101,11 +134,17 @@ namespace _0_Framework.Application
             return new DateTime(year, month, day, new PersianCalendar());
         }
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToMoney(this double myMoney)
         {
             return myMoney.ToString("N0", CultureInfo.CreateSpecificCulture("fa-ir"));
         }
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string ToFileName(this DateTime date)
         {
             return $"{date.Year:0000}-{date.Month:00}-{date.Day:00}-{date.Hour:00}-{date.Minute:00}-{date.Second:00}";
@@ -147,6 +186,9 @@ namespace _0_Framework.Application
 
 
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public static string FormatNumber(string numericText)
         {
             string formattedStr = "";
@@ -166,6 +208,9 @@ namespace _0_Framework.Application
             return formattedStr;
         }
         //*******************************
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public static string unFormatNumber(string formattedNumericText)
         {
             try
@@ -199,5 +244,6 @@ namespace _0_Framework.Application
 
 
 
+        #endregion
     }
 }
