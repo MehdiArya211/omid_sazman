@@ -29,7 +29,8 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
         public List<WorkFlowViewModel> ListAccsessPersonal { get; set; }
         public List<WorkFlowViewModel> ListUnAccsessPersonal { get; set; }
 
-        public int? RoleId;
+        [BindProperty(SupportsGet = true)]
+        public int? RoleId { get; set; }
         #region اعضا و متدهای کلاس
 
 
