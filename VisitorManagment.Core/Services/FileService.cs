@@ -440,6 +440,9 @@ namespace VisitorManagment.Core.Services
         //    return AddToFile(file);
 
         //}
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddFile(FactPersonalViewModel person)
         {
             #region اعتبارسنجی اولیه
@@ -687,6 +690,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         private BaseResult SaveUploadedFile(
     IFormFile uploadedFile,
     string folderName,
