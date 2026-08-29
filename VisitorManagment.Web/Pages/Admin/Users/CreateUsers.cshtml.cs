@@ -137,6 +137,12 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     ModelState.AddModelError("", "رمز عبور نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد.");
                     return Page();
                 }
+                if (password.Length < 8 || !password.Any(char.IsLower) || !password.Any(char.IsUpper) ||
+                    !password.Any(char.IsDigit) || !password.Any(character => !char.IsLetterOrDigit(character)))
+                {
+                    ModelState.AddModelError("", "رمز عبور باید حداقل ۸ کاراکتر و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.");
+                    return Page();
+                }
 
                 // بازیابی اطلاعات کاربر از سشن
                 var user = HttpContext.Session.GetObjectFromJson<CreateUserViewModel>("result");
@@ -155,6 +161,11 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 if (user.UserAvatar != null && !FileUploadCheck.CheckImageFileExtension(user.UserAvatar))
                 {
                     ModelState.AddModelError("", "فایل انتخابی معتبر نمی‌باشد.");
+                    return Page();
+                }
+                if (user.UserAvatar != null && user.UserAvatar.Length > 2 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("", "حجم تصویر پروفایل نمی‌تواند بیشتر از ۲ مگابایت باشد.");
                     return Page();
                 }
 
