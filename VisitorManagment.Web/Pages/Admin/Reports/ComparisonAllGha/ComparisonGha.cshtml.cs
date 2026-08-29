@@ -46,6 +46,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllGha
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageReportViewModel searchPageReportViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet()
         {
             ViewData["AllListGha"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
@@ -111,6 +114,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllGha
             #endregion
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(List<int> listGha,int actionTypeId, string startDateSearch = "", string endDateSearch = "")
         {
             ViewData["AllListGha"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
