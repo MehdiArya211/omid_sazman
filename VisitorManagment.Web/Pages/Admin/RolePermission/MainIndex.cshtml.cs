@@ -31,7 +31,8 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         public List<PermissionViewModel> ListAccsessPersonal { get; set; }
         public List<PermissionViewModel> ListUnAccsessPersonal { get; set; }
 
-        public int? RoleId;
+        [BindProperty(SupportsGet = true)]
+        public int? RoleId { get; set; }
         #region اعضا و متدهای کلاس
 
 
