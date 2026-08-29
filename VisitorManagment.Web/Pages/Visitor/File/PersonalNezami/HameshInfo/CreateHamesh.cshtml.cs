@@ -250,7 +250,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
             }
 
             // بررسی اعتبار ورودی‌ها
-            if (actionTypeId == 0 || string.IsNullOrEmpty(userDesc))
+            if (actionTypeId <= 0 || string.IsNullOrWhiteSpace(userDesc) || rcvrUserId == null || !rcvrUserId.Any())
             {
                 // مقداردهی اولیه ViewModels و ViewData
                 ViewData["fileId"] = fileId;
@@ -291,7 +291,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
                 ViewData["ActionType"] = new SelectList(_hameshService.GetActionType(), "Id", "Title");
                 ViewData["ShowPage"] = true;
 
-                ModelState.AddModelError("", "کاربر گرامی لطفا فیلد های نوع اقدام و نظریه/دستور را پر نمایید");
+                ModelState.AddModelError("", "نوع اقدام، متن نظریه و حداقل یک گیرنده را مشخص کنید.");
                 return Page();
             }
 
@@ -312,17 +312,21 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
             // ثبت هامش
             try
             {
-                var resHamesh = _hameshService.RegHamesh(actionTypeId, roleTypeId, roleTypeTitle,RoleTypeIdFinal , RoleTypeTitleFinal, userDesc, userId, fileId, hameshFullInfoViewModel.SumMablaghVamDarkhasti, hameshFullInfoViewModel.MablaghVamMohaghaghSode, rcvrUserId);
+                var requestedAmount = hameshFullInfoViewModel?.SumMablaghVamDarkhasti;
+                var approvedAmount = hameshFullInfoViewModel?.MablaghVamMohaghaghSode;
+                var resHamesh = _hameshService.RegHamesh(actionTypeId, roleTypeId, roleTypeTitle, RoleTypeIdFinal, RoleTypeTitleFinal, userDesc, userId, fileId, requestedAmount, approvedAmount, rcvrUserId);
                 if (resHamesh.Status)
                 {
-                    ViewData["successcreate"] = true;
-                    //گزاشتیم تا صفحه در ابتدا لود بشه
-                    ViewData["ShowPage"] = false;
+                    TempData["OperationTitle"] = "ثبت موفق";
+                    TempData["OperationMessage"] = resHamesh.Message;
+                    TempData["OperationIcon"] = "success";
+                    return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
                 }
                 else
                 {
-                    ViewData["successcreate"] = false;
-                    ViewData["ShowPage"] = false;
+                    ModelState.AddModelError("", resHamesh.Message);
+                    OnGet(fileId);
+                    return Page();
                 }
 
             }
@@ -380,7 +384,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
             var sndUserId = userId;
             #endregion
 
-            if (actionTypeId == 0 || userDesc == "" || userDesc == null)
+            if (actionTypeId <= 0 || string.IsNullOrWhiteSpace(userDesc) || rcvrUserId == null || !rcvrUserId.Any())
             {
 
                 #region Initial
@@ -409,7 +413,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
 
                 ViewData["ShowPage"] = true;
 
-                ModelState.AddModelError("", "کاربر گرامی لطفا فیلد های نوع اقدام و نظریه/دستور را پر نمایید");
+                ModelState.AddModelError("", "نوع اقدام، متن نظریه و حداقل یک گیرنده برای عودت را مشخص کنید.");
 
                 return Page();
             }
@@ -419,16 +423,21 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
             try
 
             {
-                var res = _hameshService.RegHamesh(actionTypeId, roleTypeId, roleTypeTitle, roleTypeIdFinal , roleTypeTitleFinal ,  userDesc, userId, fileId, hameshFullInfoViewModel.SumMablaghVamDarkhasti, hameshFullInfoViewModel.MablaghVamMohaghaghSode, rcvrUserId);
+                var requestedAmount = hameshFullInfoViewModel?.SumMablaghVamDarkhasti;
+                var approvedAmount = hameshFullInfoViewModel?.MablaghVamMohaghaghSode;
+                var res = _hameshService.RegHamesh(actionTypeId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal, userDesc, userId, fileId, requestedAmount, approvedAmount, rcvrUserId);
                 if (res.Status)
                 {
-                    ViewData["successAoudat"] = true;
-
+                    TempData["OperationTitle"] = "عودت موفق";
+                    TempData["OperationMessage"] = res.Message;
+                    TempData["OperationIcon"] = "success";
+                    return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
                 }
                 else
                 {
-                    ViewData["successAoudat"] = false;
-
+                    ModelState.AddModelError("", res.Message);
+                    OnGet(fileId);
+                    return Page();
                 }
                 ViewData["ShowPage"] = false;
             }
@@ -498,12 +507,6 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
             //اضافه کردن شناسه جلسه به جدول درخواست ملاقات
             var resAddToFile = _meetingService.AddSingleMeetingIdToFile(fileId.FirstOrDefault(), meetingId);
 
-            var userDesc = "بسمه تعالی به جلسه اضافه گردید";
-            List<int> rcvrUser=new List<int>();
-            rcvrUser.Add(_userService.GetUserByUserId(139).Id);
-           
-            _hameshService.RegHamesh( 3 , roleTypeId, roleTypeTitle ,RoleTypeIdFinal , RoleTypeTitleFinal , "", userId , fileId.FirstOrDefault() ,null , null , rcvrUser);
-
             if (resAddToFile.Status)
             {
                 //اضافه کردن به جدول نفرات جلسه
@@ -511,12 +514,22 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
 
                 if (resAddToMemberMeeting.Status)
                 {
-                    return new JsonResult(true);
+                    var meetingReceiver = _userService.GetUserByUserId(139);
+                    if (meetingReceiver == null)
+                    {
+                        return new JsonResult(new { success = false, message = "کاربر مسئول جلسه یافت نشد." });
+                    }
+
+                    var receiverIds = new List<int> { meetingReceiver.Id };
+                    var userDesc = "بسمه تعالی، درخواست ملاقات به جلسه ارجاع گردید.";
+                    var hameshResult = _hameshService.RegHamesh(3, roleTypeId, roleTypeTitle, RoleTypeIdFinal,
+                        RoleTypeTitleFinal, userDesc, userId, fileId.FirstOrDefault(), null, null, receiverIds);
+
+                    return new JsonResult(new { success = hameshResult.Status, message = hameshResult.Message });
                 }
             }
 
-
-            return new JsonResult(false);
+            return new JsonResult(new { success = false, message = "ارجاع درخواست به جلسه انجام نشد." });
 
         }
         #endregion
