@@ -20,6 +20,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Role> GetrcvrList(int roleId)
         {
             var rcvrList = _context.WorkFlows.Where(c => c.SndrRoleId == roleId).Select(c => c.RcvrRoleId).ToList();
@@ -30,6 +33,9 @@ namespace VisitorManagment.Core.Services
                 }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetRecieverUserListByFileId(int fileId, int userId)
         {
             var users = _context.Hameshes.Include(h => h.User)
@@ -58,6 +64,9 @@ namespace VisitorManagment.Core.Services
             return users;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetRecieverUserByFileId(int fileId)
         {
 
@@ -65,6 +74,9 @@ namespace VisitorManagment.Core.Services
             return users;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetRecieverUserListBySndrRoleId(int roleId, int unitDutyCode, int unitCode, int codeGha, int fileId, int roleTypeId)
         {
             var FileId = fileId;
@@ -100,6 +112,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetRecieverFarmandehiNezajaList(int roleId)
         {
 
@@ -122,6 +137,9 @@ namespace VisitorManagment.Core.Services
             return res;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListUserForAoudatToCartable GetRecieverUserListByFileIdDto(int fileId)
         {
             var users = _context.Hameshes.Include(h => h.User)
@@ -242,6 +260,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void RemoveAccessToRole(List<int> reciverRoleList, int roleId, int addUserId)
         {
             foreach (int item in reciverRoleList)
