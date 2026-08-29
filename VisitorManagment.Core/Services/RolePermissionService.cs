@@ -16,6 +16,15 @@ namespace VisitorManagment.Core.Services
         {
             _context = context;
         }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddPermissionToRole(int roleId, List<int> permissionId)
         {
 
@@ -32,6 +41,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void RemovePermissionToRole(int roleId, List<int> permissionId)
         {
             foreach (int item in permissionId)
@@ -42,5 +54,6 @@ namespace VisitorManagment.Core.Services
                 _context.SaveChanges();
             }
         }
+        #endregion
     }
 }
