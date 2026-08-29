@@ -23,14 +23,15 @@
             </select>
             <small>پس از انتخاب نقش، فهرست دسترسی‌ها نمایش داده می‌شود.</small>
         </div>
+        <button type="submit" class="access-reset"><i class="ti-search"></i> نمایش دسترسی‌ها</button>
         <a asp-page="./MainIndex" class="access-reset"><i class="ti-reload"></i> بازنشانی</a>
     </form>
 
     @if (ViewBag.ShowForm == true)
     {
-        <form method="post" class="access-board" data-access-board>
-            <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
-            <section class="access-panel access-panel--available" data-access-panel>
+        <div class="access-board" data-access-board>
+            <form method="post" class="access-panel access-panel--available" data-access-panel>
+                <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
                 <div class="access-panel__header">
                     <div><span class="access-panel__status"><i class="ti-close"></i> بدون دسترسی</span><h2>منوهای قابل افزودن</h2></div>
                     <span class="access-count">@Model.ListUnAccsessPersonal.Count مورد</span>
@@ -56,9 +57,10 @@
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
                     <button type="submit" asp-page-handler="AddAccess" class="access-action access-action--add" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده به این نقش اضافه شود؟"><i class="ti-plus"></i> افزودن دسترسی</button>
                 </footer>
-            </section>
+            </form>
 
-            <section class="access-panel access-panel--granted" data-access-panel>
+            <form method="post" class="access-panel access-panel--granted" data-access-panel>
+                <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
                 <div class="access-panel__header">
                     <div><span class="access-panel__status"><i class="ti-check"></i> دارای دسترسی</span><h2>منوهای فعال این نقش</h2></div>
                     <span class="access-count">@Model.ListAccsessPersonal.Count مورد</span>
@@ -84,8 +86,8 @@
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
                     <button type="submit" asp-page-handler="RemoveAccess" class="access-action access-action--remove" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده از این نقش حذف شود؟"><i class="ti-trash"></i> حذف دسترسی</button>
                 </footer>
-            </section>
-        </form>
+            </form>
+        </div>
     }
     else
     {
