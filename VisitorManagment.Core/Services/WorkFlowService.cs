@@ -243,21 +243,35 @@ namespace VisitorManagment.Core.Services
         /// <param name="addUserId"></param>
         public void AddAccessToRole(List<int> reciverRoleList, int roleId, int addUserId)
         {
-
-            foreach (int item in reciverRoleList)
+            if (roleId <= 0 || reciverRoleList == null || reciverRoleList.Count == 0)
             {
-                _context.WorkFlows.Add(new WorkFlow()
-                {
-                    RcvrRoleId = item,
-                    SndrRoleId = roleId,
-                    RegUserId = addUserId,
-                    RegDate = DateTime.Now,
-
-                });
-                _context.SaveChanges();
+                return;
             }
 
+            var requestedRoleIds = reciverRoleList.Where(id => id > 0 && id != roleId).Distinct().ToList();
+            var existingRoleIds = _context.WorkFlows
+                .Where(item => item.SndrRoleId == roleId && requestedRoleIds.Contains(item.RcvrRoleId))
+                .Select(item => item.RcvrRoleId)
+                .ToList();
 
+            var workFlows = requestedRoleIds
+                .Where(id => !existingRoleIds.Contains(id))
+                .Select(id => new WorkFlow
+                {
+                    RcvrRoleId = id,
+                    SndrRoleId = roleId,
+                    RegUserId = addUserId,
+                    RegDate = DateTime.Now
+                })
+                .ToList();
+
+            if (workFlows.Count == 0)
+            {
+                return;
+            }
+
+            _context.WorkFlows.AddRange(workFlows);
+            _context.SaveChanges();
         }
 
         /// <summary>
@@ -265,14 +279,23 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public void RemoveAccessToRole(List<int> reciverRoleList, int roleId, int addUserId)
         {
-            foreach (int item in reciverRoleList)
+            if (roleId <= 0 || reciverRoleList == null || reciverRoleList.Count == 0)
             {
-                var workFlow = _context.WorkFlows.Where(x => x.SndrRoleId == roleId && x.RcvrRoleId == item).FirstOrDefault();
-
-                _context.Remove(workFlow);
-                _context.SaveChanges();
-
+                return;
             }
+
+            var requestedRoleIds = reciverRoleList.Where(id => id > 0).Distinct().ToList();
+            var workFlows = _context.WorkFlows
+                .Where(item => item.SndrRoleId == roleId && requestedRoleIds.Contains(item.RcvrRoleId))
+                .ToList();
+
+            if (workFlows.Count == 0)
+            {
+                return;
+            }
+
+            _context.WorkFlows.RemoveRange(workFlows);
+            _context.SaveChanges();
         }
     }
 }
