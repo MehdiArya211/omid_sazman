@@ -18,6 +18,12 @@ namespace VisitorManagment.Web.Hubs
             _chatRoomService = chatRoomService;
             _messageService = messageService;
         }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
 
         public async Task SendNewMessage(string Sender, string Message)
         {
@@ -59,6 +65,9 @@ namespace VisitorManagment.Web.Hubs
         }
 
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override async Task OnConnectedAsync()
         {
             var user = Context.User.FindFirstValue(ClaimTypes.Email);
@@ -75,9 +84,13 @@ namespace VisitorManagment.Web.Hubs
             await base.OnConnectedAsync();
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override Task OnDisconnectedAsync(Exception exception)
         {
             return base.OnDisconnectedAsync(exception);
         }
+        #endregion
     }
 }
