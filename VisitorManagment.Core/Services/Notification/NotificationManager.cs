@@ -19,12 +19,15 @@ namespace VisitorManagment.Core.Services.Notification
         {
             _context = context;
         }
+        #region اعضا و متدهای کلاس
+
 
         /// <summary>
         /// لیست تمام اطلاعیه هایی که کاربران مشاهده نکرده اند
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
+
         public BaseResult GetAllNotificationNoWatchingUser(int userId)
         {
             var Notifications = _context.Notifications
@@ -49,6 +52,9 @@ namespace VisitorManagment.Core.Services.Notification
             };
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult Create(DataLayer.Notification Notification)
         {
             var notification = new DataLayer.Notification
@@ -91,5 +97,6 @@ namespace VisitorManagment.Core.Services.Notification
             {
             };
         }
+        #endregion
     }
 }
