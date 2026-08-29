@@ -34,6 +34,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.AdminViewRequestCirculation
         public ListFileViewModel listviewmodel { get; set; }
         public List<Users> users { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int pageId = 1, string filterCaption = "", int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0, int filterMoavenat = 0, string startDateSearch = "", string endDateSearch = "")
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
@@ -90,6 +93,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.AdminViewRequestCirculation
             users = new List<Users>();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             var result = _webApiService.GetOrganByGharargahId(id);
