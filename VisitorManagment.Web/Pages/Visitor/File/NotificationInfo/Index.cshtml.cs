@@ -19,6 +19,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.NotificationInfo
 
 
         public List<Notification> model { get; set; } 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
