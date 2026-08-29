@@ -20,6 +20,12 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
 
         [BindProperty]
         public ListMeetingViewModel listMeetingViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet(int pageId = 1, int filterMeetingStatus = 1, string filterCaption = "")
         {
             ViewData["UnitCode"]  = User.FindFirst("UnitCode").Value; 
@@ -29,6 +35,9 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
 
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYeganList(int id)
         {
             var meetingId = id;
@@ -36,5 +45,6 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
 
             return new JsonResult(result);
         }
+        #endregion
     }
 }
