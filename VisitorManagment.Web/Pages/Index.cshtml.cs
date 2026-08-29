@@ -50,12 +50,18 @@ namespace VisitorManagment.Web.Pages
         public LoginViewModel LoginViewModel { get; set; }
         public ItoLogInfoViewModel itoLogInfoViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
         }
 
     
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
             if (!ModelState.IsValid)
@@ -179,6 +185,9 @@ namespace VisitorManagment.Web.Pages
 
 
         //mehdi 1403-05-13
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost1()
         {
             if (!ModelState.IsValid)
