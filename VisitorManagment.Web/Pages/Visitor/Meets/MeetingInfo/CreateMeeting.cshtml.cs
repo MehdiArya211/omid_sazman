@@ -27,6 +27,14 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
 
         public IActionResult OnPost(int meetingStatusId, int meetingPlaceId, int boseMeetingId, int clerkMeetingId)
         {
+            OnGet();
+            if (!ModelState.IsValid)
+                return Page();
+            if (meetingStatusId <= 0 || meetingPlaceId <= 0 || boseMeetingId <= 0 || clerkMeetingId <= 0)
+            {
+                ModelState.AddModelError("", "وضعیت، محل، رئیس و منشی جلسه باید انتخاب شوند.");
+                return Page();
+            }
 
             var userid = int.Parse(User.FindFirst("Id").Value);
             meetingViewModel.MeetingStatusId = meetingStatusId;
@@ -34,8 +42,10 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
             meetingViewModel.BoseMeetingId = boseMeetingId;
             meetingViewModel.ClerkMeetingId = clerkMeetingId;
             _meetingService.CreateMeeting(userid, meetingViewModel);
-            ViewData["successcreate"] = true;
-            return Page();
+            TempData["OperationTitle"] = "ثبت موفق";
+            TempData["OperationMessage"] = "جلسه با موفقیت ثبت شد.";
+            TempData["OperationIcon"] = "success";
+            return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
 
         }
     }
