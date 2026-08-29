@@ -1,0 +1,34 @@
+@{
+    var message = TempData["OperationMessage"]?.ToString();
+    var title = TempData["OperationTitle"]?.ToString();
+    var icon = TempData["OperationIcon"]?.ToString();
+
+    // پشتیبانی از پیام‌های قدیمی صفحات تا زمان یکپارچه‌سازی کامل Handlerها.
+    if (string.IsNullOrWhiteSpace(message) && ViewData["successcreate"] is bool createSucceeded)
+    {
+        message = createSucceeded ? "عملیات ثبت با موفقیت انجام شد." : "عملیات ثبت انجام نشد.";
+        title = createSucceeded ? "ثبت موفق" : "خطا در ثبت";
+        icon = createSucceeded ? "success" : "error";
+    }
+    if (string.IsNullOrWhiteSpace(message) && ViewData["successEdit"] is bool editSucceeded)
+    {
+        message = editSucceeded ? "عملیات ویرایش با موفقیت انجام شد." : "عملیات ویرایش انجام نشد.";
+        title = editSucceeded ? "ویرایش موفق" : "خطا در ویرایش";
+        icon = editSucceeded ? "success" : "error";
+    }
+    if (string.IsNullOrWhiteSpace(message) && ViewData["successAoudat"] is bool returnSucceeded)
+    {
+        message = returnSucceeded ? "عودت درخواست با موفقیت انجام شد." : "عودت درخواست انجام نشد.";
+        title = returnSucceeded ? "عودت موفق" : "خطا در عودت";
+        icon = returnSucceeded ? "success" : "error";
+    }
+}
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div id="operation-notification"
+         data-title="@(title ?? "پیام سیستم")"
+         data-message="@message"
+         data-icon="@(icon ?? "info")"
+         hidden></div>
+}
