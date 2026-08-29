@@ -35,6 +35,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
         [BindProperty]
         public EditFactPersonalViewModel editFactPersonalViewModel { get; set; }
         public SMSInfoViewModel smsInfoViewModel { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int id)
         {
 
@@ -48,6 +51,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
             return Page();
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
             LoadDropdowns();
@@ -115,6 +121,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
         }
 
         #region گرفتن اطلاعات پرسنلی فرمانده یگان با کد پرسنلی
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalFarmandehId(string personalno)
         {
 
@@ -131,6 +140,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
         }
         #endregion
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         private void LoadDropdowns()
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
