@@ -9,7 +9,13 @@ namespace VisitorManagment.Core.Services.Interfaces
 {
 	public interface IHameshService
     {
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ActionType> GetActionType();
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<VamCode> GetVamCode();
         /// <summary>
         /// ویرایش هامش خالی که نفر هنگام ثبت درخواست ثبت کرده است
@@ -24,6 +30,9 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="mablaghVamMohaghaghShode"></param>
         public BaseResult EditHamesh(int actionTypeId,int roleTypeId , string roleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal, string userDesc , 
             int userId, int fileId  , double? mablaghVamDarkhasti, double? mablaghVamMohaghaghShode);
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void EditHameshForMeetingViewModel(int actionTypeId, MeetingHoldViewModel meetingHoldViewModel, int userId, int fileId);
         /// <summary>
         /// زمانیکه یه درخواست ملاقات ثبت میشه باید یه رکورد خالی هم تو هامش بخوره با شناسه نفری که لاگین کرده
@@ -34,6 +43,9 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="RoleTypeTitle"></param>
         /// <returns></returns>
         public BaseResult AddToHameshWhenCreateFile(int userId, int FileId , int RoleTypeId , string RoleTypeTitle,   int RoleTypeIdFinal, string RoleTypeTitleFinal );
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToHameshWhenSendListFileToFarmandehiNezaja(List<int> rcvrUserId, List<Files> files, int RoleTypeId, string RoleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal, int userId);
         /// <summary>
         /// وقتی درخواست ملاقات نفر رو به کارتابل هر کی ارسال میکنیم یه هامش خالی به گیرنده میفرستیم
@@ -44,6 +56,9 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="RoleTypeId"></param>
         /// <param name="RoleTypeTitle"></param>
         public BaseResult AddToHameshWhenSendFileToCartable(int userId, int fileId, List<int> rcvrUserId , int RoleTypeId , string RoleTypeTitle, int RoleTypeIdFinal, string RoleTypeTitleFinal);
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToHameshWhenSendListFileToCartable(int userId, List<Files> files, List<int> rcvrUserId , int RoleTypeId , string RoleTypeTitle);
         /// <summary>
         /// وقتی هامش روش میزنه و عودت رو میزنه یه هامش خالی روش میزنه 
@@ -54,9 +69,21 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="roleTypeId"></param>
         /// <param name="roleTypeTitle"></param>
         public void AddToHameshWhenSendFileToCartableWhenBackFile(int userId, int fileId, List<int> rcvrUserId, int roleTypeId, string roleTypeTitle);
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToHameshWhenSendFileToCartableInMeetingHold(int userId, int fileId, /*List<int>*/  int rcvrUserId , Hamesh hamehsViewModel);
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddHamesh(Hamesh hamesh);
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListHameshViewModel GetHameshIdByFileId(int fileId , int pageId = 1, int requestsubject = 0, string filterCaption = "");
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int GetHameshIdByUseerIdAndFileId(int userId, int fileId);
         /// <summary>
         /// هامش کسی که لاگین کرده برای درخواست نفر
@@ -65,10 +92,22 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="fileId"></param>
         /// <returns></returns>
         public Hamesh GetHameshByUserIdAndFileId(int userId, int fileId);
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetHameshHeiatReeiseByUserIdAndFileId(int userId, int fileId);
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Hamesh GetHameshByUserIdAndFileId2(int userId, int? fileId);
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetParentIdHameshByUserIdAndFileId(int userId, int fileId);
        
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetUserByParentId(int? parentId);
         BaseResult UpdateHamesh(Hamesh hamesh);
         int? GetMeetingIdByFileId(int fileId);
