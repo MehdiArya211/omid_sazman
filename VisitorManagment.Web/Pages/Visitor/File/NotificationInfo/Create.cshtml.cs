@@ -14,11 +14,20 @@ namespace VisitorManagment.Web.Pages.Visitor.File.NotificationInfo
         }
         [BindProperty]
         public NotificationViewModel Notification { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet()
         {
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
             if (!ModelState.IsValid)
@@ -30,5 +39,6 @@ namespace VisitorManagment.Web.Pages.Visitor.File.NotificationInfo
 
             return Page();
         }
+        #endregion
     }
 }
