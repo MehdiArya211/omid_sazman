@@ -34,6 +34,9 @@ namespace VisitorManagment.Web
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
@@ -139,6 +142,9 @@ namespace VisitorManagment.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
