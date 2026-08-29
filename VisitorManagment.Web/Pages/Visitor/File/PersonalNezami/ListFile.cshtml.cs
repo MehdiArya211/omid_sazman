@@ -48,6 +48,9 @@ namespace VisitorManagment.Web.Pages.Visitor
         public ListHameshViewModel ListHameshViewModel { get; set; } = new ListHameshViewModel();
 
         // متد GET برای بارگذاری صفحه و مقداردهی اولیه فیلترها و داده‌های نمایشی
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int pageId = 1, string filterCaption = "", int requestSubject = 0, int filterAvamerSadereh = 0, string filterGharargah = "")
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
@@ -63,6 +66,9 @@ namespace VisitorManagment.Web.Pages.Visitor
 
         // متد برای دریافت اطلاعات فایل به صورت JSON
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetFileInfo(int fileid)
         {
             var file = _fileService.GetFile(fileid);
@@ -71,6 +77,9 @@ namespace VisitorManagment.Web.Pages.Visitor
         }
 
         // دریافت هامش‌ها بر اساس شناسه فایل و بازگشت نتیجه به صورت PartialView
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetHamesh(int fileId)
         {
             ListHameshViewModel = _hameshService.GetHameshIdByFileId(fileId);
@@ -83,12 +92,21 @@ namespace VisitorManagment.Web.Pages.Visitor
         }
 
         // بررسی امکان نوشتن هامش و بازگشت نتیجه به صورت JSON
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetCheckWriteHamesh(int fileId) => new JsonResult(_fileService.GetFile(fileId).Id);
 
         // جستجوی خودکار برای پیشنهاد نام‌ها و بازگشت نتیجه به صورت JSON
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetSearch(string term) => new JsonResult(_fileService.GetFileForAutoCompliteSearch(term));
 
         // متد POST برای صفحه‌بندی و بروزرسانی لیست فایل‌ها با فیلترهای جدید
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostPagination(int currentPage = 1, string filterCaption = "", int requestSubject = 0, int filterAvamerSadereh = 0, string filterGharargah = "")
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
@@ -101,6 +119,9 @@ namespace VisitorManagment.Web.Pages.Visitor
         }
 
         // متد برای آرشیو کردن یک فایل و بازگشت به لیست فایل‌ها
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetArchive1(int fileId)
         {
             var userId = int.Parse(User.FindFirst("Id").Value);
@@ -109,6 +130,9 @@ namespace VisitorManagment.Web.Pages.Visitor
             return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetArchive(int fileId)
         {
             try
@@ -126,6 +150,9 @@ namespace VisitorManagment.Web.Pages.Visitor
         }
 
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         private void PopulateViewData(int userId)
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
