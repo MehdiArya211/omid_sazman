@@ -46,6 +46,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAll
         public SearchPageUnitCodeReportViewModel searchPageUnitCodeReportViewModel1 { get; set; }
         public SearchPageUnitCodeReportViewModel searchPageUnitCodeReportViewModel2 { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int filterGharargah = 0)
         {
             ViewData["Gharargah"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
@@ -114,6 +117,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAll
             #endregion
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int codeGha1 , int codeGha2 ,int unitCode1, int unitCode2, int actionTypeId, string startDateSearch = "", string endDateSearch = "")
         {
             ViewData["Gharargah"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
@@ -254,6 +260,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAll
 
 
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             var result = _webApiService.GetOrganByGharargahId(id).Data;
