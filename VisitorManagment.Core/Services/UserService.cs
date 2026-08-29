@@ -39,6 +39,9 @@ namespace VisitorManagment.Core.Services
             _client = new HttpClient();
 
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public CreateUserViewModel GetPersonalByPersonalNo(string Id, string token)
         {
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -50,10 +53,16 @@ namespace VisitorManagment.Core.Services
             return person;
         }
 
+        /// <summary>
+        /// شرایط موردنظر را بررسی می‌کند.
+        /// </summary>
         public bool IsExistUserName(string userName)
         {
             return _context.Users.Any(u => u.UserName == userName);
         }
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public Users LoginUser(LoginViewModel login)
         {
             var pass = PasswordHelper.EncodePasswordMd5(login.Password);
@@ -64,6 +73,9 @@ namespace VisitorManagment.Core.Services
 
             return result;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public InformationUserViewModel GetUserInformation(int userId)
         {
             var user = GetUserByUserId(userId);
@@ -81,6 +93,9 @@ namespace VisitorManagment.Core.Services
             return information;
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteUser(int userId)
         {
             var user = GetUserByUserId(userId);
@@ -90,6 +105,9 @@ namespace VisitorManagment.Core.Services
             UpdateUser(user);
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddUser(Users user)
         {
             _context.Users.Add(user);
@@ -97,25 +115,40 @@ namespace VisitorManagment.Core.Services
             return user.Id;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetUserByUserId(int userId)
         {
             return _context.Users.Find(userId);
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void UpdateUser(Users user)
         {
             _context.Update(user);
             _context.SaveChanges();
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetUserByUserName(string username)
         {
             return _context.Users.SingleOrDefault(u => u.UserName == username);
         }
       
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetUserByUserNameIfDeleteTrue(string username)
         {
             return _context.Users.SingleOrDefault(u => u.UserName == username);
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetUserByActiveCode(string activeCode)
         {
             return _context.Users.SingleOrDefault(u => u.ActiveCode == activeCode);
@@ -123,6 +156,9 @@ namespace VisitorManagment.Core.Services
 
         #region AdminPanel
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddUserFromAdmin(CreateUserViewModel user)
         {
 
@@ -172,6 +208,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void EditUserFromAdmin(EditUserViewModel editUserViewModel, string password, int EditUserId, int userId)
 
         {
@@ -228,6 +267,9 @@ namespace VisitorManagment.Core.Services
             UpdateUser(editUser);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public UserForAdminViewModel GetDeleteUsers(int pageId = 1, string filterFullName = "", string filterUserName = "")
         {
             IQueryable<Users> result = _context.Users.IgnoreQueryFilters().Where(u => u.IsDelete);
@@ -284,6 +326,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public EditUserViewModel GetUserForShowInEditMode(int userId)
         {
             var roleId = _context.UserRoles.Where(u => u.UserId == userId).Select(u => u.RoleId).SingleOrDefault();
@@ -313,6 +358,9 @@ namespace VisitorManagment.Core.Services
             }).SingleOrDefault();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public UserForAdminViewModel GetUsers(int roleTypeId, string userIdLoggin, int pageId = 1, string filterFullName = "", string filterUserName = "")
         {
 
@@ -383,16 +431,25 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         #region useraccess
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int GetUserIdByPersonalCode(string personalCode)
         {
             return _context.Users.Where(u => u.UserName == personalCode).Select(u => u.Id).SingleOrDefault();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetUserByPersonalCode(string personalCode)
         {
             return _context.Users.Where(u => u.UserName == personalCode).SingleOrDefault();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public UserInfoViewModel GetUserByPersonalNo(string personalCode)
         {
             return _context.Users.Include(x => x.UserRoles)
@@ -408,6 +465,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetUsers(int unitDutyCode)
         {
             return _context.Users
@@ -432,6 +492,9 @@ namespace VisitorManagment.Core.Services
         //}
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddAccessTypeToRole(List<int> accessRoleIds, int roleId, int addUserId)
         {
             //ابتدا دسترسی های داده شده به یک نقش را حذف کرده سپس مجددا ثبت میکنیم
@@ -456,6 +519,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         #region ChangePassword
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public bool ForgetPassword(ForgetPasswordViewModel forgetPassword)
         {
             var user = _context.Users.Where(x => x.UserName == forgetPassword.UserName).SingleOrDefault();
@@ -473,6 +539,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         #region SignUp
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public int SignUpUser(SignUpViewModel user)
         {
             int userId = 0;
@@ -535,6 +604,9 @@ namespace VisitorManagment.Core.Services
             return userId;
         }
 
+        /// <summary>
+        /// شرایط موردنظر را بررسی می‌کند.
+        /// </summary>
         public checkingFPrsnNoViewModel CheckingCreateFYeganOmdeh(int unitCode ,  int codeGha)
         {
             checkingFPrsnNoViewModel result=new checkingFPrsnNoViewModel ();
@@ -643,6 +715,9 @@ namespace VisitorManagment.Core.Services
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetInfoUserLoginHistory(int userName)
         {
             var info = _context.UserLoginHistories.Where(x => x.UserName == userName.ToString()).FirstOrDefault();
