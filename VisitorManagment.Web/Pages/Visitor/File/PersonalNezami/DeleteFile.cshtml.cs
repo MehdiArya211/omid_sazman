@@ -26,8 +26,18 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
         }
         public IActionResult OnPost(int Id)
         {
-            _fileService.DeleteFile(Id);
+            if (Id <= 0)
+            {
+                TempData["OperationTitle"] = "خطا در حذف";
+                TempData["OperationMessage"] = "شناسه درخواست ملاقات معتبر نیست.";
+                TempData["OperationIcon"] = "error";
+                return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
+            }
 
+            _fileService.DeleteFile(Id);
+            TempData["OperationTitle"] = "حذف موفق";
+            TempData["OperationMessage"] = "درخواست ملاقات با موفقیت حذف شد.";
+            TempData["OperationIcon"] = "success";
             return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
         }
     }
