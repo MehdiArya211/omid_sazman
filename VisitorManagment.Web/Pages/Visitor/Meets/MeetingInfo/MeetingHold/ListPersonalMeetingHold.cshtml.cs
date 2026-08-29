@@ -28,6 +28,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.MeetingHold
         [BindProperty]
         public ListMeetingHoldViewModel listMeetingHoldViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int id, int pageId = 1, string filterCaption = "")
         {
 
