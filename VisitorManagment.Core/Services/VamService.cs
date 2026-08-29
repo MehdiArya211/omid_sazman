@@ -19,9 +19,18 @@ namespace VisitorManagment.Core.Services
             _context = context;
             _vamCodeService = vamCodeService;
         }
+        #region اعضا و متدهای کلاس
 
 
 
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int CreateVam(int vamCodeId, string title, int fileId, int regUserId)
         {
             //اینجا کد وام رو با آیدی وام بیارم
@@ -48,6 +57,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddVam(Vam vam)
         {
             _context.Add(vam);
@@ -80,6 +92,9 @@ namespace VisitorManagment.Core.Services
             return listVam;
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public List<VamViewModel> getAllVamWithFileIdLBK(int fileId)
         {
             var listVam = new List<VamViewModel>();
@@ -87,6 +102,9 @@ namespace VisitorManagment.Core.Services
             return listVam;
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public BaseResult DeleteVam(int vamId)
         {
             var vamExist = _context.Vams.Where(x => x.Id == vamId).FirstOrDefault();
@@ -109,5 +127,6 @@ namespace VisitorManagment.Core.Services
             }
 
         }
+        #endregion
     }
 }
