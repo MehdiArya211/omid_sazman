@@ -209,6 +209,11 @@ namespace VisitorManagment.Core.Services
                  .FirstOrDefault();
 
 
+            if (cartable == null)
+            {
+                return false;
+            }
+
             _context.Remove(cartable);
 
             return Commit();
@@ -249,7 +254,8 @@ namespace VisitorManagment.Core.Services
             var res = _context.SaveChanges();
 
 
-            if (res == 1)//true
+            // با چند گیرنده، SaveChanges بیش از یک رکورد را برمی‌گرداند.
+            if (res > 0)
             {
                 return new BaseResult
                 {
