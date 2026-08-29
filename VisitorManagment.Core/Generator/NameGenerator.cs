@@ -6,6 +6,9 @@ namespace VisitorManagment.Core.Generator
 {
     public class NameGenerator
     {
+        /// <summary>
+        /// خروجی موردنیاز را تولید می‌کند.
+        /// </summary>
         public static string GenerateUniqCode()
         {
             //==== GUId = Globaly Unique Identifire
