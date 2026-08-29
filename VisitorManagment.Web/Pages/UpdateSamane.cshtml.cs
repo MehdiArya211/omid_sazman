@@ -5,6 +5,9 @@ namespace VisitorManagment.Web.Pages
 {
     public class UpdateSamaneModel : PageModel
     {
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
         }
