@@ -43,6 +43,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddCartable(Cartable cartable)
         {
             _context.Cartables.Add(cartable);
@@ -173,6 +176,9 @@ namespace VisitorManagment.Core.Services
         }
 
         #region send File to Cartable User Nezaja
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public int SendFileToCartableUserNejaza(List<int> rcvrUserId, int sndrUserId)
         {
             var fileId = _context.Cartables.Where(u => u.RcvrUserId == sndrUserId).Select(u => u.FileId).FirstOrDefault();
@@ -202,6 +208,9 @@ namespace VisitorManagment.Core.Services
         #endregion
         #endregion
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public bool RemoveCartable(int fileId, int senderId)
         {
             var cartable = _context.Cartables
@@ -220,6 +229,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// تغییرات جاری را در پایگاه داده ذخیره می‌کند.
+        /// </summary>
         public bool Commit()
         {
             try
@@ -233,6 +245,9 @@ namespace VisitorManagment.Core.Services
             }
         }
 
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public BaseResult SendFileToCartableRecivers(List<int> rcvrUserId, int sndrUserId, int fileId)
         {
             var file = _context.Files.Where(f => f.Id == fileId).FirstOrDefault();
@@ -273,6 +288,9 @@ namespace VisitorManagment.Core.Services
             }
         }
 
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public BaseResult SendFileToCartableWhenRegHamesh(List<int> rcvrUserId, int sndrUserId, int fileId)
         {
             var file = _fileService.GetFileByFileId(fileId);
