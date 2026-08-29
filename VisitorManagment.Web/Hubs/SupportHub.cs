@@ -23,6 +23,12 @@ namespace VisitorManagment.Web.Hubs
             _messageService = messageService;
             _siteChathub = hubContext;
         }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
+
         public async override Task OnConnectedAsync()
         {
             var rooms = await _chatRoomService.GetAllrooms();
@@ -31,12 +37,18 @@ namespace VisitorManagment.Web.Hubs
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task LoadMessage(Guid roomId)
         {
             var message = await _messageService.GetChatMessage(roomId);
             await Clients.Caller.SendAsync("getNewMessage", message);
         }
 
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public async Task SendMessage(Guid roomId,string text)
         {
             var message = new MessageDto
@@ -52,5 +64,6 @@ namespace VisitorManagment.Web.Hubs
                 .SendAsync("getNewMessage", message.Sender, message.Message, message.Time.ToShortTimeString());
                 
         }
+        #endregion
     }
 }
