@@ -16,6 +16,12 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
         {
             _context = context;
         }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
 
         public Task<List<MessageDto>> GetChatMessage(Guid RoomId)
         {
@@ -29,6 +35,9 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             return Task.FromResult(messages);
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public Task SaveChatMessage(Guid RoomId, MessageDto message)
         {
             var room = _context.ChatRooms.SingleOrDefault(p => p.Id == RoomId);
@@ -43,5 +52,6 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             _context.SaveChanges();
             return Task.CompletedTask;
         }
+        #endregion
     }
 }
