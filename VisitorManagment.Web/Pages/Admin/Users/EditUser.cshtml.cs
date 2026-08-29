@@ -174,6 +174,15 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
         public IActionResult OnPost(string password, int userId, string fname, string lname, string rankTitle)
         {
+            var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
+            ViewData["RolesTitle"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
+
+            if (editUserViewModel == null || userId <= 0)
+            {
+                ModelState.AddModelError("", "اطلاعات کاربر معتبر نیست.");
+                return Page();
+            }
+
             editUserViewModel.RankTitle = rankTitle;
             if (editUserViewModel.UserRolesId == 0)
             {
@@ -197,6 +206,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             _permissionService.EditRolesToUser(editUserViewModel.UserRolesId, userId);
 
 
+            TempData["OperationTitle"] = "ویرایش موفق";
+            TempData["OperationMessage"] = "اطلاعات کاربر با موفقیت ویرایش شد.";
+            TempData["OperationIcon"] = "success";
             return Redirect("/Admin/Users");
 
         }
