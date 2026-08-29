@@ -25,6 +25,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.MeetingHold
         [BindProperty]
         public ReportTestInfoViewModel reportTestInfoViewModel { get; set; }
         public ReportTestInfoViewModelV2 reportTestInfoViewModelv2 { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int id)
         {
             reportTestInfoViewModel = _reportService.GetReportFullPersonal(id);
