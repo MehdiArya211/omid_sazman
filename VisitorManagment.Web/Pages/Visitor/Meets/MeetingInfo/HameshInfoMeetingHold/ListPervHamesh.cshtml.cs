@@ -31,6 +31,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo.MeetingHold.Hamesh
         [BindProperty]
         public ListHameshViewModel listHameshViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int id, int pageId = 1, int filterMeetingStatus = 1, string filterCaption = "")
         {
             listHameshViewModel = _hameshService.GetHameshIdByFileId(id, pageId, filterMeetingStatus, filterCaption);
