@@ -18,6 +18,9 @@ namespace VisitorManagment.Web.ViewComponents
             _permissionService = permissionService;
         }
         [Authorize]
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task<IViewComponentResult> InvokeAsync(int userId)
         {
             return await Task.FromResult((IViewComponentResult)View("Permission", _permissionService.GetPermissionsForUser(userId)));
