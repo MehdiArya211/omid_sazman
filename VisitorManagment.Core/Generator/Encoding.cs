@@ -2,6 +2,15 @@
 {
     public class Encoding64
     {
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
+
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public static string Base64Encoding64Method(string Data)
         {
             byte[] DataBytes = System.Text.Encoding.UTF8.GetBytes(Data);
@@ -9,6 +18,9 @@
             return sReturnValue;
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public static string Base64DecodingMethod(string Data)
         {
             byte [] DataBytes = System.Convert.FromBase64String(Data);
@@ -17,5 +29,6 @@
                 .UTF8.GetString(DataBytes);
             return returnValue;
         }
+        #endregion
     }
 }
