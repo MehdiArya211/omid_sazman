@@ -22,6 +22,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
         public InformationUserViewModel InformationUserViewModel { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int id)
         {
             //کاربر غیر ادمین صفحه رو بهش نشون نده
@@ -39,6 +42,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return Page();
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int UserId)
         {
             if (UserId <= 0)
