@@ -11,6 +11,12 @@ namespace VisitorManagment.Web.Pages.Captcha
     public class CaptchaService
     {
         const string Letters = "1234567890";
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// خروجی موردنیاز را تولید می‌کند.
+        /// </summary>
+
         public static string GenerateCaptchaCode()
         {
             Random rand = new Random();
@@ -27,6 +33,9 @@ namespace VisitorManagment.Web.Pages.Captcha
             return sb.ToString();
         }
 
+        /// <summary>
+        /// شرایط موردنظر را بررسی می‌کند.
+        /// </summary>
         public static bool ValidateCaptchaCode(string userInputCaptcha, HttpContext context)
         {
             //var dddd = context.Session.GetString("CaptchaCode");
@@ -34,6 +43,9 @@ namespace VisitorManagment.Web.Pages.Captcha
             context.Session.Remove("CaptchaCode");
             return isValid;
         }
+        /// <summary>
+        /// خروجی موردنیاز را تولید می‌کند.
+        /// </summary>
         public static CaptchaResult GenerateCaptchaImage(int width, int height, string captchaCode)
         {
             using (Bitmap baseMap = new Bitmap(width, height))
@@ -200,5 +212,6 @@ namespace VisitorManagment.Web.Pages.Captcha
                 }
             }
         }
+        #endregion
     }
 }
