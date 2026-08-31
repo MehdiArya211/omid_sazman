@@ -31,11 +31,11 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         [BindProperty]
        
         //مدل گزارش دایره ای براساس نوع اقدامات
-        public List<HameshRequestGhaModel> lstRequestPieModel { get; set; }
+        public List<HameshRequestGhaModel> lstRequestPieModel { get; set; } = new List<HameshRequestGhaModel>();
         public ReqoestGhaReportViewModal PieDto { get; set; }
         
         //مدل نمودار میله ای گزارش فراوانی مشکلات
-        public List<ProblemReportViewModel> lstChartModel { get; set; }     
+        public List<ProblemReportViewModel> lstChartModel { get; set; } = new List<ProblemReportViewModel>();
         public ChartProblemOmdRequestGha chartDto { get; set; }
         public SearchPageReportRequestGhaReportViewModel searchPageReportViewModel { get; set; }
 

@@ -41,7 +41,7 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAll
 
         [BindProperty]
         //مدل نمودار میله ای گزارش فراوانی مشکلات
-        public List<ProblemReportViewModel> lstChartModel { get; set; }
+        public List<ProblemReportViewModel> lstChartModel { get; set; } = new List<ProblemReportViewModel>();
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageUnitCodeReportViewModel searchPageUnitCodeReportViewModel1 { get; set; }
         public SearchPageUnitCodeReportViewModel searchPageUnitCodeReportViewModel2 { get; set; }

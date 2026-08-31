@@ -35,7 +35,7 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
             _chartService = chartService;
         }
         [BindProperty]
-        public List<Chart> BarLineDataSet { get; set; }
+        public List<Chart> BarLineDataSet { get; set; } = new List<Chart>();
 
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.

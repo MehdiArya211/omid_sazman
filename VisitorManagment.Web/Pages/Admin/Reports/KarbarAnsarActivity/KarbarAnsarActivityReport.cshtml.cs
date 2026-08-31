@@ -34,9 +34,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.KarbarAnsarActivity
         }
 
         [BindProperty]
-        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; }
-        public List<SimpleReportViewModel> lstModel { get; set; }
-        public List<SimpleReportViewModel> lstModel1 { get; set; }
+        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; } = new List<ChartFarmandehActivityDto>();
+        public List<SimpleReportViewModel> lstModel { get; set; } = new List<SimpleReportViewModel>();
+        public List<SimpleReportViewModel> lstModel1 { get; set; } = new List<SimpleReportViewModel>();
 
         public FarmandehReportDTO dto { get; set; }
 

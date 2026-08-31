@@ -4,7 +4,7 @@
 @model VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllUnitGha.CompariosonAllUnitGharargahModel
 @{
 
-    var XLabelsFproblem = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstChartModel.Select(x => x.DimensionOne).ToList());
+    var XLabelsFproblem = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstChartModel.OrderBy(x => x.Quantity).Select(x => x.DimensionOne).ToList());
     var YValuesFproblem = Newtonsoft.Json.JsonConvert.SerializeObject(Model.lstChartModel.OrderBy(x => x.Quantity).Select(x => x.Quantity).ToList());
 
 }

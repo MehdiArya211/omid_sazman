@@ -40,7 +40,7 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllUnitGha
 
         [BindProperty]
         //مدل نمودار میله ای گزارش فراوانی مشکلات
-        public List<ProblemReportViewModel> lstChartModel { get; set; }
+        public List<ProblemReportViewModel> lstChartModel { get; set; } = new List<ProblemReportViewModel>();
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageAllUnitCodeForGhaReportViewModel searchPageUnitCodeReportViewModel { get; set; }
 

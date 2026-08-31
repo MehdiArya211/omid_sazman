@@ -44,10 +44,10 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.RankingAllUnit
 
         [BindProperty]
         //مدل نمودار میله ای گزارش فراوانی مشکلات
-        public List<ProblemReportViewModel> lstChartModel { get; set; }
+        public List<ProblemReportViewModel> lstChartModel { get; set; } = new List<ProblemReportViewModel>();
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageReportViewModel searchPageReportViewModel { get; set; }
-        public List<AllOrganViewModelDto> listOrganViewModel { get; set; }
+        public List<AllOrganViewModelDto> listOrganViewModel { get; set; } = new List<AllOrganViewModelDto>();
 
 
         /// <summary>

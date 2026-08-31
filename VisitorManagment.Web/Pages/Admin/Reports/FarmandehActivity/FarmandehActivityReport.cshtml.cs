@@ -33,9 +33,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         }
 
         [BindProperty]
-        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; }
-        public List<SimpleReportViewModel> lstModelPieChart { get; set; }
-        public List<SimpleReportViewModel> lstModelBarChart { get; set; }
+        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; } = new List<ChartFarmandehActivityDto>();
+        public List<SimpleReportViewModel> lstModelPieChart { get; set; } = new List<SimpleReportViewModel>();
+        public List<SimpleReportViewModel> lstModelBarChart { get; set; } = new List<SimpleReportViewModel>();
         public SearchPageReportFarmandehActivityReportViewModel searchPageReportViewModel { get; set; }
 
         public FarmandehReportDTO dto { get; set; }
