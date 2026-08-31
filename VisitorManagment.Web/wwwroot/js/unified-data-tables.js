@@ -102,6 +102,59 @@
         });
     }
 
+    /** نوار پایین جدول و دسترسی سریع به شماره صفحه را ایجاد می‌کند. */
+    function createPaginationBar(api) {
+        var container = $(api.table().container());
+        if (container.find(".dataTables-footer").length) { return; }
+
+        var info = container.find(".dataTables_info").first();
+        var paginate = container.find(".dataTables_paginate").first();
+        if (!info.length && !paginate.length) { return; }
+
+        var footer = $('<div class="dataTables-footer"></div>');
+        var pagingCluster = $('<div class="dataTables-paging-cluster"></div>');
+        var jump = $('<label class="dataTables-page-jump"><span>برو به صفحه</span><input type="number" min="1" inputmode="numeric" aria-label="شماره صفحه"><span class="dataTables-page-total"></span></label>');
+        if (info.length) { footer.append(info); }
+        if (paginate.length) { pagingCluster.append(paginate); }
+        pagingCluster.append(jump);
+        footer.append(pagingCluster);
+        container.append(footer);
+
+        var input = jump.find("input");
+        var total = jump.find(".dataTables-page-total");
+
+        function syncPagination() {
+            var pageInfo = api.page.info();
+            var pageCount = Math.max(pageInfo.pages, 1);
+            input.attr("max", pageCount).val(pageInfo.page + 1);
+            total.text("از " + pageCount);
+            jump.toggle(pageInfo.pages > 1);
+            paginate.attr("aria-label", "صفحه‌بندی جدول");
+            paginate.find(".paginate_button").attr("role", "button");
+        }
+
+        input.on("change", function () {
+            var pageInfo = api.page.info();
+            var requestedPage = Number(this.value);
+            if (!Number.isFinite(requestedPage)) { requestedPage = pageInfo.page + 1; }
+            requestedPage = Math.min(Math.max(Math.round(requestedPage), 1), Math.max(pageInfo.pages, 1));
+            api.page(requestedPage - 1).draw("page");
+        });
+        input.on("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                this.blur();
+            }
+        });
+
+        api.on("draw.unifiedPagination", syncPagination);
+        syncPagination();
+
+        container.children(".row").filter(function () {
+            return $(this).find("input, select, table, .dataTables_info, .dataTables_paginate").length === 0;
+        }).remove();
+    }
+
     function initializeTable(table) {
         if (!shouldEnhance(table)) { return; }
         table.dataset.datatableInitialized = "true";
@@ -115,12 +168,19 @@
                 autoWidth: false,
                 responsive: true,
                 pageLength: 10,
+                pagingType: "full_numbers",
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "همه"]],
                 order: [],
                 language: persianLanguage
             });
         }
+        var settings = api.settings()[0];
+        if (settings && settings.sPaginationType !== "full_numbers") {
+            settings.sPaginationType = "full_numbers";
+            api.draw(false);
+        }
         createToolbar(api);
+        createPaginationBar(api);
         api.columns.adjust();
         if (api.responsive && typeof api.responsive.recalc === "function") { api.responsive.recalc(); }
     }
