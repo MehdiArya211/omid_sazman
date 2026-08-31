@@ -147,15 +147,15 @@ namespace VisitorManagment.Web
         /// </summary>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                app.UseDeveloperExceptionPage();
-                //app.UseExceptionHandler("/Error");
+                // در محیط عملیاتی جزئیات فنی خطا نباید به کاربر نمایش داده شود.
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
             }
             // خط زیر برای سیشن
             app.UseSession();
