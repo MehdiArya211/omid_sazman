@@ -1,5 +1,14 @@
 ﻿<!doctype html>
-<html lang="en">
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var displayName = User.Identity?.Name ?? "کاربر";
+    var avatarClaim = User.FindFirst("UserAvatar")?.Value;
+    var avatarUrl = string.IsNullOrWhiteSpace(avatarClaim)
+        ? "/useravatar/Default.jpg"
+        : "/UserAvatar/" + avatarClaim;
+    var hasCurrentUserId = int.TryParse(User.FindFirst("Id")?.Value, out var currentUserId);
+}
+<html lang="fa" dir="rtl">
 
 <head>
     <partial name="_MetaTags" />
@@ -44,10 +53,10 @@
 
             <div class="navigation-menu-tab">
                 <div>
-                    <div class="navigation-menu-tab-header" data-toggle="tooltip" title="@User.Identity.Name" data-placement="right">
+                    <div class="navigation-menu-tab-header" data-toggle="tooltip" title="@displayName" data-placement="right">
                         <a href="/#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
                             <figure class="avatar avatar-sm">
-                                <img src="/UserAvatar/@User.FindFirst("UserAvatar").Value??/useravatar/Default.jpg" class="rounded-circle" alt="avatar">
+                                <img src="@avatarUrl" class="rounded-circle" alt="تصویر کاربر">
                             </figure>
                         </a>
                     </div>
@@ -91,11 +100,11 @@
                 <div>
                     <div id="navigation-logo">
 
-                        @if (User.Identity.IsAuthenticated)
+                        @if (isAuthenticated)
                         {
 
                             <div class="loggein ">
-                                <i class="zmdi zmdi-account"></i><a href="#"> @User.Identity.Name  <br> <p style="text-align:center"> خوش آمدید </p> </a>
+                                <i class="zmdi zmdi-account"></i><a href="#"> @displayName  <br> <p style="text-align:center"> خوش آمدید </p> </a>
                             </div>
                         }
                     </div>
@@ -105,7 +114,10 @@
                 <div class="navigation-menu-group">
                     <div class="open" id="dashboards">
                         <ul>
-                            @await Component.InvokeAsync("Permission", int.Parse(User.FindFirst("Id").Value))
+                            @if (isAuthenticated && hasCurrentUserId)
+                            {
+                                @await Component.InvokeAsync("Permission", currentUserId)
+                            }
                         </ul>
                     </div>
                 </div>
