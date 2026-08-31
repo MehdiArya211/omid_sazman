@@ -62,16 +62,40 @@
     function createToolbar(api) {
         var container = $(api.table().container());
         if (container.find(".dataTables-toolbar").length) { return; }
+        container.addClass("unified-datatable");
+        container.closest(".table-responsive, #print_this").addClass("datatable-host");
+        $(api.table().node()).removeClass("overflow-auto");
+
         var lengthSelect = container.find(".dataTables_length select").first();
         if (lengthSelect.length && !lengthSelect.find('option[value="-1"]').length) {
             lengthSelect.append('<option value="-1">همه</option>');
         }
         var filter = container.find(".dataTables_filter").first();
-        var toolbar = $('<div class="dataTables-toolbar"><div class="dataTables-toolbar__exports"></div></div>');
+        var length = container.find(".dataTables_length").first();
+        var toolbar = $('<div class="dataTables-toolbar"><div class="dataTables-toolbar__controls"></div><div class="dataTables-toolbar__exports"></div></div>');
+        var controls = toolbar.find(".dataTables-toolbar__controls");
         var exports = toolbar.find(".dataTables-toolbar__exports");
+
+        if (filter.length) {
+            var searchInput = filter.find("input").first();
+            searchInput.attr({ placeholder: "جست‌وجو در جدول...", "aria-label": "جست‌وجو در جدول" });
+            filter.empty().append($('<label class="dataTables-search-box"><i class="ti-search" aria-hidden="true"></i><span class="sr-only">جست‌وجو</span></label>').append(searchInput));
+            controls.append(filter);
+        }
+        if (length.length) {
+            var select = length.find("select").first();
+            select.attr("aria-label", "تعداد رکورد در هر صفحه");
+            length.empty().append($('<label class="dataTables-length-box"><span>نمایش</span></label>').append(select).append("<span>رکورد</span>"));
+            controls.append(length);
+        }
+
+        // ردیف خالی Bootstrap که بعد از انتقال جست‌وجو و تعداد رکورد باقی می‌ماند حذف می‌شود.
+        container.children(".row").filter(function () {
+            return $(this).find("input, select, table, .dataTables_info, .dataTables_paginate").length === 0;
+        }).remove();
+
         exports.append('<button type="button" class="dataTables-export dataTables-export--excel" data-grid-export="excel"><i class="ti-file"></i> خروجی Excel</button>');
         exports.append('<button type="button" class="dataTables-export dataTables-export--word" data-grid-export="word"><i class="ti-files"></i> خروجی Word</button>');
-        if (filter.length) { toolbar.prepend(filter); }
         container.prepend(toolbar);
         toolbar.on("click", "[data-grid-export]", function () {
             openColumnModal(api, this.dataset.gridExport);
@@ -97,6 +121,8 @@
             });
         }
         createToolbar(api);
+        api.columns.adjust();
+        if (api.responsive && typeof api.responsive.recalc === "function") { api.responsive.recalc(); }
     }
 
     function ensureModal() {
@@ -168,9 +194,23 @@
         Array.prototype.forEach.call(tables, initializeTable);
     }
 
+    /** عرض ستون‌های جدول‌های قابل مشاهده را پس از تغییر اندازه، تب یا مودال اصلاح می‌کند. */
+    function adjustVisibleTables() {
+        $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+        $.fn.dataTable.tables({ visible: true, api: true }).responsive.recalc();
+    }
+
     $(function () {
         ensureModal();
         scan(document);
+        var resizeTimer;
+        $(window).on("resize.unifiedDataTables", function () {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(adjustVisibleTables, 140);
+        });
+        $(document).on("shown.bs.tab shown.bs.modal", function () {
+            window.setTimeout(adjustVisibleTables, 50);
+        });
         if (window.MutationObserver) {
             new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
