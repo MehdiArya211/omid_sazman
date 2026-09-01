@@ -32,12 +32,21 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
         public async Task<Guid> CreateChatRoom(string ConnectionId , string personalCode)
         {
             var user=_userService.GetUserByPersonalCode(personalCode);
+            if (user == null)
+                throw new InvalidOperationException("کاربر معتبر برای ایجاد گفت‌وگو پیدا نشد.");
             var existChatRoom = _context.ChatRooms.SingleOrDefault(p => p.ConnectionId == ConnectionId);
             if (existChatRoom != null)
             {
                 return await Task.FromResult(existChatRoom.Id);
             }
 
+            var userRoom = _context.ChatRooms.FirstOrDefault(p => p.UserId == user.Id);
+            if (userRoom != null)
+            {
+                userRoom.ConnectionId = ConnectionId;
+                await _context.SaveChangesAsync();
+                return userRoom.Id;
+            }
             ChatRoom chatRoom = new ChatRoom()
             {
                 ConnectionId = ConnectionId,
@@ -46,8 +55,8 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 Title = user.FirstName + " " + user.LastName + "****" + user.UnitTitle,
             };
             _context.ChatRooms.Add(chatRoom);
-            _context.SaveChanges();
-            return await Task.FromResult(chatRoom.Id);
+            await _context.SaveChangesAsync();
+            return chatRoom.Id;
         }
 
         /// <summary>
@@ -65,6 +74,7 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 .Include(p => p.User)
                 .Include(p => p.ChatMessages)
                 .Where(p => p.ChatMessages.Any())
+                .OrderByDescending(p => p.ChatMessages.Max(m => m.Time))
                 .ToList();
 
             var room = new List<ChatRoomDTO>();
@@ -90,6 +100,8 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
         public async Task<Guid> GetChatRoomForConnection(string CoonectionId)
         {
             var chatRoom = _context.ChatRooms.SingleOrDefault(p => p.ConnectionId == CoonectionId);
+            if (chatRoom == null)
+                throw new InvalidOperationException("اتاق گفت‌وگو برای اتصال جاری پیدا نشد.");
             return await Task.FromResult(chatRoom.Id);
         }
         #endregion

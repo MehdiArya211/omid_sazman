@@ -1,150 +1,50 @@
-﻿var activeRoomId = ''; // برای نگهداری چت روم فعال برای پشتیبان
+(function () {
+    "use strict";
+    var activeRoomId = "";
+    var support = new signalR.HubConnectionBuilder().withUrl("/supporthub").withAutomaticReconnect().build();
+    var chat = new signalR.HubConnectionBuilder().withUrl("/chathub?support=true").withAutomaticReconnect().build();
+    var roomList, messages, form, input, sendButton, search;
 
-
-//اتصال با هاب کانکشن پشتیبانی
-var supportConnection = new signalR.HubConnectionBuilder()
-    .withUrl('/supporthub')
-    .build();
-
-// ایجاد یک کانکشن با سرور سیگنال ار
-var chatConnection = new signalR.HubConnectionBuilder()
-    .withUrl('/chatHub')
-    .build();
-
-
-
-function Init() {
-    supportConnection.start();
-    chatConnection.start();
-
-    //هر زمان دکمه "ارسال" در فرم چت باکس زده شد این کد برای سابمیت فرم اجرا می شود
-    var answerForm = $("#answerForm");
-
-    answerForm.on('submit', function (e) {
-        e.preventDefault();
-
-        var text = e.target[0].value;
-        e.target[0].value = '';
-        sendMessage(text);
+    function appendMessage(sender, message, time) {
+        var li = document.createElement("li"), meta = document.createElement("div"), body = document.createElement("div");
+        meta.className = "chat-message-meta"; body.className = "chat-message-body";
+        meta.textContent = (sender || "کاربر") + " · " + (time || ""); body.textContent = message || "";
+        li.appendChild(meta); li.appendChild(body); messages.appendChild(li); messages.scrollTop = messages.scrollHeight;
+    }
+    function loadRooms(rooms) {
+        roomList.textContent = "";
+        (rooms || []).forEach(function (room) {
+            var link = document.createElement("button");
+            link.type = "button"; link.className = "list-group-item list-group-item-action chat-room-item";
+            link.dataset.id = room.id; link.textContent = room.title || "گفت‌گوی بدون عنوان"; roomList.appendChild(link);
+        });
+    }
+    async function switchRoom(button) {
+        var id = button.dataset.id; if (!id || id === activeRoomId) return;
+        if (activeRoomId && chat.state === signalR.HubConnectionState.Connected) await chat.invoke("LeaveRoom", activeRoomId);
+        activeRoomId = id; messages.textContent = "";
+        roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.classList.toggle("active", x === button); });
+        await chat.invoke("JoinRoom", id); await support.invoke("LoadMessage", id);
+    }
+    async function start(connection) {
+        if (connection.state === signalR.HubConnectionState.Disconnected) await connection.start();
+    }
+    document.addEventListener("DOMContentLoaded", async function () {
+        roomList = document.getElementById("roomList"); messages = document.getElementById("chatMessage");
+        form = document.getElementById("answerForm"); input = document.getElementById("answerText");
+        search = document.getElementById("chatRoomSearch");
+        if (!roomList || !messages || !form || !input) return; sendButton = form.querySelector("button[type=submit]");
+        support.on("GetRooms", loadRooms);
+        support.on("getNewMessage", function (items) { (items || []).forEach(function (m) { appendMessage(m.sender, m.message, m.time && new Date(m.time).toLocaleTimeString("fa-IR", {hour:"2-digit", minute:"2-digit"})); }); });
+        chat.on("getNewMessage", appendMessage);
+        roomList.addEventListener("click", function (event) { var button = event.target.closest(".chat-room-item"); if (button) switchRoom(button).catch(console.error); });
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault(); var text = input.value.trim(); if (!text || !activeRoomId) return;
+            sendButton.disabled = true;
+            try { await support.invoke("SendMessage", activeRoomId, text); appendMessage("پشتیبان", text, new Date().toLocaleTimeString("fa-IR", {hour:"2-digit", minute:"2-digit"})); input.value = ""; }
+            finally { sendButton.disabled = false; input.focus(); }
+        });
+        if (search) search.addEventListener("input", function () { var q = search.value.trim().toLowerCase(); roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.hidden = q && !x.textContent.toLowerCase().includes(q); }); });
+        try { await Promise.all([start(support), start(chat)]); } catch (error) { console.error("Chat connection failed", error); }
     });
-
-};
-
-function sendMessage(text) {
-    if (text && text.length) {
-        supportConnection.invoke('SendMessage', activeRoomId, text);
-    }
-
-}
-
-
-chatConnection.on('getNewMessage', showMessage);
-
-
-// بعد از این که صفحه کامل بارگذاری شد  این بخش اجرا می شود
-$(document).ready(function () {
-    console.log("ready!");
-    //متد راه اندازی اجرا می شود
-    Init();
-});
-
-
-supportConnection.on('getNewMessage', addMessages);
-
-function addMessages(messages) {
-    if (!messages) return;
-    messages.forEach(function (m) {
-        showMessage(m.sender, m.message, m.time);
-    });
-}
-
-function showMessage(sender, message, time) {
-    $("#chatMessage").append('<li><div><span class="name"> ' + sender + ' </span><span class="time">' + time + '</span></div><div class="message"> ' + message.replace(/(.{1,300})/g, '$1<br/>') + ' </div></li>');
-}
-
-
-
-
-//دریافت لیست  چت روم ها
-supportConnection.on('GetRooms', loadRooms);
-
-
-function loadRooms(rooms) {
-   // alert(rooms);
-    if (!rooms) return;
-    var roomIds = Object.keys(rooms);
-   // alert(roomIds);
-    if (!roomIds.length) return;
-
-
-    removeAllChildren(roomListEl);
-
-    for (let i = 0; i < rooms.length;i++) {
-        var roomInfo = rooms[i].id;
-        var roomTitle = rooms[i].title;
-
-        return $("#roomList").append("<a class='list-group-item list-group-item-action d-flex justify-content-between align-items-center' data-id='" + roomInfo + "' href='#'>" + roomTitle + "</a>");
-
-    }
-    //rooms.forEach(function (id, title) {
-    //    console.log(rooms);
-    //    var roomInfo = rooms[0].id;
-    //    console.log(roomInfo);
-    //    var roomTitle = rooms[title];
-    //    //alert(roomTitle);
-    //    if (!roomInfo) return;
-
-    //    //ایجاد دکمه برای لیست
-    //    return $("#roomList").append("<a class='list-group-item list-group-item-action d-flex justify-content-between align-items-center' data-id='" + roomInfo + "' href='#'>" + roomTitle + "</a>");
-
-    //});
-
-}
-
-var roomListEl = document.getElementById('roomList');
-var roomMessagesEl = document.getElementById('chatMessage');
-
-
-function removeAllChildren(node) {
-    if (!node) return;
-
-    while (node.lastChild) {
-        node.removeChild(node.lastChild);
-    }
-}
-
-function setActiveRoomButton(el) {
-    var allButtons = roomListEl.querySelectorAll('a.list-group-item');
-
-    allButtons.forEach(function (btn) {
-        btn.classList.remove('active');
-    });
-    el.classList.add('active');
-}
-
-
-function switchActiveRoomTo(id) {
-    if (id === activeRoomId) return;
-
-
-    removeAllChildren(roomMessagesEl);
-
-    if (activeRoomId) {
-    chatConnection.invoke('LeaveRoom', activeRoomId);
-    }
-
-
-    activeRoomId = id;
-
-    chatConnection.invoke('JoinRoom', activeRoomId);
-    supportConnection.invoke('LoadMessage', activeRoomId);
-}
-
-
-
-roomListEl.addEventListener('click', function (e) {
-    roomMessagesEl.style.display = 'block';
-    setActiveRoomButton(e.target);
-    var roomId = e.target.getAttribute('data-id');
-    switchActiveRoomTo(roomId);
-});
+})();

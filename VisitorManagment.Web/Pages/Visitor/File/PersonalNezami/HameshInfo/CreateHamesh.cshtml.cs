@@ -1009,12 +1009,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
         /// </summary>
         public IActionResult OnGetArchive(int fileId)
         {
-            var userId = int.Parse(User.FindFirst("Id").Value);
-
-            _fileService.ArchivedFile(fileId, userId);
-            ViewData["Archived"] = true;
-            ViewData["ShowPage"] = false;
-            return Page();
+            return BadRequest("بایگانی فقط از صفحه فهرست و پس از تأیید کاربر قابل انجام است.");
         }
 
         #endregion

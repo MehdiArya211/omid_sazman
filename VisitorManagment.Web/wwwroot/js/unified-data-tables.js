@@ -33,7 +33,8 @@
         if (table.matches(".no-datatable, .tableChild, #roomTable, #tblRooms, #fileTable")) { return false; }
         if (!table.tHead || !table.tBodies.length || !table.tHead.rows.length) { return false; }
         if (table.closest(".swal-modal")) { return false; }
-        return table.hasAttribute("data-datatable") || table.id === "dataTable" || table.id === "myTable" ||
+        var isDestinationTable = !!table.closest("#gridsendlist, .gridsendlist, [data-destination-selector]");
+        return isDestinationTable || table.hasAttribute("data-datatable") || table.id === "dataTable" || table.id === "myTable" ||
             table.id === "example1" || (isReportPage() && table.classList.contains("table"));
     }
 
@@ -261,6 +262,7 @@
     }
 
     $(function () {
+        if (isReportPage()) { document.body.classList.add("report-page"); }
         ensureModal();
         scan(document);
         var resizeTimer;

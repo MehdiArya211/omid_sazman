@@ -124,16 +124,14 @@ namespace VisitorManagment.Web.Pages.Visitor
         /// </summary>
         public IActionResult OnGetArchive1(int fileId)
         {
-            var userId = int.Parse(User.FindFirst("Id").Value);
-            _fileService.ArchivedFile(fileId, userId);
-            ViewData["Archived"] = true;
-            return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
+            return BadRequest("بایگانی فقط از مسیر تأییدشده و امن قابل انجام است.");
         }
 
         /// <summary>
         /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
         /// </summary>
-        public IActionResult OnGetArchive(int fileId)
+        [ValidateAntiForgeryToken]
+        public IActionResult OnPostArchive(int fileId)
         {
             try
             {

@@ -41,16 +41,20 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
         public Task SaveChatMessage(Guid RoomId, MessageDto message)
         {
             var room = _context.ChatRooms.SingleOrDefault(p => p.Id == RoomId);
+            if (room == null)
+                throw new InvalidOperationException("اتاق گفت‌وگو وجود ندارد.");
+            if (message == null || string.IsNullOrWhiteSpace(message.Message))
+                throw new ArgumentException("متن پیام نمی‌تواند خالی باشد.", nameof(message));
+            var text = message.Message.Trim();
             ChatMessage chatMessage = new ChatMessage()
             {
                 ChatRoom = room,
-                Message = message.Message,
+                Message = text.Length > 2000 ? text.Substring(0, 2000) : text,
                 Sender = message.Sender,
                 Time = message.Time,
             };
             _context.ChatMessages.Add(chatMessage);
-            _context.SaveChanges();
-            return Task.CompletedTask;
+            return _context.SaveChangesAsync();
         }
         #endregion
     }

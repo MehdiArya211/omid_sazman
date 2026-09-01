@@ -40,6 +40,12 @@
         return /delete|remove|حذف/.test(marker);
     }
 
+    function isArchiveOperation(form, submitter) {
+        var marker = [form && form.getAttribute("action"), form && form.dataset.operation,
+            submitter && submitter.dataset.operation, submitter && submitter.textContent].filter(Boolean).join(" ").toLowerCase();
+        return /archive|بایگانی|خاتمه/.test(marker);
+    }
+
     /** کنترل‌های نامعتبر را مشخص می‌کند و با اولین خطا به کاربر بازخورد می‌دهد. */
     function enableValidationFeedback() {
         document.addEventListener("invalid", function (event) {
@@ -108,14 +114,16 @@
             }
 
             var explicitConfirm = form.dataset.confirm || (submitter && submitter.dataset.confirm);
-            if (form.dataset.confirmed !== "true" && (explicitConfirm || isDeleteOperation(form, submitter))) {
+            var deleting = isDeleteOperation(form, submitter);
+            var archiving = isArchiveOperation(form, submitter);
+            if (form.dataset.confirmed !== "true" && (explicitConfirm || deleting || archiving)) {
                 event.preventDefault();
                 fire({
                     icon: "warning",
-                    title: "تأیید حذف",
-                    text: explicitConfirm || "آیا از حذف این مورد مطمئن هستید؟ این عملیات قابل بازگشت نیست.",
+                    title: archiving ? "تأیید بایگانی" : "تأیید حذف",
+                    text: explicitConfirm || (archiving ? "آیا مطمئن هستید که این درخواست به بایگانی منتقل شود؟" : "آیا از حذف این مورد مطمئن هستید؟ این عملیات قابل بازگشت نیست."),
                     showCancelButton: true,
-                    confirmButtonText: "بله، حذف شود",
+                    confirmButtonText: archiving ? "بله، بایگانی شود" : "بله، حذف شود",
                     cancelButtonText: "انصراف",
                     confirmButtonColor: "#b42318",
                     cancelButtonColor: "#64748b",
@@ -162,16 +170,34 @@
         });
     }
 
+    /** ظاهر و دسترس‌پذیری مودال‌های قدیمی و پویا را یکسان می‌کند. */
+    function enhanceModals(root) {
+        var modals = root && root.matches && root.matches(".modal") ? [root] : (root || document).querySelectorAll(".modal");
+        Array.prototype.forEach.call(modals, function (modal) {
+            modal.setAttribute("role", "dialog");
+            modal.setAttribute("aria-modal", "true");
+            var dialog = modal.querySelector(".modal-dialog");
+            if (dialog) dialog.classList.add("modal-dialog-centered");
+            var title = modal.querySelector(".modal-title");
+            if (title) {
+                if (!title.id) title.id = "modal-title-" + Math.random().toString(36).slice(2, 9);
+                modal.setAttribute("aria-labelledby", title.id);
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         showServerNotification();
         enableValidationFeedback();
         enableSubmitCoordinator();
         enhanceCrudForms(document);
+        enhanceModals(document);
         if (window.MutationObserver) {
             new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
                     Array.prototype.forEach.call(mutation.addedNodes, function (node) {
                         if (node.nodeType === 1) enhanceCrudForms(node);
+                        if (node.nodeType === 1) enhanceModals(node);
                     });
                 });
             }).observe(document.querySelector(".main-content") || document.body, { childList: true, subtree: true });

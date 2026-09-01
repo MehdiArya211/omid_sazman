@@ -1,14 +1,5 @@
 ﻿<!doctype html>
-@{
-    var isAuthenticated = User.Identity?.IsAuthenticated == true;
-    var displayName = User.Identity?.Name ?? "کاربر";
-    var avatarClaim = User.FindFirst("UserAvatar")?.Value;
-    var avatarUrl = string.IsNullOrWhiteSpace(avatarClaim)
-        ? "/useravatar/Default.jpg"
-        : "/UserAvatar/" + avatarClaim;
-    var hasCurrentUserId = int.TryParse(User.FindFirst("Id")?.Value, out var currentUserId);
-}
-<html lang="fa" dir="rtl">
+<html lang="en">
 
 <head>
     <partial name="_MetaTags" />
@@ -28,6 +19,11 @@
 
         <div>
             <ul class="navbar-nav">
+                <li class="nav-item">
+                    <button type="button" class="nav-link ui-settings-toggle" id="uiSettingsToggle" title="تنظیمات نمایش" aria-controls="uiSettingsPanel" aria-expanded="false">
+                        <i data-feather="type"></i><span class="sr-only">تنظیمات نمایش</span>
+                    </button>
+                </li>
 
                 <!-- begin::navigation-toggler -->
                 <li class="nav-item navigation-toggler">
@@ -44,6 +40,25 @@
         </div>
 
     </div>
+    <aside class="ui-settings-panel" id="uiSettingsPanel" aria-hidden="true" aria-label="تنظیمات نمایش">
+        <div class="ui-settings-header">
+            <div><strong>تنظیمات نمایش</strong><small>تغییرات فقط برای همین کاربر ذخیره می‌شود</small></div>
+            <button type="button" class="ui-settings-close" aria-label="بستن">&times;</button>
+        </div>
+        <div class="ui-settings-body">
+            <label for="uiFontFamily">فونت نوشته‌ها</label>
+            <select id="uiFontFamily" class="form-control">
+                <option value="default">فونت پیش‌فرض</option>
+                <option value="tahoma">Tahoma</option>
+                <option value="arial">Arial</option>
+            </select>
+            <label for="uiFontSize">اندازه نوشته <output id="uiFontSizeValue">۱۰۰٪</output></label>
+            <input id="uiFontSize" type="range" min="90" max="110" step="5" value="100" />
+            <p class="ui-settings-hint">بازه اندازه برای حفظ چیدمان و خوانایی سایت محدود شده است.</p>
+            <button type="button" id="uiSettingsReset" class="btn btn-light btn-block">بازنشانی تنظیمات</button>
+        </div>
+    </aside>
+    <div class="ui-settings-backdrop" id="uiSettingsBackdrop" hidden></div>
     <!-- end::header -->
     <!-- begin::main -->
     <div id="main">
@@ -53,10 +68,10 @@
 
             <div class="navigation-menu-tab">
                 <div>
-                    <div class="navigation-menu-tab-header" data-toggle="tooltip" title="@displayName" data-placement="right">
+                    <div class="navigation-menu-tab-header" data-toggle="tooltip" title="@User.Identity.Name" data-placement="right">
                         <a href="/#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
                             <figure class="avatar avatar-sm">
-                                <img src="@avatarUrl" class="rounded-circle" alt="تصویر کاربر">
+                                <img src="/UserAvatar/@User.FindFirst("UserAvatar").Value??/useravatar/Default.jpg" class="rounded-circle" alt="avatar">
                             </figure>
                         </a>
                     </div>
@@ -100,11 +115,11 @@
                 <div>
                     <div id="navigation-logo">
 
-                        @if (isAuthenticated)
+                        @if (User.Identity.IsAuthenticated)
                         {
 
                             <div class="loggein ">
-                                <i class="zmdi zmdi-account"></i><a href="#"> @displayName  <br> <p style="text-align:center"> خوش آمدید </p> </a>
+                                <i class="zmdi zmdi-account"></i><a href="#"> @User.Identity.Name  <br> <p style="text-align:center"> خوش آمدید </p> </a>
                             </div>
                         }
                     </div>
@@ -114,10 +129,7 @@
                 <div class="navigation-menu-group">
                     <div class="open" id="dashboards">
                         <ul>
-                            @if (isAuthenticated && hasCurrentUserId)
-                            {
-                                @await Component.InvokeAsync("Permission", currentUserId)
-                            }
+                            @await Component.InvokeAsync("Permission", int.Parse(User.FindFirst("Id").Value))
                         </ul>
                     </div>
                 </div>
@@ -164,6 +176,7 @@
 
 
     <script src="~/js/operation-feedback.js" asp-append-version="true"></script>
+    <script src="~/js/ui-preferences.js" asp-append-version="true"></script>
 </body>
 
 </html>

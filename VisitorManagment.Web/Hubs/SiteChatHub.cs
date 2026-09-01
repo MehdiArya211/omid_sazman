@@ -27,12 +27,13 @@ namespace VisitorManagment.Web.Hubs
 
         public async Task SendNewMessage(string Sender, string Message)
         {
+            if (string.IsNullOrWhiteSpace(Message)) return;
             var roomId = await _chatRoomService.GetChatRoomForConnection(Context.ConnectionId);
 
             MessageDto messageDto = new MessageDto()
             {
-                Message = Message,
-                Sender = Sender,
+                Message = Message.Trim(),
+                Sender = Context.User.Identity.Name ?? Sender ?? "کاربر",
                 Time = DateTime.Now,
             };
 
@@ -70,12 +71,15 @@ namespace VisitorManagment.Web.Hubs
         /// </summary>
         public override async Task OnConnectedAsync()
         {
-            var user = Context.User.FindFirstValue(ClaimTypes.Email);
-            if (user=="95003599")
+            var isSupportConnection = string.Equals(Context.GetHttpContext()?.Request.Query["support"], "true", StringComparison.OrdinalIgnoreCase);
+            if (isSupportConnection && Context.User.Identity.IsAuthenticated)
             {
                 await base.OnConnectedAsync();
                 return;
             }
+            var user = Context.User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrWhiteSpace(user))
+                throw new HubException("برای استفاده از چت باید وارد سامانه شوید.");
             var roomId = await _chatRoomService.CreateChatRoom(Context.ConnectionId , user);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
