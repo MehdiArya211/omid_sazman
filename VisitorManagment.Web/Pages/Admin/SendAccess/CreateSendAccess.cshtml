@@ -22,8 +22,10 @@
             </select>
             <small>نقشی را انتخاب کنید که می‌خواهید مقصدهای مجاز آن را تنظیم کنید.</small>
         </div>
-        <button type="submit" class="access-reset"><i class="ti-search"></i> نمایش دسترسی‌ها</button>
-        <a asp-page="./CreateSendAccess" class="access-reset"><i class="ti-reload"></i> بازنشانی</a>
+        <div class="access-role-picker__actions">
+            <button type="submit" class="access-reset"><i class="ti-search"></i> نمایش دسترسی‌ها</button>
+            <a asp-page="./CreateSendAccess" class="access-reset"><i class="ti-reload"></i> بازنشانی</a>
+        </div>
     </form>
 
     @if (ViewBag.ShowForm == true)

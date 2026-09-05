@@ -3,7 +3,24 @@
     var activeRoomId = "";
     var support = new signalR.HubConnectionBuilder().withUrl("/supporthub").withAutomaticReconnect().build();
     var chat = new signalR.HubConnectionBuilder().withUrl("/chathub?support=true").withAutomaticReconnect().build();
-    var roomList, messages, form, input, sendButton, search;
+    var roomList, messages, form, input, sendButton, search, emptyState, currentUser;
+
+    function setEmptyState(title, description, icon) {
+        if (!emptyState) return;
+        emptyState.classList.remove("is-hidden");
+        emptyState.querySelector("i").className = icon || "ti-comments";
+        emptyState.querySelector("strong").textContent = title;
+        emptyState.querySelector("span").textContent = description;
+    }
+
+    function hideEmptyState() {
+        if (emptyState) emptyState.classList.add("is-hidden");
+    }
+
+    function scrollToLatestMessage() {
+        var panel = messages.closest(".message-item");
+        if (panel) panel.scrollTop = panel.scrollHeight;
+    }
 
     function formatPersianDate(value) {
         if (!value) return "";
@@ -12,17 +29,24 @@
         return new Intl.DateTimeFormat("fa-IR-u-ca-persian", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
     }
 
-    function appendMessage(sender, message, time) {
+    function appendMessage(sender, message, time, forceSupport) {
         var li = document.createElement("li"), meta = document.createElement("div"), body = document.createElement("div");
         meta.className = "chat-message-meta"; body.className = "chat-message-body";
-        var isSupport = (sender || "").indexOf("پشتیبان") !== -1;
+        var normalizedSender = (sender || "").trim().toLowerCase();
+        var isSupport = forceSupport === true || normalizedSender.indexOf("پشتیبان") !== -1 || (currentUser && normalizedSender === currentUser);
         li.classList.toggle("is-support", isSupport);
         meta.textContent = (sender || "کاربر") + " · " + formatPersianDate(time); body.textContent = message || "";
-        li.appendChild(meta); li.appendChild(body); messages.appendChild(li); messages.scrollTop = messages.scrollHeight;
-        var empty = document.getElementById("chatEmptyState"); if (empty) empty.classList.add("is-hidden");
+        li.appendChild(meta); li.appendChild(body); messages.appendChild(li); hideEmptyState(); scrollToLatestMessage();
     }
     function loadRooms(rooms) {
         roomList.textContent = "";
+        if (!rooms || !rooms.length) {
+            var noRoom = document.createElement("div");
+            noRoom.className = "chat-room-empty";
+            noRoom.textContent = "هنوز گفت‌وگویی ثبت نشده است.";
+            roomList.appendChild(noRoom);
+            return;
+        }
         (rooms || []).forEach(function (room) {
             var link = document.createElement("button");
             link.type = "button"; link.className = "list-group-item list-group-item-action chat-room-item";
@@ -37,12 +61,22 @@
         var id = button.dataset.id; if (!id || id === activeRoomId) return;
         if (activeRoomId && chat.state === signalR.HubConnectionState.Connected) await chat.invoke("LeaveRoom", activeRoomId);
         activeRoomId = id; messages.textContent = "";
+        setEmptyState("در حال دریافت پیام‌ها...", "لطفاً چند لحظه صبر کنید.", "ti-reload");
         roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.classList.toggle("active", x === button); });
         document.getElementById("activeChatTitle").textContent = button.dataset.title;
         document.getElementById("activeChatMeta").textContent = "تاریخ و ساعت پیام‌ها به تقویم شمسی";
         var content = document.querySelector(".support-chat-page .chat-content"); if (content) content.classList.add("mobile-open");
         input.disabled = false; sendButton.disabled = false;
-        await chat.invoke("JoinRoom", id); await support.invoke("LoadMessage", id);
+        try {
+            await chat.invoke("JoinRoom", id);
+            await support.invoke("LoadMessage", id);
+            window.setTimeout(function () {
+                if (!messages.children.length && activeRoomId === id) setEmptyState("پیامی وجود ندارد", "این گفت‌وگو هنوز پیامی ندارد.", "ti-comment-alt");
+            }, 300);
+        } catch (error) {
+            setEmptyState("دریافت پیام‌ها ناموفق بود", "ارتباط با سرور برقرار نشد؛ دوباره تلاش کنید.", "ti-alert");
+            throw error;
+        }
     }
     async function start(connection) {
         if (connection.state === signalR.HubConnectionState.Disconnected) await connection.start();
@@ -50,7 +84,8 @@
     document.addEventListener("DOMContentLoaded", async function () {
         roomList = document.getElementById("roomList"); messages = document.getElementById("chatMessage");
         form = document.getElementById("answerForm"); input = document.getElementById("answerText");
-        search = document.getElementById("chatRoomSearch");
+        search = document.getElementById("chatRoomSearch"); emptyState = document.getElementById("chatEmptyState");
+        var page = document.querySelector(".support-chat-page"); currentUser = page ? (page.dataset.currentUser || "").trim().toLowerCase() : "";
         if (!roomList || !messages || !form || !input) return; sendButton = form.querySelector("button[type=submit]");
         support.on("GetRooms", loadRooms);
         support.on("getNewMessage", function (items) { (items || []).forEach(function (m) { appendMessage(m.sender, m.message, m.time); }); });
@@ -68,13 +103,15 @@
         form.addEventListener("submit", async function (event) {
             event.preventDefault(); var text = input.value.trim(); if (!text || !activeRoomId) return;
             sendButton.disabled = true;
-            try { await support.invoke("SendMessage", activeRoomId, text); appendMessage("پشتیبان", text, new Date()); input.value = ""; }
+            try { await support.invoke("SendMessage", activeRoomId, text); appendMessage("پشتیبان", text, new Date(), true); input.value = ""; }
+            catch (error) { if (window.Swal) Swal.fire({icon:"error",title:"ارسال انجام نشد",text:"ارتباط با سرور را بررسی و دوباره تلاش کنید."}); else window.alert("ارسال پیام انجام نشد. دوباره تلاش کنید."); }
             finally { sendButton.disabled = false; input.focus(); }
         });
         if (search) search.addEventListener("input", function () { var q = search.value.trim().toLowerCase(); roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.hidden = q && !x.textContent.toLowerCase().includes(q); }); });
         input.addEventListener("keydown", function (event) { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); } });
         var close = document.querySelector(".mobile-chat-close-btn a");
         if (close) close.addEventListener("click", function (event) { event.preventDefault(); var content = document.querySelector(".support-chat-page .chat-content"); if (content) content.classList.remove("mobile-open"); });
-        try { await Promise.all([start(support), start(chat)]); var state = document.getElementById("supportConnectionStatus"); if (state) { state.textContent="آنلاین"; state.classList.add("is-online"); } } catch (error) { console.error("Chat connection failed", error); }
+        try { await Promise.all([start(support), start(chat)]); var state = document.getElementById("supportConnectionStatus"); if (state) { state.textContent="آنلاین"; state.classList.add("is-online"); } }
+        catch (error) { var state = document.getElementById("supportConnectionStatus"); if (state) state.textContent="ارتباط برقرار نشد"; setEmptyState("اتصال به چت برقرار نشد", "صفحه را تازه‌سازی کنید یا وضعیت شبکه را بررسی کنید.", "ti-alert"); console.error("Chat connection failed", error); }
     });
 })();

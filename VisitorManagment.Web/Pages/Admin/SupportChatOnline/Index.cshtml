@@ -3,7 +3,7 @@
 @{ ViewData["Title"] = "پشتیبانی آنلاین"; }
 <link rel="stylesheet" href="~/css/chat-professional.css" asp-append-version="true" />
 <!-- begin::main -->
-<div class="support-chat-page" dir="rtl">
+<div class="support-chat-page" dir="rtl" data-current-user="@(User.Identity?.Name ?? string.Empty)">
 
     <div>
 
@@ -87,7 +87,7 @@
                     </div>
                     <!-- end::chat header -->
                     <!-- begin::messages -->
-                    <div>
+                    <div class="chat-conversation-body">
                         <div class="message-item">
                             <div class="message-item-content">
                                 <ul id="chatMessage" aria-live="polite">
@@ -128,21 +128,4 @@
 @section GetInformationPersonal
     {
     <script src="~/systemchatonline/supportsignalrservice.js"></script>
-    <script>
-        $(function () {
-            $(document).on('click', '.chat-block .chat-sidebar .chat-sidebar-content .chat-lists a', function () {
-                var chat_content = $('.chat-block .chat-content');
-
-                // Open chat screen
-                chat_content.addClass('mobile-open');
-
-                // Scroll resize
-                chat_content.find('.messages').scrollTop(chat_content.find('.messages').get(0).scrollHeight, -1).niceScroll({
-                    horizrailenabled: false
-                }).resize();
-
-                return false;
-            });
-        });
-    </script>
     }
