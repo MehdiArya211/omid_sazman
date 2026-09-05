@@ -1,7 +1,10 @@
+@font-face { font-family:IRANSans; src:url('/assets/fonts/fonts/IRANSansWeb.woff2') format('woff2'); font-display:swap; }
+@font-face { font-family:Shabnam; src:url('/asset/fonts/Shabnam.woff2') format('woff2'); font-display:swap; }
 :root { --user-font-scale: 1; --user-font-family: inherit; --ui-primary: #185f7d; --ui-primary-dark: #10465e; }
 body, button, input, select, textarea { font-family: var(--user-font-family) !important; }
 body { font-size: calc(1rem * var(--user-font-scale)); }
 .ui-settings-toggle { border: 0; background: transparent; cursor: pointer; }
+.support-notification-link{position:relative}.support-unread-badge{position:absolute;top:2px;right:1px;display:grid;place-items:center;min-width:18px;height:18px;padding:0 5px;color:#fff;border:2px solid #fff;border-radius:10px;background:#d9364f;font-size:9px;font-weight:800}
 .ui-settings-panel { position: fixed; top: 0; left: 0; width: min(360px, 92vw); height: 100vh; z-index: 1055; background: #fff; box-shadow: 12px 0 35px rgba(15, 46, 61, .2); transform: translateX(-105%); transition: transform .25s ease; direction: rtl; }
 .ui-settings-panel.is-open { transform: translateX(0); }
 .ui-settings-header { padding: 20px; color: #fff; background: linear-gradient(135deg, var(--ui-primary-dark), var(--ui-primary)); display: flex; justify-content: space-between; align-items: flex-start; }
@@ -22,6 +25,7 @@ body { font-size: calc(1rem * var(--user-font-scale)); }
 
 .btn, button.btn, input.btn { min-height: 40px; min-width: 104px; border-radius: 9px !important; padding: 8px 16px !important; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-weight: 600; }
 .btn-sm { min-height: 34px; min-width: 76px; padding: 5px 11px !important; }
+.input-group-append .btn, .input-group-prepend .btn, .form-group .btn-search, button[data-search], .search-submit { min-width:42px!important; width:auto; min-height:38px; padding:6px 11px!important; }
 .btn.is-submitting { cursor: wait; opacity: .8; }
 
 .dataTables_wrapper .pagination .page-item.active .page-link,
@@ -39,3 +43,8 @@ body { font-size: calc(1rem * var(--user-font-scale)); }
 #gridsendlist .dataTables-search-box input { width: 100%; }
 .main-content .card { max-width: 100%; }
 @media (max-width: 767.98px) { .modal-dialog { margin: 10px; } .modal-body { padding: 15px !important; } .btn, button.btn, input.btn { min-width: 96px; } }
+
+/* صفحات گزارش: عرض کنترل‌شده، کارت‌های مرتب و نمودار واکنش‌گرا */
+.report-page .demo-code-preview{width:calc(100% - 30px);max-width:1440px;margin:0 auto 24px!important;padding:22px!important;border:1px solid #e1eaee;border-radius:18px;background:#fff;box-shadow:0 10px 30px rgba(18,59,74,.07)}.report-page .demo-code-preview:before{display:none}.report-page form>.row{row-gap:4px}.report-page form .form-group{height:100%;margin-bottom:14px}.report-page form .select2-container{width:100%!important}.report-page form .btn{margin:3px}.report-page .chart-container{position:relative!important;width:100%!important;height:clamp(300px,48vw,520px)!important;min-width:0;overflow:hidden;padding:12px;border:1px solid #e4ecef;border-radius:15px;background:#fbfdfd}.report-page .chart-container canvas,.report-page canvas{width:100%!important;height:100%!important;max-height:520px!important}.report-page table{max-width:100%}.report-page img.thumbnail{display:block;width:150px!important;height:170px!important;max-width:100%;margin:auto;object-fit:cover;border:4px solid #fff!important;border-radius:18px!important;box-shadow:0 8px 24px rgba(18,59,74,.16)}.report-page .box-body{min-width:0;max-width:100%}
+.report-summary-page .card-body,.archived-requests-page .card-body,.meeting-participants-page .card-body{padding:22px}.report-table-card{max-width:100%;padding:14px;margin:16px 0;border:1px solid #e2eaee;border-radius:15px;background:#fff}.archive-page-heading{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding:17px;border-radius:15px;background:linear-gradient(135deg,#f0f8fa,#fff)}.archive-page-heading>span{display:grid;place-items:center;width:50px;height:50px;color:#fff;border-radius:15px;background:linear-gradient(135deg,#176b82,#2994a8);font-size:21px}.archive-page-heading h4{margin:0 0 5px;color:#183d4b}.archive-page-heading p{margin:0;color:#74858c;font-size:11px}.archived-requests-page .modal dl{display:grid;grid-template-columns:minmax(120px,35%) minmax(0,1fr);gap:10px;margin:0;padding:10px 4px;border-bottom:1px solid #edf2f4}.archived-requests-page .modal dt,.archived-requests-page .modal dd{margin:0!important;padding:0!important}.archived-requests-page .modal dd{color:#315a68}.meeting-info-note{display:flex;align-items:center;gap:9px;padding:12px 14px;margin-bottom:16px;color:#256071;border:1px solid #cce4e9;border-radius:11px;background:#f0fafb;font-size:11px}.meeting-row--ordered td{background:#e7f7f8!important}.meeting-row--ordered td:first-child{box-shadow:inset -4px 0 #24a0ae}
+@media(max-width:767px){.report-page .demo-code-preview{width:calc(100% - 14px);padding:13px!important}.report-page .chart-container{height:340px!important}.report-summary-page .card-body,.archived-requests-page .card-body,.meeting-participants-page .card-body{padding:13px}.archived-requests-page .modal dl{grid-template-columns:1fr;gap:4px}}

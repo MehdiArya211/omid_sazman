@@ -9,6 +9,7 @@ using VisitorManagment.Web.Hubs;
 namespace VisitorManagment.Web.Hubs
 {
   
+    [Authorize]
     public class SupportHub:Hub
     {
         private readonly IChatRoomService _chatRoomService;
@@ -36,6 +37,13 @@ namespace VisitorManagment.Web.Hubs
             await base.OnConnectedAsync(); 
         }
 
+        /// <summary>فهرست گفت‌وگوها را پس از دریافت اولین پیام تازه‌سازی می‌کند.</summary>
+        public async Task RefreshRooms()
+        {
+            var rooms = await _chatRoomService.GetAllrooms();
+            await Clients.Caller.SendAsync("GetRooms", rooms);
+        }
+
 
         /// <summary>
         /// اطلاعات موردنیاز را دریافت می‌کند.
@@ -51,17 +59,18 @@ namespace VisitorManagment.Web.Hubs
         /// </summary>
         public async Task SendMessage(Guid roomId,string text)
         {
+            if (string.IsNullOrWhiteSpace(text)) return;
             var message = new MessageDto
             {
                 Sender = Context.User.Identity.Name,
-                Message = text,
+                Message = text.Trim(),
                 Time = DateTime.Now,
             };
 
             await _messageService.SaveChatMessage(roomId, message);
 
             await _siteChathub.Clients.Group(roomId.ToString())
-                .SendAsync("getNewMessage", message.Sender, message.Message, message.Time.ToShortTimeString());
+                .SendAsync("getNewMessage", message.Sender, message.Message, message.Time);
                 
         }
         #endregion

@@ -761,10 +761,7 @@
 
                                             }
 
-                                            else
-                                            {
-                                                <a href="" target="_blank" class="btn btn-info btn-pulse">فایلی وجود ندارد</a>
-                                            }
+                                            else { <span class="hamesh-empty-file"><i class="ti-info-alt"></i> موردی وجود ندارد</span> }
 
                                             @*@if (Model.hameshFullInfoViewModel.attacmentFileName != "")
                                         {
@@ -782,17 +779,14 @@
                                         <div class="modal-header">
                                             <h5 class="modal-title">فایل پیوستی هیئت رئیسه</h5>
 
-                                            @foreach (var item in Model.hameshFullInfoViewModel.AttachDastorName)
+                                            @if (Model.hameshFullInfoViewModel.AttachDastorName != null && Model.hameshFullInfoViewModel.AttachDastorName.Count > 0)
                                             {
-                                                @if (Model.hameshFullInfoViewModel.AttachDastorName != null)
+                                                foreach (var item in Model.hameshFullInfoViewModel.AttachDastorName)
                                                 {
                                                     <a href="/AttachDastor/@item" target="_blank" class="btn btn-info btn-pulse">دانلود</a>
                                                 }
-                                                else
-                                                {
-                                                    <a href="#" target="_blank" class="btn btn-info btn-pulse">فایلی وجود ندارد</a>
-                                                }
                                             }
+                                            else { <span class="hamesh-empty-file"><i class="ti-info-alt"></i> موردی وجود ندارد</span> }
 
                                         </div>
 
@@ -822,10 +816,11 @@
 
                                             <h5 class="modal-title">فیش حقوقی</h5>
 
-                                            <a href="/FishAttachment/@Model.hameshFullInfoViewModel.fishAttacmentFileName" target="_blank"
-                                           class="btn btn-info btn-pulse">
-                                                دانلود
-                                            </a>
+                                            @if (!string.IsNullOrWhiteSpace(Model.hameshFullInfoViewModel.fishAttacmentFileName))
+                                            {
+                                                <a href="/FishAttachment/@Model.hameshFullInfoViewModel.fishAttacmentFileName" target="_blank" class="btn btn-info btn-pulse">دانلود</a>
+                                            }
+                                            else { <span class="hamesh-empty-file"><i class="ti-info-alt"></i> فیش حقوقی ثبت نشده است</span> }
 
                                             @*<a href="/AttachDastor/@item" target="_blank" class="btn btn-info btn-pulse">دانلود</a>*@
                                         </div>
@@ -964,6 +959,7 @@
 
 @section GetInformationPersonal
     {
+    <script src="~/js/hamesh-ux.js" asp-append-version="true"></script>
 
     <script src="~/js/hamesh-management.js"></script>
     <script>

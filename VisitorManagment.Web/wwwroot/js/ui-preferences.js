@@ -2,7 +2,14 @@
     "use strict";
     var key = "omid.ui.preferences.v1";
     var root = document.documentElement;
-    var fonts = { default: "inherit", tahoma: "Tahoma, Arial, sans-serif", arial: "Arial, Tahoma, sans-serif" };
+    var fonts = {
+        default: "inherit", iransans: "IRANSans, Tahoma, sans-serif",
+        shabnam: "Shabnam, IRANSans, Tahoma, sans-serif",
+        bnazanin: "'B Nazanin', IRANSans, Tahoma, serif",
+        bmitra: "'B Mitra', IRANSans, Tahoma, serif",
+        btitr: "'B Titr', IRANSans, Tahoma, sans-serif",
+        tahoma: "Tahoma, Arial, sans-serif", arial: "Arial, Tahoma, sans-serif"
+    };
 
     function read() {
         try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { return {}; }

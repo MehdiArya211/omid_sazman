@@ -75,6 +75,7 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 .Include(p => p.ChatMessages)
                 .Where(p => p.ChatMessages.Any())
                 .OrderByDescending(p => p.ChatMessages.Max(m => m.Time))
+                .AsNoTracking()
                 .ToList();
 
             var room = new List<ChatRoomDTO>();
@@ -86,6 +87,10 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 room1.Id = item.Id;
                 //room1.ConnectionId = item.ConnectionId;
                 room1.Title = item.Title;
+                var lastMessage = item.ChatMessages.OrderByDescending(message => message.Time).FirstOrDefault();
+                room1.LastMessage = lastMessage?.Message;
+                room1.LastMessageTime = lastMessage?.Time;
+                room1.MessageCount = item.ChatMessages.Count;
                 room.Add(room1);
             }
            

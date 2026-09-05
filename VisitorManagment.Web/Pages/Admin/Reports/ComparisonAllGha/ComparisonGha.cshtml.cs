@@ -119,6 +119,7 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllGha
         /// </summary>
         public IActionResult OnPost(List<int> listGha,int actionTypeId, string startDateSearch = "", string endDateSearch = "")
         {
+            listGha = listGha ?? new List<int>();
             ViewData["AllListGha"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
             ViewData["ActionType"] = new SelectList(_hameshService.GetActionType(), "Id", "Title");
 

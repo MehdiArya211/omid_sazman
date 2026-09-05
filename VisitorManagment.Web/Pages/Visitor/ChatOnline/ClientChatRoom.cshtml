@@ -3,7 +3,8 @@
 @{
     Layout = "_Layout";
 }
-<div>
+<link rel="stylesheet" href="~/css/chat-professional.css" asp-append-version="true" />
+<div class="client-chat-page" dir="rtl">
 
     <!-- begin::chat block -->
     <div class=" h-100">
@@ -20,7 +21,9 @@
                     <div class="d-flex align-items-center">
 
                         <div>
-                            <h6 class="mb-1" >پشتیبان سامانه امید (مهدی آریانژاد)</h6>
+                            <span class="chat-kicker">ارتباط مستقیم</span>
+                            <h5 class="mb-1">پشتیبانی آنلاین سامانه امید</h5>
+                            <small id="chatConnectionStatus" class="chat-connection-status">در حال اتصال...</small>
                             <input type="hidden" id="fullNameUser" value="@ViewBag.FullName">
                         </div>
                     </div>
@@ -39,7 +42,7 @@
                 <div class="chat-footer border-top" id="SendNewMessage">
                     <form class="d-flex" id="NewMessageForm">
                         <div class="flex-grow-1">
-                            <input type="text" class="form-control" placeholder="پیام خود را بنویسید" id="MessageInput">
+                            <textarea class="form-control" rows="1" maxlength="2000" placeholder="پیام خود را بنویسید؛ Enter برای ارسال" id="MessageInput"></textarea>
                         </div>
                         <div class="chat-footer-buttons d-flex">
                             <button class="btn btn-primary" type="submit">

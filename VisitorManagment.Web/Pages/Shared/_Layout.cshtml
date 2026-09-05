@@ -19,6 +19,14 @@
 
         <div>
             <ul class="navbar-nav">
+                @if (User.Identity?.IsAuthenticated == true && User.FindFirst("PersonalCode")?.Value == "95003599")
+                {
+                    <li class="nav-item">
+                        <a href="/Admin/SupportChatOnline/Index" class="nav-link support-notification-link" title="پیام‌های پشتیبانی">
+                            <i data-feather="message-circle"></i><span id="supportUnreadBadge" class="support-unread-badge" hidden>۰</span>
+                        </a>
+                    </li>
+                }
                 <li class="nav-item">
                     <button type="button" class="nav-link ui-settings-toggle" id="uiSettingsToggle" title="تنظیمات نمایش" aria-controls="uiSettingsPanel" aria-expanded="false">
                         <i data-feather="type"></i><span class="sr-only">تنظیمات نمایش</span>
@@ -49,6 +57,11 @@
             <label for="uiFontFamily">فونت نوشته‌ها</label>
             <select id="uiFontFamily" class="form-control">
                 <option value="default">فونت پیش‌فرض</option>
+                <option value="iransans">ایران‌سنس</option>
+                <option value="shabnam">شبنم</option>
+                <option value="bnazanin">B Nazanin</option>
+                <option value="bmitra">B Mitra</option>
+                <option value="btitr">B Titr</option>
                 <option value="tahoma">Tahoma</option>
                 <option value="arial">Arial</option>
             </select>
@@ -177,6 +190,10 @@
 
     <script src="~/js/operation-feedback.js" asp-append-version="true"></script>
     <script src="~/js/ui-preferences.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true && User.FindFirst("PersonalCode")?.Value == "95003599")
+    {
+        <script src="~/js/support-chat-notifications.js" asp-append-version="true"></script>
+    }
 </body>
 
 </html>

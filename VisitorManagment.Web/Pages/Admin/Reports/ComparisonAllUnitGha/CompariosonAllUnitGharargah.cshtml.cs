@@ -66,6 +66,7 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllUnitGha
         /// </summary>
         public IActionResult OnPost(int codeGha, List<int> unitCode, int actionTypeId, string startDateSearch = "", string endDateSearch = "")
         {
+            unitCode = unitCode ?? new List<int>();
             ViewData["AllListGha"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
             ViewData["Gharargah"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
             ViewData["ActionType"] = new SelectList(_hameshService.GetActionType(), "Id", "Title");

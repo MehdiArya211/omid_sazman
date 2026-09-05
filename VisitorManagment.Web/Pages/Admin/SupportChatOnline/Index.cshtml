@@ -1,10 +1,9 @@
 ﻿@page
 @model VisitorManagment.Web.Pages.Admin.SupportChatOnline.IndexModel
-@{
-
-}
+@{ ViewData["Title"] = "پشتیبانی آنلاین"; }
+<link rel="stylesheet" href="~/css/chat-professional.css" asp-append-version="true" />
 <!-- begin::main -->
-<div>
+<div class="support-chat-page" dir="rtl">
 
     <div>
 
@@ -21,7 +20,9 @@
                         <div class="d-flex">
 
                             <div>
-                                <h6 class="mb-1">پشتیبان سامانه امید(مهدی آریانژاد)</h6>
+                                <span class="chat-kicker">مرکز پاسخ‌گویی</span>
+                                <h5 class="mb-1">پشتیبانی آنلاین سامانه امید</h5>
+                                <small id="supportConnectionStatus" class="chat-connection-status">در حال اتصال...</small>
                             </div>
                           
                         </div>
@@ -29,7 +30,7 @@
                             <div class="input-group">
                                 <input type="search" id="chatRoomSearch" class="form-control" placeholder="جستجو در گفت‌وگوها" aria-label="جستجو در گفت‌وگوها">
                                 <div class="input-group-append">
-                                    <button class="btn btn-outline-light" type="button">
+                                    <button class="btn btn-outline-light" type="button" aria-label="جستجو">
                                         <i class="ti-search"></i>
                                     </button>
                                 </div>
@@ -51,16 +52,7 @@
                                 <p class="small mb-0">گفت‌گوهای اخیر</p>
                                 <div class="chat-lists">
                                     <div class="list-group list-group-flush">
-                                        <a href="#"
-                                           class="list-group-item d-flex align-items-center link-1 pl-0 pr-0 pb-3 pt-3">
-                                            <div class="pr-3">
-                                                <div class="avatar avatar-sm avatar-state-danger">
-                                                    <span class="avatar-title bg-success rounded-circle"></span>
-                                                </div>
-                                            </div>
-                                            <div id="roomList">
-                                            </div>
-                                        </a>
+                                        <div id="roomList" class="chat-room-list" aria-live="polite"></div>
 
                                     </div>
                                 </div>
@@ -79,8 +71,8 @@
                         <div class="d-flex align-items-center">
 
                             <div>
-                                <h6 class="mb-1">پیام ها</h6>
-                                <div class="m-0 small text-success">پاسخ‌گویی آنلاین</div>
+                                <h6 class="mb-1" id="activeChatTitle">یک گفت‌وگو را انتخاب کنید</h6>
+                                <div class="m-0 small text-muted" id="activeChatMeta">پیام‌های کاربر همراه تاریخ و ساعت نمایش داده می‌شود</div>
                             </div>
                             <div class="ml-auto">
                                 <ul class="nav align-items-center">
@@ -98,8 +90,9 @@
                     <div>
                         <div class="message-item">
                             <div class="message-item-content">
-                                <ul id="chatMessage">
+                                <ul id="chatMessage" aria-live="polite">
                                 </ul>
+                                <div id="chatEmptyState" class="chat-empty-state"><i class="ti-comments"></i><strong>گفت‌وگویی انتخاب نشده است</strong><span>از فهرست کاربران یک گفت‌وگو را باز کنید.</span></div>
                             </div>
                         </div>
 
@@ -109,10 +102,10 @@
                     <div class="chat-footer border-top">
                         <form class="d-flex" id="answerForm">
                             <div class="flex-grow-1">
-                                <input id="answerText" type="text" class="form-control" placeholder="پیام خود را بنویسید">
+                                <textarea id="answerText" class="form-control" rows="1" maxlength="2000" placeholder="پاسخ خود را بنویسید؛ Enter برای ارسال و Shift+Enter برای خط جدید" disabled></textarea>
                             </div>
                             <div class="chat-footer-buttons d-flex">
-                                <button class="btn btn-primary" type="submit">
+                                <button class="btn btn-primary" type="submit" disabled>
                                     <i data-feather="send" class="width-15 height-15"></i>
                                 </button>
                             </div>

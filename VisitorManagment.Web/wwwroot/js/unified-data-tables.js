@@ -33,7 +33,7 @@
         if (table.matches(".no-datatable, .tableChild, #roomTable, #tblRooms, #fileTable")) { return false; }
         if (!table.tHead || !table.tBodies.length || !table.tHead.rows.length) { return false; }
         if (table.closest(".swal-modal")) { return false; }
-        var isDestinationTable = !!table.closest("#gridsendlist, .gridsendlist, [data-destination-selector]");
+        var isDestinationTable = !!table.closest("#gridsendlist, #gridsendlistMain, .gridsendlist, .gridsendlistMain, [data-destination-selector]");
         return isDestinationTable || table.hasAttribute("data-datatable") || table.id === "dataTable" || table.id === "myTable" ||
             table.id === "example1" || (isReportPage() && table.classList.contains("table"));
     }
@@ -76,6 +76,7 @@
         var toolbar = $('<div class="dataTables-toolbar"><div class="dataTables-toolbar__controls"></div><div class="dataTables-toolbar__exports"></div></div>');
         var controls = toolbar.find(".dataTables-toolbar__controls");
         var exports = toolbar.find(".dataTables-toolbar__exports");
+        var zoom = $('<div class="dataTables-zoom" aria-label="بزرگ‌نمایی متن جدول"><span>اندازه متن</span><button type="button" data-grid-zoom="out" title="کوچک‌تر">−</button><button type="button" data-grid-zoom="reset" title="اندازه عادی">۱۰۰٪</button><button type="button" data-grid-zoom="in" title="بزرگ‌تر">+</button></div>');
 
         if (filter.length) {
             var searchInput = filter.find("input").first();
@@ -97,9 +98,21 @@
 
         exports.append('<button type="button" class="dataTables-export dataTables-export--excel" data-grid-export="excel"><i class="ti-file"></i> خروجی Excel</button>');
         exports.append('<button type="button" class="dataTables-export dataTables-export--word" data-grid-export="word"><i class="ti-files"></i> خروجی Word</button>');
+        exports.prepend(zoom);
         container.prepend(toolbar);
         toolbar.on("click", "[data-grid-export]", function () {
             openColumnModal(api, this.dataset.gridExport);
+        });
+        toolbar.on("click", "[data-grid-zoom]", function () {
+            var table = $(api.table().node());
+            var current = Number(table.attr("data-text-zoom") || 100);
+            if (this.dataset.gridZoom === "in") current += 10;
+            else if (this.dataset.gridZoom === "out") current -= 10;
+            else current = 100;
+            current = Math.max(80, Math.min(140, current));
+            table.attr("data-text-zoom", current).css("--grid-text-scale", current / 100);
+            zoom.find('[data-grid-zoom="reset"]').text(current + "٪");
+            api.columns.adjust();
         });
     }
 
@@ -172,10 +185,14 @@
                 pagingType: "full_numbers",
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "همه"]],
                 order: [],
+                columnDefs: [{ targets: "_all", orderable: true }],
                 language: persianLanguage
             });
         }
         var settings = api.settings()[0];
+        if (settings && settings.aoColumns) {
+            settings.aoColumns.forEach(function (column) { column.bSortable = true; });
+        }
         if (settings && settings.sPaginationType !== "full_numbers") {
             settings.sPaginationType = "full_numbers";
             api.draw(false);

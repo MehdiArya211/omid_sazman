@@ -13,10 +13,12 @@ namespace VisitorManagment.Web.Hubs
     {
         private readonly IChatRoomService _chatRoomService;
         private readonly IMessageService _messageService;
-        public SiteChatHub(IChatRoomService chatRoomService, IMessageService messageService)
+        private readonly IHubContext<SupportHub> _supportHub;
+        public SiteChatHub(IChatRoomService chatRoomService, IMessageService messageService, IHubContext<SupportHub> supportHub)
         {
             _chatRoomService = chatRoomService;
             _messageService = messageService;
+            _supportHub = supportHub;
         }
         #region اعضا و متدهای کلاس
 
@@ -39,7 +41,8 @@ namespace VisitorManagment.Web.Hubs
 
             await _messageService.SaveChatMessage(roomId,messageDto);
             await Clients.Groups(roomId.ToString())
-                .SendAsync("getNewMessage", messageDto.Sender, messageDto.Message, messageDto.Time.ToShortTimeString());
+                .SendAsync("getNewMessage", messageDto.Sender, messageDto.Message, messageDto.Time);
+            await _supportHub.Clients.All.SendAsync("newSupportMessage", roomId, messageDto.Sender, messageDto.Message, messageDto.Time);
         }
 
         /// <summary>
@@ -71,7 +74,8 @@ namespace VisitorManagment.Web.Hubs
         /// </summary>
         public override async Task OnConnectedAsync()
         {
-            var isSupportConnection = string.Equals(Context.GetHttpContext()?.Request.Query["support"], "true", StringComparison.OrdinalIgnoreCase);
+            var supportQueryValue = Context.GetHttpContext()?.Request.Query["support"].ToString();
+            var isSupportConnection = string.Equals(supportQueryValue, "true", StringComparison.OrdinalIgnoreCase);
             if (isSupportConnection && Context.User.Identity.IsAuthenticated)
             {
                 await base.OnConnectedAsync();
@@ -83,8 +87,11 @@ namespace VisitorManagment.Web.Hubs
             var roomId = await _chatRoomService.CreateChatRoom(Context.ConnectionId , user);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
-            await Clients.Caller.
-                SendAsync("getNewMessage", "پشتیبانی سامانه امید", "سلام وقت بخیر 👋 . چطور میتونم کمکتون کنم؟", DateTime.Now.ToShortTimeString());
+            var history = await _messageService.GetChatMessage(roomId);
+            if (history.Count > 0)
+                await Clients.Caller.SendAsync("loadChatHistory", history);
+            else
+                await Clients.Caller.SendAsync("getNewMessage", "پشتیبانی سامانه امید", "سلام وقت بخیر 👋 . چطور می‌توانم کمکتان کنم؟", DateTime.Now);
             await base.OnConnectedAsync();
         }
 
