@@ -78,6 +78,7 @@
                                 <h6 class="mb-1" id="activeChatTitle">یک گفت‌وگو را انتخاب کنید</h6>
                                 <div class="m-0 small text-muted" id="activeChatMeta">پیام‌های کاربر همراه تاریخ و ساعت نمایش داده می‌شود</div>
                             </div>
+                            <div class="chat-message-search"><i class="ti-search"></i><input id="adminMessageSearch" type="search" placeholder="جستجو در پیام‌ها"></div>
                         </div>
                     </div>
                     <!-- end::chat header -->
@@ -95,11 +96,14 @@
                     <!-- end::messages -->
                     <!-- begin::chat footer -->
                     <div class="chat-footer border-top">
+                        <div id="adminTypingIndicator" class="chat-typing" hidden><span></span><span></span><span></span><em>کاربر در حال نوشتن است</em></div>
                         <div id="adminReplyPreview" class="chat-reply-composer" hidden>
                             <div><strong>پاسخ به <span data-reply-sender></span></strong><p data-reply-message></p></div>
                             <button type="button" data-cancel-reply aria-label="لغو پاسخ"><i class="ti-close"></i></button>
                         </div>
                         <form class="chat-compose" id="answerForm" novalidate>
+                            <input id="adminAttachmentInput" class="chat-file-input" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip">
+                            <button class="chat-attach-button" id="adminAttachButton" type="button" title="ارسال فایل یا تصویر"><i class="ti-clip"></i></button>
                             <div class="chat-compose__input">
                                 <textarea id="answerText" rows="1" maxlength="2000" inputmode="text" autocomplete="off" placeholder="پیام خود را بنویسید..." disabled></textarea>
                                 <small>Enter برای ارسال · Shift+Enter برای خط جدید</small>
