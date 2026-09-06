@@ -1,6 +1,8 @@
 (function () {
     "use strict";
-    var connection = new signalR.HubConnectionBuilder().withUrl("/chathub").withAutomaticReconnect([0, 2000, 5000, 10000]).build();
+    // نسخه SignalR موجود در پروژه withAutomaticReconnect ندارد؛ اتصال مجدد دستی انجام می‌شود.
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chathub").build();
+    var reconnectTimer = null;
     var form, input, messages, button, status, emptyState, replyPreview, currentUser;
     var selectedReply = null;
     function formatPersianDate(value) {
@@ -55,8 +57,15 @@
     }
     async function start() {
         if (connection.state !== signalR.HubConnectionState.Disconnected) return;
-        try { await connection.start(); setState("آنلاین", true); }
-        catch (_) { setState("در حال اتصال مجدد...", false); window.setTimeout(start, 5000); }
+        try {
+            await connection.start();
+            if (reconnectTimer) { window.clearTimeout(reconnectTimer); reconnectTimer = null; }
+            setState("آنلاین", true);
+        }
+        catch (_) {
+            setState("در حال اتصال مجدد...", false);
+            reconnectTimer = window.setTimeout(start, 5000);
+        }
     }
     document.addEventListener("DOMContentLoaded", function () {
         form = document.getElementById("NewMessageForm"); input = document.getElementById("MessageInput");
@@ -89,9 +98,10 @@
             messages.textContent = "";
             (items || []).forEach(function (item) { addMessage(item); });
         });
-        connection.onreconnecting(function () { setState("در حال اتصال مجدد...", false); });
-        connection.onreconnected(function () { setState("آنلاین", true); });
-        connection.onclose(function () { setState("قطع ارتباط", false); start(); });
+        connection.onclose(function () {
+            setState("در حال اتصال مجدد...", false);
+            reconnectTimer = window.setTimeout(start, 2000);
+        });
         start();
     });
 })();
