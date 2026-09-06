@@ -4,7 +4,7 @@
     Layout = "_Layout";
 }
 <link rel="stylesheet" href="~/css/chat-professional.css" asp-append-version="true" />
-<div class="client-chat-page" dir="rtl" data-current-user="@ViewBag.FullName">
+<div class="client-chat-page" dir="rtl" data-current-user="@(User.Identity?.Name ?? string.Empty)">
 
     <!-- begin::chat block -->
     <div class=" h-100">
@@ -27,6 +27,7 @@
                             <small id="chatConnectionStatus" class="chat-connection-status">در حال اتصال...</small>
                             <input type="hidden" id="fullNameUser" value="@ViewBag.FullName">
                         </div>
+                        <div class="chat-message-search"><i class="ti-search"></i><input id="clientMessageSearch" type="search" placeholder="جستجو در پیام‌ها"></div>
                     </div>
                 </div>
                 <!-- end::chat header -->
@@ -39,11 +40,14 @@
                 <!-- end::messages -->
                 <!-- begin::chat footer -->
                 <div class="chat-footer border-top" id="SendNewMessage">
+                    <div id="clientTypingIndicator" class="chat-typing" hidden><span></span><span></span><span></span><em>پشتیبان در حال نوشتن است</em></div>
                     <div id="clientReplyPreview" class="chat-reply-composer" hidden>
                         <div><strong>پاسخ به <span data-reply-sender></span></strong><p data-reply-message></p></div>
                         <button type="button" data-cancel-reply aria-label="لغو پاسخ"><i class="ti-close"></i></button>
                     </div>
                     <form class="chat-compose" id="NewMessageForm" novalidate>
+                        <input id="clientAttachmentInput" class="chat-file-input" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip">
+                        <button class="chat-attach-button" id="clientAttachButton" type="button" title="ارسال فایل یا تصویر"><i class="ti-clip"></i></button>
                         <div class="chat-compose__input">
                             <textarea rows="1" maxlength="2000" inputmode="text" autocomplete="off" placeholder="پیام خود را بنویسید..." id="MessageInput"></textarea>
                             <small>Enter برای ارسال · Shift+Enter برای خط جدید</small>
