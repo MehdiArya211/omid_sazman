@@ -91,6 +91,7 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 room1.LastMessage = lastMessage?.Message;
                 room1.LastMessageTime = lastMessage?.Time;
                 room1.MessageCount = item.ChatMessages.Count;
+                room1.UnreadCount = item.ChatMessages.Count(message => !message.IsRead);
                 room.Add(room1);
             }
            
