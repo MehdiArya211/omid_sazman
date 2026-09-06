@@ -22,6 +22,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
        
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int pageId = 1, string filterUserName = "", string filterEmail = "")
         {
             //کاربر غیر ادمین صفحه رو بهش نشون نده

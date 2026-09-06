@@ -33,12 +33,15 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         }
 
         [BindProperty]
-        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; }
-        public List<SimpleReportViewModel> lstModelPieChart { get; set; }
-        public List<SimpleReportViewModel> lstModelBarChart { get; set; }
+        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; } = new List<ChartFarmandehActivityDto>();
+        public List<SimpleReportViewModel> lstModelPieChart { get; set; } = new List<SimpleReportViewModel>();
+        public List<SimpleReportViewModel> lstModelBarChart { get; set; } = new List<SimpleReportViewModel>();
         public SearchPageReportFarmandehActivityReportViewModel searchPageReportViewModel { get; set; }
 
         public FarmandehReportDTO dto { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
             ViewData["FarmandehInfo"] = new SelectList(_personService.GetFarmandehInfos(), "Id", "Title");
@@ -84,6 +87,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int PrsnCd , string startDateSearch = "", string endDateSearch = "")
         {
             ViewData["FarmandehInfo"] = new SelectList(_personService.GetFarmandehInfos(), "Id", "Title");

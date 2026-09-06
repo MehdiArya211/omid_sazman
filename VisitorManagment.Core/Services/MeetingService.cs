@@ -37,11 +37,17 @@ namespace VisitorManagment.Core.Services
             apiUrlCardIsar = CustomSettings.Instance.ApiCardIsarUrl;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<MeetingPlace> GetMeetingPlace()
         {
             return _context.MeetingPlaces.ToList();
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void CreateMeeting(int userId, Meeting meetingViewModel)
         {
             var meeting = new Meeting();
@@ -63,27 +69,42 @@ namespace VisitorManagment.Core.Services
             AddToMeeting(meeting);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ClerkMeeting> GetClerkMeeting()
         {
             return _context.ClerkMeetings.ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<BoseMeeting> GetBoseMeeting()
         {
             return _context.BoseMeetings.ToList();
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToMeeting(Meeting meeting)
         {
             _context.Meetings.Add(meeting);
             _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<MeetingStatus> GetMeetingStatus()
         {
             return _context.MeetingStaus.ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListMeetingViewModel GetListMeeting(int pageId = 1, int filterMeetingStatus = 1, string filterCaption = "")
         {
 
@@ -127,11 +148,17 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetMeetingIdByFileId(int Id)
         {
             return _context.Files.Where(f => f.Id == Id).Select(f => f.MeetingId).SingleOrDefault();
         }
         #region Edit Meeting
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public EditMeetingViewModel GetMeetingForEdit(int Id)
         {
             var meeting = GetMeetingByMeetingId(Id);
@@ -150,6 +177,9 @@ namespace VisitorManagment.Core.Services
             return editfile;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Meeting GetMeetingByMeetingId(int Id)
         {
             var meeting = _context.Meetings.Where(f => f.Id == Id).SingleOrDefault();
@@ -157,6 +187,9 @@ namespace VisitorManagment.Core.Services
             return meeting;
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void EditMeeting(EditMeetingViewModel meeting)
         {
             var editmeeting = GetMeetingByMeetingId(meeting.Id);
@@ -176,6 +209,9 @@ namespace VisitorManagment.Core.Services
             UpdateMeeting(editmeeting);
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void UpdateMeeting(Meeting meeting)
         {
             _context.Update(meeting);
@@ -185,6 +221,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         #region Delete
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public DeleteMeetingViewModel GetMeetingInformation(int meetingId)
         {
             var meeting = GetMeetingByMeetingId(meetingId);
@@ -199,6 +238,9 @@ namespace VisitorManagment.Core.Services
             return information;
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteMeeting(int MeetingId)
         {
             var meeting = GetMeetingByMeetingId(MeetingId);
@@ -213,11 +255,17 @@ namespace VisitorManagment.Core.Services
 
         #region AutoCompleteSerach
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<string> GetMeetingForAutoCompliteSearch(string term)
         {
             return _context.Meetings.Where(p => p.Title.Contains(term)).Select(p => p.Title).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Meeting> GetMeetingList(int id)
         {
             return _context.Meetings.Where(m => m.Id == id).ToList();
@@ -226,6 +274,9 @@ namespace VisitorManagment.Core.Services
 
         #region Meeting Hold
         //گرفتن اعضای جلسه
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListMeetingHoldViewModel GetPersonalMemberForMeetingList(int meetingId, int pageId = 1, string filterCaption = "")
         {
             //list files
@@ -266,6 +317,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public List<Hamesh> getHmaeshByFileId(int personId, int meetingId)
         {
             var fileId = _context.Files.Where(f => f.PersonalId == personId && f.MeetingId == meetingId).Select(f => f.Id).SingleOrDefault();
@@ -273,6 +327,9 @@ namespace VisitorManagment.Core.Services
             return res;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int GetFileIdByMeetingIdAndPersonId(int meetingId, int personId)
         {
             return _context.Files.Where(f => f.PersonalId == personId && f.MeetingId == meetingId).Select(f => f.Id).SingleOrDefault();
@@ -282,6 +339,9 @@ namespace VisitorManagment.Core.Services
 
         #region ReferenceToMeeting
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListFileReferenceViewModel GetListFileForReference(int rcvrUserId, int pageId = 1, string filterCaption = "", int SubjectId = 0, int filterCodGhaTitle = 0, string filterGharargah = "")
         {
             IQueryable<Cartable> result = _context.Cartables.Include(f => f.File).Where(f => f.RcvrUserId == rcvrUserId && f.File.MeetingId == null);
@@ -332,6 +392,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<FactPersonalReferencViewModel> GetCodGhaTitle()
         {
             return _context.Files.Select(f => new FactPersonalReferencViewModel()
@@ -341,6 +404,9 @@ namespace VisitorManagment.Core.Services
             }).Distinct().ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ListFileReferenceViewModel> GetMeetingTitle()
         {
             return _context.Meetings.Where(m => m.MeetingStatusId == 1).Select(f => new ListFileReferenceViewModel()
@@ -350,10 +416,16 @@ namespace VisitorManagment.Core.Services
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<RequestSubject> GetRequestSubjects()
         {
             return _context.RequestSubjects.ToList();
         }
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddMeetingIdToFile(List<int> fileId, int MeetingId)
         {
             foreach (var item in fileId)
@@ -366,6 +438,9 @@ namespace VisitorManagment.Core.Services
             _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListFileReferenceViewModel GetListFileForEditReference(int meetingId, int pageId = 1, string filterCaption = "", int SubjectId = 0, int filterCodGhaTitle = 0)
         {
             // rcvrUserId ===>>>UserId claim
@@ -418,6 +493,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeletePersonInMeeting(int fileId)
         {
             var result = _context.Files.SingleOrDefault(f => f.Id == fileId);
@@ -426,6 +504,9 @@ namespace VisitorManagment.Core.Services
             _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListFileReferenceViewModel GetListFileForAddPersonToMeeting(int rcvrUserId, int meetingId, int pageId = 1, string filterCaption = "", int SubjectId = 0, int filterCodGhaTitle = 0)
         {
 
@@ -485,6 +566,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListFileReferenceViewModel GetFileForFinalApprovalMeeting(int meetingId)
         {
             IQueryable<Files> result = _context.Files.Where(f => f.MeetingId == meetingId);
@@ -514,6 +598,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddFinalApprovalMeeting(int meetingId, int userid)
         {
             var result = _context.Meetings.SingleOrDefault(f => f.Id == meetingId);
@@ -528,6 +615,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         #region SMS
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddSMSInfo(SMSInfoViewModel smsInfo, string token)
         {
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -540,6 +630,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListSMSInfoViewModel GetFileForSMSInfo(int? meetingId)
         {
             IQueryable<Files> result = _context.Files.Where(f => f.MeetingId == meetingId);
@@ -567,6 +660,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         #region get List File When MeetingId==Id(Meeting)
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Files> GetListFileByMeetingId(int meetingId)
         {
             var files = _context.Files.Where(x => x.MeetingId == meetingId && x.IsDelete == false).ToList();
@@ -578,6 +674,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         //لیست جلسات ملاقات برای فرم هامش
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListMeetingForHameshFormViewModel GetListMeetingForFormHamesh()
         {
             var result = _context.Meetings.Where(x =>x.MeetingStatusId==1 && x.IsDelete == false );
@@ -602,6 +701,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListMeetingViewModel GetListMeetingForOnlineConversation()
         {
             IQueryable<Meeting> result = _context.Meetings.Where(x => x.IsDelete == false && x.IsSend && x.MeetingStatusId == 1 && x.IsFinished == false);
@@ -670,6 +772,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddPersonToMemberMeeting(int meetingId, int fileId, int UnitCode, string unitTitle)
         {
             var MemberMeeting = new MemberMeeting
@@ -737,6 +842,9 @@ namespace VisitorManagment.Core.Services
             };
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<OrganViewModelDto> GetListOrganMemberMeeting(int meetingId)
         {
             var memberMeeting = _context.MemberMeetings.Where(x => x.MeetingId == meetingId)
@@ -753,6 +861,9 @@ namespace VisitorManagment.Core.Services
             return memberMeeting;
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public BaseResult ChangeStatusMeeting(int meetingId)
         {
             var meeting = GetMeetingByMeetingId(meetingId);
@@ -790,6 +901,9 @@ namespace VisitorManagment.Core.Services
             return res;
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public BaseResult ChangeStatusPersonInMeeting(int fileId)
         {
             var memberMeeting = _context.MemberMeetings.Where(x => x.FileId == fileId).FirstOrDefault();

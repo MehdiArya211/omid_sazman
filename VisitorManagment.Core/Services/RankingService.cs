@@ -80,6 +80,9 @@ namespace VisitorManagment.Core.Services
             return finalPoint;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int GetRanking(int unitCode)
         {
             
@@ -145,6 +148,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int GetEshrafDefId(System.DateTime date)
         {
             var res = _context.EshrafPeriodDefs.Where(x => x.StartDate <= date && x.EndDate <= date).Select
@@ -196,6 +202,9 @@ namespace VisitorManagment.Core.Services
             return res;
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public void FinalCalculate()
         {
             var eshrafDefId = GetEshrafPeriodDef();
@@ -315,6 +324,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToPoint(PointViewModel model)
         {
             var point = new Point()
@@ -333,11 +345,17 @@ namespace VisitorManagment.Core.Services
             _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<TblDepartment> GetListAllUnitForCalculateRanking()
         {
             return _context.TblDepartments.ToList();
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public BaseResult Remove(Point point)
         {
             try
@@ -364,6 +382,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListPointViewModel GetAll()
         {
             var list = new ListPointViewModel();
@@ -397,6 +418,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public List<Point> pointListHamvandUnit(List<int> units)
         {
             var eshrafdefId = GetEshrafPeriodDef();

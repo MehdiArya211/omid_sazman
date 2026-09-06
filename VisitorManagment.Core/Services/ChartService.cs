@@ -28,6 +28,9 @@ namespace VisitorManagment.Core.Services
         //    return chart;
         //}
 
+        /// <summary>
+        /// اطلاعات موردنیاز برای نمایش را آماده می‌کند.
+        /// </summary>
         public ChartBarDto ShowReportBarChartSearch(DateTime? startDateSearch, DateTime? endDateSearch, int requestSubjectId = 0,
                                                  int filterGharargahId = 0, int filterYeganId = 0)
 
@@ -75,6 +78,9 @@ namespace VisitorManagment.Core.Services
         }
 
         #region میزان فعالیت فرماندهان
+        /// <summary>
+        /// اطلاعات موردنیاز برای نمایش را آماده می‌کند.
+        /// </summary>
         public ChartFarmandehActivityDto ShowReportChartFarmandehActivity(string personCode)
         {
             var res = _context.Hameshes.Include(x => x.File);
@@ -113,6 +119,9 @@ namespace VisitorManagment.Core.Services
 
         }
         #endregion
+        /// <summary>
+        /// اطلاعات موردنیاز برای نمایش را آماده می‌کند.
+        /// </summary>
         public Chart ShowReportOne()
         {
             var files = _context.Files.Where(x => x.CodGhaTitle != null);

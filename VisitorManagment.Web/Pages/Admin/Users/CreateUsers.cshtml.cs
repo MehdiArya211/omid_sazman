@@ -35,6 +35,12 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
         [BindProperty]
         public CreateUserViewModel CreateUserViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public IActionResult OnGet()
         {
@@ -57,6 +63,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return Page();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalId(string personalno)
         {
             // اعتبارسنجی اولیه ورودی
@@ -87,6 +96,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int roleId, string password, IFormFile userAvatar)
         {
             try
@@ -110,6 +122,28 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
                 ViewData["RolesTitle"] = new SelectList(roles, "RoleId", "Title");
 
+                if (roleId <= 0)
+                {
+                    ModelState.AddModelError("", "انتخاب نقش کاربر الزامی است.");
+                    return Page();
+                }
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    ModelState.AddModelError("", "رمز عبور الزامی است.");
+                    return Page();
+                }
+                if (password.Length > 200)
+                {
+                    ModelState.AddModelError("", "رمز عبور نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد.");
+                    return Page();
+                }
+                if (password.Length < 8 || !password.Any(char.IsLower) || !password.Any(char.IsUpper) ||
+                    !password.Any(char.IsDigit) || !password.Any(character => !char.IsLetterOrDigit(character)))
+                {
+                    ModelState.AddModelError("", "رمز عبور باید حداقل ۸ کاراکتر و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.");
+                    return Page();
+                }
+
                 // بازیابی اطلاعات کاربر از سشن
                 var user = HttpContext.Session.GetObjectFromJson<CreateUserViewModel>("result");
                 if (user == null)
@@ -127,6 +161,11 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 if (user.UserAvatar != null && !FileUploadCheck.CheckImageFileExtension(user.UserAvatar))
                 {
                     ModelState.AddModelError("", "فایل انتخابی معتبر نمی‌باشد.");
+                    return Page();
+                }
+                if (user.UserAvatar != null && user.UserAvatar.Length > 2 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("", "حجم تصویر پروفایل نمی‌تواند بیشتر از ۲ مگابایت باشد.");
                     return Page();
                 }
 
@@ -161,6 +200,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 }
 
                 // هدایت به صفحه اصلی
+                TempData["OperationTitle"] = "ثبت موفق";
+                TempData["OperationMessage"] = "کاربر با موفقیت ثبت شد.";
+                TempData["OperationIcon"] = "success";
                 return RedirectToPage("Index");
             }
             catch (Exception ex)
@@ -174,5 +216,6 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
 
 
+        #endregion
     }
 }

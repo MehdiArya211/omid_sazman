@@ -20,12 +20,15 @@ namespace VisitorManagment.Core.Services.Reports
         {
             _context = context;
         }
+        #region اعضا و متدهای کلاس
+
 
         /// <summary>
         /// گرفتن تعداد اقدام های انجام شده فرمانده براساس نوع اقدام
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
+
         public List<HameshActionTypeModel> GetTotalHelpAmountForServiceType(int userId, DateTime? startDateEnglish, DateTime? endDateEnglish)
         {
             var strAnd = " AND ";
@@ -236,6 +239,7 @@ namespace VisitorManagment.Core.Services.Reports
 
 
 
+        #endregion
     }
 }
 

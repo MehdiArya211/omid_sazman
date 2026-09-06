@@ -1,44 +1,30 @@
-﻿var chatBox = $("#ChatBox");
-
-var connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chathub")
-    .build();
-
-connection.start();
-
-
-
-function Init() {
-
-
-    // هر زمان که دکمه ارسال در چت باکس کلیک شور کد های زیر اجرا می شود
-    var NewMessageForm = $("#NewMessageForm");
-    NewMessageForm.on("submit", function (e) {
-        e.preventDefault();
-        var message = e.target[0].value;
-        e.target[0].value = '';
-        sendMessage(message);
+(function () {
+    "use strict";
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chathub").build();
+    var form, input, messages, button, status, emptyState, replyPreview, currentUser, search, fileInput, attachButton, typingIndicator;
+    var selectedReply = null, reconnectTimer = null, typingTimer = null, lastDateKey = "";
+    function persianDate(value, dateOnly) { var date=new Date(value);if(Number.isNaN(date.getTime()))return value||"";return new Intl.DateTimeFormat("fa-IR-u-ca-persian",dateOnly?{year:"numeric",month:"long",day:"numeric"}:{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(date); }
+    function normalize(value,message,time){return value&&typeof value==="object"?value:{sender:value,message:message,time:time};}
+    function isMine(data){return currentUser&&(data.sender||"").trim().toLowerCase()===currentUser;}
+    function clearReply(){selectedReply=null;if(replyPreview)replyPreview.hidden=true;}
+    function selectReply(data){if(!data||!data.id||data.isDeleted)return;selectedReply=data;replyPreview.querySelector("[data-reply-sender]").textContent=data.sender||"پیام";replyPreview.querySelector("[data-reply-message]").textContent=data.message||data.attachmentName||"پیوست";replyPreview.hidden=false;input.focus();}
+    function addDateDivider(data){var d=new Date(data.time),key=Number.isNaN(d.getTime())?"":d.toISOString().slice(0,10);if(key&&key!==lastDateKey){var x=document.createElement("li");x.className="chat-date-divider";x.textContent=persianDate(d,true);messages.appendChild(x);lastDateKey=key;}}
+    function attachmentNode(data){if(!data.attachmentUrl||data.isDeleted)return null;var a=document.createElement("a");a.className="chat-attachment";a.href=data.attachmentUrl;a.target="_blank";a.rel="noopener";if((data.attachmentContentType||"").indexOf("image/")===0){var img=document.createElement("img");img.src=data.attachmentUrl;img.alt=data.attachmentName||"تصویر";a.appendChild(img);}var label=document.createElement("span");label.innerHTML='<i class="ti-file"></i> ';label.appendChild(document.createTextNode(data.attachmentName||"دریافت فایل"));a.appendChild(label);return a;}
+    function renderMessage(value,message,time){var data=normalize(value,message,time);addDateDivider(data);var mine=isMine(data),li=document.createElement("li");li.dataset.messageId=data.id||"";li._chatMessage=data;li.classList.toggle("is-current-user",mine);li.classList.toggle("is-deleted",!!data.isDeleted);if(data.replyToMessage){var q=document.createElement("button");q.type="button";q.className="chat-message-reply";q.dataset.replyTarget=data.replyToMessageId||"";q.innerHTML="<strong></strong><span></span>";q.querySelector("strong").textContent=data.replyToSender||"پیام";q.querySelector("span").textContent=data.replyToMessage;li.appendChild(q);}var meta=document.createElement("div");meta.className="chat-message-meta";meta.textContent=(data.sender||"کاربر")+" · "+persianDate(data.time)+(data.editedAt?" · ویرایش‌شده":"");li.appendChild(meta);var body=document.createElement("div");body.className="chat-message-body";body.textContent=data.isDeleted?"این پیام حذف شده است":(data.message||"");li.appendChild(body);var attachment=attachmentNode(data);if(attachment)li.appendChild(attachment);if(!data.isDeleted){var actions=document.createElement("div");actions.className="chat-message-actions";actions.innerHTML='<button type="button" data-action="reply" title="پاسخ"><i class="ti-back-left"></i></button><button type="button" data-action="copy" title="کپی"><i class="ti-files"></i></button>'+(mine?'<button type="button" data-action="edit" title="ویرایش"><i class="ti-pencil"></i></button><button type="button" data-action="delete" title="حذف"><i class="ti-trash"></i></button>':'');li.appendChild(actions);}var delivery=document.createElement("small");delivery.className="chat-delivery";delivery.textContent=mine?(data.isRead?"✓✓ خوانده شد":"✓ ارسال شد"):"";li.appendChild(delivery);messages.appendChild(li);if(emptyState)emptyState.classList.add("is-hidden");var panel=document.getElementById("MessagePanel");if(panel)panel.scrollTop=panel.scrollHeight;}
+    function replaceMessage(data){var old=messages.querySelector('[data-message-id="'+data.id+'"]');if(!old)return;old._chatMessage=data;old.classList.toggle("is-deleted",!!data.isDeleted);var body=old.querySelector(".chat-message-body");if(body)body.textContent=data.isDeleted?"این پیام حذف شده است":(data.message||"");var meta=old.querySelector(".chat-message-meta");if(meta)meta.textContent=(data.sender||"کاربر")+" · "+persianDate(data.time)+(data.editedAt?" · ویرایش‌شده":"");if(data.isDeleted)old.querySelectorAll(".chat-attachment,.chat-message-actions").forEach(function(x){x.remove();});}
+    function markRead(ids){(ids||[]).forEach(function(id){var x=messages.querySelector('[data-message-id="'+id+'"] .chat-delivery');if(x)x.textContent="✓✓ خوانده شد";});}
+    function markDelivered(ids){(ids||[]).forEach(function(id){var x=messages.querySelector('[data-message-id="'+id+'"] .chat-delivery');if(x&&x.textContent!=="✓✓ خوانده شد")x.textContent="✓✓ تحویل شد";});}
+    function setState(text,ok){if(status){status.textContent=text;status.classList.toggle("is-online",ok);}if(button)button.disabled=!ok;if(input)input.disabled=!ok;if(attachButton)attachButton.disabled=!ok;}
+    function showError(error){console.error("Chat operation failed",error);var message="ارتباط با سرور برقرار نیست. چند لحظه بعد دوباره تلاش کنید.";if(window.Swal)Swal.fire({icon:"error",title:"عملیات انجام نشد",text:message,confirmButtonText:"باشه"});else window.alert(message);}
+    function beginInlineEdit(li,data){if(!li||li.querySelector(".chat-inline-editor"))return;var body=li.querySelector(".chat-message-body"),actions=li.querySelector(".chat-message-actions"),editor=document.createElement("div");editor.className="chat-inline-editor";editor.innerHTML='<textarea maxlength="2000" aria-label="ویرایش متن پیام"></textarea><div><button type="button" data-edit-save>ذخیره</button><button type="button" data-edit-cancel>لغو</button></div>';var textarea=editor.querySelector("textarea"),save=editor.querySelector("[data-edit-save]");textarea.value=data.message||"";body.hidden=true;if(actions)actions.hidden=true;body.insertAdjacentElement("afterend",editor);function cancel(){editor.remove();body.hidden=false;if(actions)actions.hidden=false;}async function submit(){var text=textarea.value.trim();if(!text&&!data.attachmentUrl){textarea.focus();return;}save.disabled=true;try{await connection.invoke("EditMessage",data.id,text);cancel();}catch(error){save.disabled=false;showError(error);}}editor.querySelector("[data-edit-cancel]").addEventListener("click",cancel);save.addEventListener("click",submit);textarea.addEventListener("keydown",function(event){if(event.key==="Escape"){event.preventDefault();cancel();}else if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();submit();}});textarea.focus();textarea.setSelectionRange(textarea.value.length,textarea.value.length);}
+    function sendFile(file){if(!file)return;if(file.size>5*1024*1024){window.alert("حجم فایل باید کمتر از ۵ مگابایت باشد.");fileInput.value="";return;}var reader=new FileReader();reader.onload=function(){var base64=String(reader.result).split(",")[1]||"";connection.invoke("SendAttachment",file.name,file.type,base64,input.value.trim(),selectedReply?selectedReply.id:null).then(function(){input.value="";fileInput.value="";clearReply();}).catch(showError);};reader.readAsDataURL(file);}
+    async function start(){if(connection.state!==signalR.HubConnectionState.Disconnected)return;try{await connection.start();setState("آنلاین",true);}catch(_){setState("در حال اتصال مجدد...",false);reconnectTimer=setTimeout(start,5000);}}
+    async function ensureConnected(){if(connection.state===signalR.HubConnectionState.Connected)return true;if(connection.state===signalR.HubConnectionState.Disconnected){try{await connection.start();setState("آنلاین",true);return true;}catch(error){showError(error);setState("ارتباط قطع است",false);return false;}}showError();return false;}
+    function enableWheelScroll(){var panel=document.getElementById("MessagePanel");if(!panel||panel.dataset.wheelReady)return;panel.dataset.wheelReady="true";panel.addEventListener("wheel",function(event){if(panel.scrollHeight<=panel.clientHeight)return;panel.scrollTop+=event.deltaY;event.preventDefault();event.stopPropagation();},{passive:false});}
+    function syncHeight(){var page=document.querySelector(".client-chat-page");if(page)page.style.setProperty("--chat-viewport-height",Math.max(480,innerHeight-Math.max(0,page.getBoundingClientRect().top)-10)+"px");}
+    document.addEventListener("DOMContentLoaded",function(){document.documentElement.classList.add("chat-page-lock");document.body.classList.add("chat-page-lock");syncHeight();addEventListener("resize",syncHeight);form=document.getElementById("NewMessageForm");input=document.getElementById("MessageInput");messages=document.getElementById("Messages");button=document.getElementById("clientSendButton");status=document.getElementById("chatConnectionStatus");emptyState=document.getElementById("clientChatEmptyState");replyPreview=document.getElementById("clientReplyPreview");search=document.getElementById("clientMessageSearch");fileInput=document.getElementById("clientAttachmentInput");attachButton=document.getElementById("clientAttachButton");typingIndicator=document.getElementById("clientTypingIndicator");var page=document.querySelector(".client-chat-page");currentUser=page?(page.dataset.currentUser||"").trim().toLowerCase():"";if(!form||!input||!messages||!button)return;
+        async function send(e){if(e)e.preventDefault();var text=input.value.trim();if(!text){input.focus();return;}button.disabled=true;if(!await ensureConnected()){button.disabled=false;return;}try{await connection.invoke("SendNewMessage","",text,selectedReply?selectedReply.id:null);input.value="";clearReply();}catch(error){showError(error);setState("ارسال ناموفق",false);}finally{button.disabled=connection.state!==signalR.HubConnectionState.Connected;input.focus();}}
+        form.addEventListener("submit",function(e){e.preventDefault();send(e);});button.addEventListener("click",send);input.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send(e);}});input.addEventListener("input",function(){connection.invoke("Typing",true).catch(function(){});clearTimeout(typingTimer);typingTimer=setTimeout(function(){connection.invoke("Typing",false).catch(function(){});},1200);});messages.addEventListener("click",function(e){var action=e.target.closest("[data-action]");if(action){var li=action.closest("li"),data=li._chatMessage,kind=action.dataset.action;if(kind==="reply")selectReply(data);if(kind==="copy")navigator.clipboard.writeText(data.message||"");if(kind==="edit")beginInlineEdit(li,data);if(kind==="delete"&&confirm("این پیام حذف شود؟"))connection.invoke("DeleteMessage",data.id).catch(showError);return;}var quote=e.target.closest(".chat-message-reply");if(quote){var target=messages.querySelector('[data-message-id="'+quote.dataset.replyTarget+'"]');if(target)target.scrollIntoView({behavior:"smooth",block:"center"});}});
+        if(replyPreview)replyPreview.querySelector("[data-cancel-reply]").addEventListener("click",clearReply);if(search)search.addEventListener("input",function(){var q=search.value.trim().toLowerCase();messages.querySelectorAll("li:not(.chat-date-divider)").forEach(function(x){x.hidden=!!q&&!x.textContent.toLowerCase().includes(q);});});if(attachButton&&fileInput){attachButton.addEventListener("click",function(){fileInput.click();});fileInput.addEventListener("change",function(){sendFile(fileInput.files[0]);});}connection.on("getNewMessage",function(x,m,t){renderMessage(x,m,t);connection.invoke("MarkAsDelivered").catch(function(){});if(!document.hidden)connection.invoke("MarkAsRead").catch(function(){});});connection.on("loadChatHistory",function(items){messages.textContent="";lastDateKey="";(items||[]).forEach(renderMessage);connection.invoke("MarkAsDelivered").catch(function(){});if(!document.hidden)connection.invoke("MarkAsRead").catch(function(){});});connection.on("messageUpdated",replaceMessage);connection.on("messageDeleted",replaceMessage);connection.on("messagesDelivered",markDelivered);connection.on("messagesRead",markRead);connection.on("typingChanged",function(_,typing){if(typingIndicator)typingIndicator.hidden=!typing;});document.addEventListener("visibilitychange",function(){if(!document.hidden&&connection.state===signalR.HubConnectionState.Connected)connection.invoke("MarkAsRead").catch(function(){});});connection.onclose(function(){setState("در حال اتصال مجدد...",false);reconnectTimer=setTimeout(start,2000);});enableWheelScroll();start();
     });
-
-}
-
-//ارسال پیام به سرور
-function sendMessage(text) {
-    //var fullName = $("#fullNameUser").innerhtml();
-    var fullName = document.getElementById("fullNameUser").value;
-    connection.invoke('SendNewMessage', fullName, text);
-}
-
-//درسافت پیام از سرور
-connection.on('getNewMessage', getMessage);
-
-function getMessage(sender, message, time) {
-
-
-    $("#Messages").append("<li><div><span>" + sender + "</span><span>" + "(" + time + ")" + "</span></div><div class='messages'>" + message.replace(/(.{1,300})/g, '$1<br/>') +"</div></li>")
-};
-
-
-$(document).ready(function () {
-    Init();
-});
+})();

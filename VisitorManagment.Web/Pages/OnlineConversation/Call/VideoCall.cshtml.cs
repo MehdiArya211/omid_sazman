@@ -11,6 +11,9 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
     [Authorize]
     public class VideoCallModel : PageModel
     {
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
         }

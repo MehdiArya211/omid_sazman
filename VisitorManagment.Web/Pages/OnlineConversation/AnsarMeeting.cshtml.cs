@@ -7,6 +7,9 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
     [Authorize]
     public class AnsarMeetingModel : PageModel
     {
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
         }

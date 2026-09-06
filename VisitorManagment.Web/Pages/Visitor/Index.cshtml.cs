@@ -40,6 +40,9 @@ namespace VisitorManagment.Web.Pages.Visitor
         public List<ProblemReportViewModel> lstChartModel { get; set; }
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageAllUnitCodeForGhaReportViewModel searchPageUnitCodeReportViewModel { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
 

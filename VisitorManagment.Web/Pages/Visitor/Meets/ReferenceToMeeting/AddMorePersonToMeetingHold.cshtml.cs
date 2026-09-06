@@ -26,6 +26,12 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
         }
         [BindProperty]
         public ListFileReferenceViewModel listviewmodel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet(int id, int pageId = 1, string filterCaption = "", int SubjectId = 0, int filterCodGha = 0)
         {
             ViewData["RequestSubjects"] = new SelectList(_meetingService.GetRequestSubjects(), "Id", "Title");
@@ -38,6 +44,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
 
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(List<int> fileId)
         {
             int meetingId = listviewmodel.MeetingId;
@@ -59,6 +68,7 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
 
         }
 
+        #endregion
     }
 }
 

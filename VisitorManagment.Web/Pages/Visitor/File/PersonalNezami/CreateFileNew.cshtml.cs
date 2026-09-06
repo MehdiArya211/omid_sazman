@@ -28,6 +28,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
 
         [BindProperty]
         public FactPersonalViewModel factPersonalViewModel { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
             LoadDropdowns();
@@ -37,6 +40,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
 
 
         #region گرفتن اطلاعات پرسنلی نفر با کد پرسنلی
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalId(string personalno)
         {
             var unitDutyCodeUserLogin = int.Parse(User.FindFirst("UnitDutyCode").Value);
@@ -74,6 +80,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         private void LoadDropdowns()
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");

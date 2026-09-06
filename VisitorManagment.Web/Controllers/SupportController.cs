@@ -10,6 +10,9 @@ namespace VisitorManagment.Web.Controllers
     [Authorize]
     public class SupportController : Controller
     {
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public IActionResult Index()
         {
             return View();

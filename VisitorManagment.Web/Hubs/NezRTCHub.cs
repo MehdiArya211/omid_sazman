@@ -14,11 +14,17 @@ namespace VisitorManagment.Web.Hubs
     {
         private static RoomManager roomManager = new RoomManager();
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override  Task OnConnectedAsync()
         {
              return base.OnConnectedAsync();
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public override Task OnDisconnectedAsync(Exception exception)
         {
             roomManager.DeleteRoom(Context.ConnectionId);
@@ -26,6 +32,9 @@ namespace VisitorManagment.Web.Hubs
             return base.OnDisconnectedAsync(exception);
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public async Task CreateRoom(string personalCode, string MeetId)
         {
             RoomInfo roomInfo = roomManager.CreateRoom(Context.ConnectionId, personalCode, MeetId);
@@ -42,6 +51,9 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task Join(string roomId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
@@ -56,22 +68,34 @@ namespace VisitorManagment.Web.Hubs
             //}
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task LeaveRoom(string roomId)
         {
             await Clients.Group(roomId).SendAsync("bye");
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task GetRoomInfo()
         {
             await NotifyRoomInfoAsync(true);
             await ansarNotifyRoomInfoAsync(true);
         }
 
+        /// <summary>
+        /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
+        /// </summary>
         public async Task SendMessage(string roomId, object message)
         {
             await Clients.OthersInGroup(roomId).SendAsync("message", message);
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task NotifyRoomInfoAsync(bool notifyOnlyCaller)
         {
             List<RoomInfo> roomInfos = roomManager.GetAllRoomInfo();
@@ -99,6 +123,9 @@ namespace VisitorManagment.Web.Hubs
         // ansar tasks
         // added by mahdi fakhr
         private static AnsarRoomManager ansarRoomManager = new AnsarRoomManager();
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ansarCreateRoom(string name)
         {
             AnsarRoomInfo ansarRoomInfo = ansarRoomManager.CreateRoom(Context.ConnectionId, name);
@@ -114,6 +141,9 @@ namespace VisitorManagment.Web.Hubs
                 await Clients.Caller.SendAsync("error", "error occurred when creating a new room.");
             }
         }
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ansarJoin(string roomId, string name)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
@@ -127,14 +157,23 @@ namespace VisitorManagment.Web.Hubs
                 await ansarNotifyRoomInfoAsync(false);
             }
         }
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ansarLeaveRoom(string roomId)
         {
             await Clients.Group(roomId).SendAsync("bye");
         }
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ansarGetRoomInfo()
         {
             await ansarNotifyRoomInfoAsync(true);
         }
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ansarNotifyRoomInfoAsync(bool notifyOnlyCaller)
         {
             List<AnsarRoomInfo> ansarRoomInfos = ansarRoomManager.GetAllRoomInfo();
@@ -159,6 +198,9 @@ namespace VisitorManagment.Web.Hubs
 
 
         // chatroom hub 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ChatJoin(string roomId)
         {
             // joining to given room id
@@ -170,6 +212,9 @@ namespace VisitorManagment.Web.Hubs
             await Clients.Group(roomId).SendAsync("chatjoined", roomId);
         }
         // Leave
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task LeaveChatRoom(string roomId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
@@ -177,16 +222,25 @@ namespace VisitorManagment.Web.Hubs
         }
 
         // ChatMessage
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task ChatMessage(string roomId, string message, string uuid)
         {
             await Clients.OthersInGroup(roomId).SendAsync("on_chatroom_message", message, uuid);
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public async Task RemoveAllChats(string roomId)
         {
             await Clients.Group(roomId).SendAsync("remove_chat_messages", roomId);
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public async Task RemoveSingleChatMessage(string roomId, string uuid)
         {
             await Clients.OthersInGroup(roomId).SendAsync("remove_single_chat_messages", uuid);
@@ -211,6 +265,9 @@ namespace VisitorManagment.Web.Hubs
             rooms = new ConcurrentDictionary<int, RoomInfo>();
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public RoomInfo CreateRoom(string connectionId, string personalCode = "not set", string MeetId = "not set")
         {
 
@@ -237,11 +294,17 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteRoom(int roomId)
         {
             rooms.TryRemove(roomId, out _);
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteRoom(string connectionId)
         {
             int? correspondingRoomId = null;
@@ -259,6 +322,9 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<RoomInfo> GetAllRoomInfo()
         {
             return rooms.Values.ToList();
@@ -281,6 +347,9 @@ namespace VisitorManagment.Web.Hubs
             ansarRooms = new ConcurrentDictionary<int, AnsarRoomInfo>();
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public AnsarRoomInfo CreateRoom(string connectionId, string name)
         {
 
@@ -306,11 +375,17 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteRoom(int roomId)
         {
             ansarRooms.TryRemove(roomId, out _);
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteRoom(string connectionId)
         {
             int? correspondingRoomId = null;
@@ -328,6 +403,9 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<AnsarRoomInfo> GetAllRoomInfo()
         {
             return ansarRooms.Values.ToList();

@@ -319,7 +319,29 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Property<Guid>("ChatRoomId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AttachmentContentType").HasMaxLength(150).HasColumnType("nvarchar(150)");
+                    b.Property<string>("AttachmentName").HasMaxLength(260).HasColumnType("nvarchar(260)");
+                    b.Property<long?>("AttachmentSize").HasColumnType("bigint");
+                    b.Property<string>("AttachmentUrl").HasMaxLength(500).HasColumnType("nvarchar(500)");
+                    b.Property<DateTime?>("DeletedAt").HasColumnType("datetime2");
+                    b.Property<DateTime?>("EditedAt").HasColumnType("datetime2");
+                    b.Property<DateTime?>("DeliveredAt").HasColumnType("datetime2");
+                    b.Property<bool>("IsDelivered").HasColumnType("bit");
+                    b.Property<bool>("IsDeleted").HasColumnType("bit");
+                    b.Property<bool>("IsRead").HasColumnType("bit");
+                    b.Property<DateTime?>("ReadAt").HasColumnType("datetime2");
+
                     b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ReplyToMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReplyToMessage")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("ReplyToSender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Sender")

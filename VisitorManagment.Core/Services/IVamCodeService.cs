@@ -15,6 +15,9 @@ namespace VisitorManagment.Core.Services
         {
             _context = context;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public VamCode GetVamCodeWithVamId(int vamId)
         {
             var vamCode = _context.VamCodes.Where(x => x.Id == vamId).FirstOrDefault();

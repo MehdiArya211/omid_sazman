@@ -750,30 +750,43 @@
         }
         // آرشیو کردن فایل
         function archive(fileId) {
-            try {
+            Swal.fire({
+                icon: 'warning',
+                title: 'انتقال به بایگانی',
+                text: 'آیا مطمئن هستید که این درخواست به بایگانی منتقل شود؟',
+                showCancelButton: true,
+                confirmButtonText: 'بله، بایگانی شود',
+                cancelButtonText: 'انصراف',
+                reverseButtons: true,
+                focusCancel: true,
+                confirmButtonColor: '#185f7d'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+                var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                Swal.fire({ title: 'در حال بایگانی...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
                 $.ajax({
                     url: "@Url.Page("ListFile")?handler=Archive",
-                    type: "GET",
-                    data: { fileId },
-                    success: function () {
+                    type: "POST",
+                    data: { fileId: fileId, __RequestVerificationToken: token ? token.value : '' },
+                    success: function (response) {
+                        if (!response || response.success !== true) {
+                            Swal.fire('خطا', (response && response.message) || 'بایگانی انجام نشد.', 'error');
+                            return;
+                        }
                         Swal.fire({
                             title: 'موفق!',
-                            text: 'فایل با موفقیت آرشیو شد.',
+                            text: response.message,
                             icon: 'success',
-                            confirmButtonText: 'باشه'
+                            confirmButtonText: 'تأیید'
                         }).then(() => {
                             window.location.href = '/Visitor/File/PersonalNezami/listfile';
                         });
-                        setTimeout(() => window.location.href = '/Visitor/File/PersonalNezami/listfile', 1000);
                     },
                     error: function () {
-                        alert("خطا در آرشیو فایل. لطفا دوباره تلاش کنید.");
+                        Swal.fire('خطا', 'خطا در آرشیو فایل. لطفاً دوباره تلاش کنید.', 'error');
                     }
                 });
-            } catch (error) {
-                console.error(error);
-                alert("خطای غیرمنتظره‌ای رخ داده است.");
-            }
+            });
         }
 
 
@@ -795,4 +808,3 @@
 
     </script>
 }
-

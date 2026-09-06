@@ -28,11 +28,17 @@ namespace VisitorManagment.Core.Services
             _vamService = vamService;
             _cartableService = cartableService;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ActionType> GetActionType()
         {
             return _context.ActionTypes.ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<VamCode> GetVamCode()
         {
             var allVam = _context.VamCodes.ToList();
@@ -69,8 +75,18 @@ namespace VisitorManagment.Core.Services
         {
             var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
 
+            if (editHamesh == null)
+            {
+                return new BaseResult(false, "هامش در انتظار اقدام برای این کاربر یافت نشد.");
+            }
+
+            if (actionTypeId <= 0 || string.IsNullOrWhiteSpace(userDesc))
+            {
+                return new BaseResult(false, "نوع اقدام و متن نظریه/هامش الزامی است.");
+            }
+
             editHamesh.ActionTypeId = actionTypeId;
-            editHamesh.UserDesc = userDesc;
+            editHamesh.UserDesc = userDesc.Trim();
             editHamesh.RoleTypeId = roleTypeId;
             editHamesh.RoleTypeTitle = roleTypeTitle;
             editHamesh.RoleTypeFinalId = roleTypeIdFinal;
@@ -104,6 +120,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void EditHameshForMeetingViewModel(int actionTypeId, MeetingHoldViewModel meetingHoldViewModel, int userId, int fileId)
         {
             var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
@@ -142,6 +161,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToHameshWhenSendListFileToFarmandehiNezaja(List<int> rcvrUserId, List<Files> files, int RoleTypeId, string RoleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal, int userId)
         {
             foreach (var file in files)
@@ -173,12 +195,41 @@ namespace VisitorManagment.Core.Services
             }
 
         }
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddToHameshWhenSendFileToCartable(int userId, int fileId, List<int> rcvrUserId, int RoleTypeId, string RoleTypeTitle, int RoleTypeIdFinal, string RoleTypeTitleFinal)
         {
-            Hamesh hamesh = _context.Hameshes.Where(c => c.UserId == userId && c.FileId == fileId).OrderBy(x => x.RegDate).LastOrDefault();
+            var hamesh = _context.Hameshes
+                .Where(c => c.UserId == userId && c.FileId == fileId)
+                .OrderByDescending(x => x.RegDate)
+                .ThenByDescending(x => x.Id)
+                .FirstOrDefault();
 
-            foreach (int rcvrId in rcvrUserId)
+            if (hamesh == null)
             {
+                return new BaseResult(false, "هامش مبدأ برای ایجاد گردش جدید یافت نشد.");
+            }
+
+            var receiverIds = (rcvrUserId ?? new List<int>())
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (!receiverIds.Any())
+            {
+                return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
+            }
+
+            foreach (var rcvrId in receiverIds)
+            {
+                var hasPendingHamesh = _context.Hameshes.Any(x =>
+                    x.FileId == fileId && x.UserId == rcvrId && x.UserDesc == "");
+                if (hasPendingHamesh)
+                {
+                    continue;
+                }
+
                 _context.Hameshes.Add(new Hamesh()
                 {
                     FileId = fileId,
@@ -215,6 +266,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToHameshWhenSendListFileToCartable(int userId, List<Files> files, List<int> rcvrUserId, int RoleTypeId, string RoleTypeTitle)
         {
             //******************
@@ -295,6 +349,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddToHameshWhenSendFileToCartableInMeetingHold(int userId, int fileId, int rcvrUserId, Hamesh hamehsViewModel)
         {
             var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
@@ -306,6 +363,9 @@ namespace VisitorManagment.Core.Services
             UpdateHamesh(editHamesh);
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddHamesh(Hamesh hamesh)
         {
             _context.Hameshes.Add(hamesh);
@@ -330,12 +390,18 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetHameshIdByFileId(int fileId)
         {
             return _context.Hameshes.Where(h => h.FileId == fileId).Select(h => h.ParentId).SingleOrDefault();
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int GetHameshIdByUseerIdAndFileId(int userId, int fileId)
         {
             var hameshId = _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).Select(h => h.Id).SingleOrDefault();
@@ -364,22 +430,34 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Hamesh GetHameshByUserIdAndFileId2(int userId, int? fileId)
         {
             //return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).SingleOrDefault();
             return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).OrderBy(h => h.RegDate).Last();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetParentIdHameshByUserIdAndFileId(int userId, int fileId)
         {
             return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).OrderBy(h => h.RegDate).Select(h => h.ParentId).Last();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetUserByParentId(int? parentId)
         {
             return _context.Hameshes.Include(u => u.User).Where(h => h.Id == parentId).Select(u => u.User).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public BaseResult UpdateHamesh(Hamesh hamesh)
         {
             _context.Update(hamesh);
@@ -403,6 +481,9 @@ namespace VisitorManagment.Core.Services
 
 
         //meetingid => fileId
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListHameshViewModel GetHameshIdByFileId(int fileId, int pageId = 1, int requestsubject = 0, string filterCaption = "")
         {
             int fileid = _context.Files.Where(f => f.Id == fileId).Select(f => f.Id).SingleOrDefault();
@@ -441,6 +522,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListHameshViewModel GetHameshIdByFileId2(int fileId, int pageId = 1, int requestsubject = 0, string filterCaption = "")
         {
             const int take = 1000; // تعداد نتایج در هر صفحه
@@ -532,6 +616,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public int? GetMeetingIdByFileId(int fileId)
         {
             return _context.Files.Where(f => f.Id == fileId).Select(f => f.MeetingId).SingleOrDefault();
@@ -557,6 +644,9 @@ namespace VisitorManagment.Core.Services
         }
 
         //get Perv Hamesh
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Hamesh> GetHameshMoavenatForFRadeBalatar(int fileId)
         {
             var result = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
@@ -568,6 +658,9 @@ namespace VisitorManagment.Core.Services
         }
         #region  Hamesh For Stimul
         //farmandeh Unit Duty
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetHameshFUnitDuty(int fileId)
         {
             //var result1 = _context.Hameshes.Include(x => x.User)
@@ -584,6 +677,9 @@ namespace VisitorManagment.Core.Services
             return result;
         }
         //farmandeh Unit 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetHameshFUnit(int fileId)
         {
             var res = _context.Hameshes.Include(x => x.User)
@@ -601,6 +697,9 @@ namespace VisitorManagment.Core.Services
             return res;
         }
         //farmandeh Gharargah 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetHameshFGharargah(int fileId)
         {
             // var res = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).Where(x => x.FileId == fileId && x.RoleTypeId == 4 && x.UserDesc != "").Select(x => x.UserDesc).SingleOrDefault();
@@ -618,6 +717,9 @@ namespace VisitorManagment.Core.Services
         #endregion
 
         //Get Role Type Person
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public HameshInfoViewModel GetRoleTypePerson(int userId)
         {
             var role = _context.UserRoles.Include(x => x.Role)
@@ -637,6 +739,9 @@ namespace VisitorManagment.Core.Services
         }
 
         //get all hamesh
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public List<HameshInfoViewModel> getAllHameshWithOutMoavenat(int fileId)
         {
             var listhamesh = _context.Hameshes.Include(x => x.File)
@@ -654,6 +759,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetlastHameshKarshenasgharagahAnsarNezaja(int fileId)
         {
             string result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == 5 && x.UserDesc != "")
@@ -669,6 +777,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetlastHameshKarbarNezaja(int fileId)
         {
             var result = "";
@@ -797,6 +908,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetHameshHeiatReeiseByUserIdAndFileId(int userId, int fileId)
         {
             //کسی که داره میفرسته از جدول کارتابل رو میگیره تا بتونیم هامش نفر قبلی رو از روش پیدا کنیم
@@ -807,6 +921,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public HameshFullInfoFileViewModel GetFullInfoFileForOnlineConversation(int fileId, int userId)
         {
             var file = _context.Files.Include(x => x.RequestSubject).Where(x => x.Id == fileId).FirstOrDefault();
@@ -853,6 +970,9 @@ namespace VisitorManagment.Core.Services
             return hamesh;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetFirstHameshKarshenasgharagahAnsarNezaja(int fileId)
         {
             string result = _context.Hameshes
@@ -940,14 +1060,36 @@ namespace VisitorManagment.Core.Services
 
         //}
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult RegHamesh(int actionTypeId, int roleTypeId, string roleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal, string userDesc, int userId, int fileId, double? mablaghVamDarkhasti, double? mablaghVamMohaghaghShode, List<int> rcvrUserId)
         {
+            var receiverIds = (rcvrUserId ?? new List<int>())
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (actionTypeId <= 0)
+                return new BaseResult(false, "نوع اقدام انتخاب نشده است.");
+            if (string.IsNullOrWhiteSpace(userDesc))
+                return new BaseResult(false, "متن نظریه/هامش الزامی است.");
+            if (userId <= 0 || fileId <= 0)
+                return new BaseResult(false, "اطلاعات کاربر یا درخواست معتبر نیست.");
+            if (!receiverIds.Any())
+                return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
+
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
                     // عملیات ویرایش هامش
-                    var resultHamesh = EditHamesh(actionTypeId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal, userDesc, userId, fileId, mablaghVamDarkhasti, mablaghVamMohaghaghShode);
+                    var resultHamesh = EditHamesh(actionTypeId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal, userDesc.Trim(), userId, fileId, mablaghVamDarkhasti, mablaghVamMohaghaghShode);
+                    if (!resultHamesh.Status)
+                    {
+                        transaction.Rollback();
+                        return resultHamesh;
+                    }
 
                     // عملیات ویرایش فایل
                     var resFile = _fileService.EditFileWhenSendHamesh(fileId, actionTypeId, mablaghVamDarkhasti, mablaghVamMohaghaghShode, roleTypeId);
@@ -963,7 +1105,13 @@ namespace VisitorManagment.Core.Services
 
                     // ارسال به کارتابل
                     var file = _context.Files.FirstOrDefault(f => f.Id == fileId);
-                    foreach (int rcvrId in rcvrUserId)
+                    if (file == null)
+                    {
+                        transaction.Rollback();
+                        return new BaseResult(false, "درخواست ملاقات یافت نشد.");
+                    }
+
+                    foreach (var rcvrId in receiverIds)
                     {
                         _context.Cartables.Add(new Cartable()
                         {
@@ -981,8 +1129,8 @@ namespace VisitorManagment.Core.Services
                     var resCartable = _context.SaveChanges();
 
                     //هامش خالی به گیرنده
-                    var resEmptyHamesh = AddToHameshWhenSendFileToCartable(userId, fileId, rcvrUserId, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal);
-                    if (resultHamesh.Status && resFile.Status && resCartable != 0)
+                    var resEmptyHamesh = AddToHameshWhenSendFileToCartable(userId, fileId, receiverIds, roleTypeId, roleTypeTitle, roleTypeIdFinal, roleTypeTitleFinal);
+                    if (resultHamesh.Status && resFile.Status && resCartable > 0 && resEmptyHamesh.Status)
                     {
                         transaction.Commit();
 
@@ -1022,6 +1170,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult RegFileAndAddToCartableAndRegHamesh0(FactPersonalViewModel model, int userId, int roleTypeId, string roleTypeTitle, int roleTypeFinalId, string roleTypeFinalTitle)
         {
             using (var transaction = _context.Database.BeginTransaction())
@@ -1061,6 +1212,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult RegFileAndAddToCartableAndRegHamesh(
     FactPersonalViewModel model,
     int userId,
@@ -1160,6 +1314,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult RegHameshHeiatRaeise(int fileId, HameshFullInfoFileViewModel hamesh, int roleTypeId, string roleTypeTitle, int roleTypeFinalId, string roleTypeFinalTitle, int userId)
         {
             var file = _fileService.GetFile(fileId);
@@ -1206,9 +1363,8 @@ namespace VisitorManagment.Core.Services
                 return new BaseResult
                 {
                     Message = " عملیات ناموفق",
-                    Status = true
+                    Status = false
                 };
-                throw;
             }
         }
     }

@@ -93,8 +93,14 @@ namespace VisitorManagment.DataLayer.Context
         #endregion
 
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ChatMessage>()
+                .Property(message => message.ReplyToMessage)
+                .HasMaxLength(180);
             modelBuilder.Entity<Users>()
               .HasQueryFilter(u => !u.IsDelete);
             modelBuilder.Entity<Files>()

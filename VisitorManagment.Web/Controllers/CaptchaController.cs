@@ -10,6 +10,9 @@ namespace Peygiry.Web.Controllers
     [AllowAnonymous]
     public class CaptchaController : Controller
     {
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public IActionResult Index()
         {
             int width = 150;

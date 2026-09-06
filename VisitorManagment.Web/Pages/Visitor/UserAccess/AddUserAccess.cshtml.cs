@@ -30,6 +30,12 @@ namespace VisitorManagment.Web.Pages.Visitor.UserAccess
         public CreateUserAccessViewModel createUserAccessViewModel { get; set; }
         public List<Users> userlist;
         public int userid;
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet()
         {
             var userId = User.FindFirst("Id").Value;
@@ -39,6 +45,9 @@ namespace VisitorManagment.Web.Pages.Visitor.UserAccess
             ViewData["RoleListEtayi"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonal(string personalno)
         {
             var userunitdutycode = int.Parse(User.FindFirst("UnitDutyCode").Value);
@@ -58,6 +67,9 @@ namespace VisitorManagment.Web.Pages.Visitor.UserAccess
 
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(List<int> RoleListEtayi, int roleidhidden)
         {
             var addUserId = int.Parse(User.FindFirst("Id").Value);
@@ -66,5 +78,6 @@ namespace VisitorManagment.Web.Pages.Visitor.UserAccess
             return Page();
         }
 
+        #endregion
     }
 }

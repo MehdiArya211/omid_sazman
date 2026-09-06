@@ -40,10 +40,13 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllUnitGha
 
         [BindProperty]
         //مدل نمودار میله ای گزارش فراوانی مشکلات
-        public List<ProblemReportViewModel> lstChartModel { get; set; }
+        public List<ProblemReportViewModel> lstChartModel { get; set; } = new List<ProblemReportViewModel>();
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageAllUnitCodeForGhaReportViewModel searchPageUnitCodeReportViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int filterGharargah = 0)
         {
             ViewData["Gharargah"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
@@ -58,8 +61,12 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllUnitGha
 
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int codeGha, List<int> unitCode, int actionTypeId, string startDateSearch = "", string endDateSearch = "")
         {
+            unitCode = unitCode ?? new List<int>();
             ViewData["AllListGha"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
             ViewData["Gharargah"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
             ViewData["ActionType"] = new SelectList(_hameshService.GetActionType(), "Id", "Title");
@@ -169,6 +176,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports.ComparisonAllUnitGha
 
 
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             ViewData["AllListGha"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");

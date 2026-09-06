@@ -29,7 +29,14 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
         public List<WorkFlowViewModel> ListAccsessPersonal { get; set; }
         public List<WorkFlowViewModel> ListUnAccsessPersonal { get; set; }
 
-        public int? RoleId;
+        [BindProperty(SupportsGet = true)]
+        public int? RoleId { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet(int? roleId = 0)
         {
@@ -65,6 +72,12 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
         /// <returns></returns>
         public IActionResult OnPostRegAccess(List<int> UnAccessRoleId, int roleId)
         {
+            if (roleId <= 0 || UnAccessRoleId == null || UnAccessRoleId.Count == 0)
+            {
+                SetOperationNotification("انتخاب نقش", "حداقل یک نقش را برای افزودن به مسیر ارسال انتخاب کنید.", "warning");
+                return RedirectToPage(new { roleId });
+            }
+
             RoleId = roleId;
 
             ViewData["AllRole"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
@@ -79,12 +92,8 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
             ViewData["RoleId"] = roleId;
 
             _workFlowService.AddAccessToRole(UnAccessRoleId, roleId, int.Parse(userId));
-            // لیست پرسنلی که دسترسی دارد
-            ListAccsessPersonal = _workFlowService.GetReciverList(roleId);
-
-            // لیست پرسنلی که دسترسی ندارد
-            ListUnAccsessPersonal = _workFlowService.GetUnAccessList(roleId);
-            return Page();
+            SetOperationNotification("ثبت موفق", "نقش‌های انتخاب‌شده با موفقیت به مسیر ارسال اضافه شدند.", "success");
+            return RedirectToPage(new { roleId });
         }
 
 
@@ -96,6 +105,12 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
         /// <returns></returns>
         public IActionResult OnPostUnAccess(List<int> AccessRoleId, int roleId)
         {
+            if (roleId <= 0 || AccessRoleId == null || AccessRoleId.Count == 0)
+            {
+                SetOperationNotification("انتخاب نقش", "حداقل یک نقش را برای حذف از مسیر ارسال انتخاب کنید.", "warning");
+                return RedirectToPage(new { roleId });
+            }
+
             RoleId = roleId;
 
             ViewData["AllRole"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
@@ -111,13 +126,20 @@ namespace VisitorManagment.Web.Pages.Admin.SendAccess
 
 
             _workFlowService.RemoveAccessToRole(AccessRoleId, roleId, int.Parse(userId));
-            // لیست پرسنلی که دسترسی دارد
-            ListAccsessPersonal = _workFlowService.GetReciverList(roleId);
-
-            // لیست پرسنلی که دسترسی ندارد
-            ListUnAccsessPersonal = _workFlowService.GetUnAccessList(roleId);
-            return Page();
+            SetOperationNotification("حذف موفق", "نقش‌های انتخاب‌شده با موفقیت از مسیر ارسال حذف شدند.", "success");
+            return RedirectToPage(new { roleId });
         }
 
+        /// <summary>
+        /// پیام نتیجه عملیات مسیر ارسال را برای نمایش پس از انتقال صفحه تنظیم می‌کند.
+        /// </summary>
+        private void SetOperationNotification(string title, string message, string icon)
+        {
+            TempData["OperationTitle"] = title;
+            TempData["OperationMessage"] = message;
+            TempData["OperationIcon"] = icon;
+        }
+
+        #endregion
     }
 }

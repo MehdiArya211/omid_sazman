@@ -21,6 +21,9 @@ namespace VisitorManagment.Web.Helpers
 
     public static class SessionHelper
     {
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public static void SetObjectAsJson(this ISession session, string key, object value)
         {
             session.SetString(key, JsonConvert.SerializeObject(value));

@@ -22,16 +22,31 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             _context = context;
             _userService = userService;
         }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
 
         public async Task<Guid> CreateChatRoom(string ConnectionId , string personalCode)
         {
             var user=_userService.GetUserByPersonalCode(personalCode);
+            if (user == null)
+                throw new InvalidOperationException("کاربر معتبر برای ایجاد گفت‌وگو پیدا نشد.");
             var existChatRoom = _context.ChatRooms.SingleOrDefault(p => p.ConnectionId == ConnectionId);
             if (existChatRoom != null)
             {
                 return await Task.FromResult(existChatRoom.Id);
             }
 
+            var userRoom = _context.ChatRooms.FirstOrDefault(p => p.UserId == user.Id);
+            if (userRoom != null)
+            {
+                userRoom.ConnectionId = ConnectionId;
+                await _context.SaveChangesAsync();
+                return userRoom.Id;
+            }
             ChatRoom chatRoom = new ChatRoom()
             {
                 ConnectionId = ConnectionId,
@@ -40,10 +55,13 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 Title = user.FirstName + " " + user.LastName + "****" + user.UnitTitle,
             };
             _context.ChatRooms.Add(chatRoom);
-            _context.SaveChanges();
-            return await Task.FromResult(chatRoom.Id);
+            await _context.SaveChangesAsync();
+            return chatRoom.Id;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task<List<ChatRoomDTO>> GetAllrooms()
         {
             //var rooms = _context.ChatRooms
@@ -56,6 +74,8 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 .Include(p => p.User)
                 .Include(p => p.ChatMessages)
                 .Where(p => p.ChatMessages.Any())
+                .OrderByDescending(p => p.ChatMessages.Max(m => m.Time))
+                .AsNoTracking()
                 .ToList();
 
             var room = new List<ChatRoomDTO>();
@@ -67,6 +87,11 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
                 room1.Id = item.Id;
                 //room1.ConnectionId = item.ConnectionId;
                 room1.Title = item.Title;
+                var lastMessage = item.ChatMessages.OrderByDescending(message => message.Time).FirstOrDefault();
+                room1.LastMessage = lastMessage?.Message;
+                room1.LastMessageTime = lastMessage?.Time;
+                room1.MessageCount = item.ChatMessages.Count;
+                room1.UnreadCount = item.ChatMessages.Count(message => !message.IsRead);
                 room.Add(room1);
             }
            
@@ -75,10 +100,16 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
             return await Task.FromResult(room);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task<Guid> GetChatRoomForConnection(string CoonectionId)
         {
             var chatRoom = _context.ChatRooms.SingleOrDefault(p => p.ConnectionId == CoonectionId);
+            if (chatRoom == null)
+                throw new InvalidOperationException("اتاق گفت‌وگو برای اتصال جاری پیدا نشد.");
             return await Task.FromResult(chatRoom.Id);
         }
+        #endregion
     }
 }

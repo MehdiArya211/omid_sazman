@@ -35,6 +35,9 @@ namespace VisitorManagment.Web.Pages.Visitor.MeetingInfo
         public ListMeetingViewModel listMeetingViewModel { get; set; }
         public List<Users> users { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int pageId = 1, int filterMeetingStatus = 1, string filterCaption = "")
         {
             users = new List<Users>();
@@ -48,6 +51,9 @@ namespace VisitorManagment.Web.Pages.Visitor.MeetingInfo
         }
 
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetRecieverUser(int meetingId)
         {
             //session meetingId
@@ -70,6 +76,9 @@ namespace VisitorManagment.Web.Pages.Visitor.MeetingInfo
         }
 
 
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostSendFileToFarmandehiNezaja(List<int> rcvrUserId)
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
@@ -106,12 +115,18 @@ namespace VisitorManagment.Web.Pages.Visitor.MeetingInfo
             return Page();
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
             return Page();
         }
 
         #region autocomplete search
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetSearch(string term)
         {
             var names = _meetingService.GetMeetingForAutoCompliteSearch(term);
@@ -120,6 +135,9 @@ namespace VisitorManagment.Web.Pages.Visitor.MeetingInfo
         #endregion
 
         #region تغییر وضعیت جلسات ملاقات
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetChangeStatusMeeting(int meetingId)
         {
             var result = _meetingService.ChangeStatusMeeting(meetingId);

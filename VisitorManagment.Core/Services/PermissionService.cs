@@ -16,7 +16,16 @@ namespace VisitorManagment.Core.Services
         {
             _context = context;
         }
+        #region اعضا و متدهای کلاس
 
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
+
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public int AddRole(Role role)
         {
             _context.Roles.Add(role);
@@ -24,6 +33,9 @@ namespace VisitorManagment.Core.Services
             return role.RoleId;
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public void AddRolesToUser(int roleId, int userId)
         {
 
@@ -38,12 +50,18 @@ namespace VisitorManagment.Core.Services
             _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void DeleteRole(Role role)
         {
             role.IsDelete = true;
             UpdateRole(role);
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void EditRolesToUser(int roleId, int userId)
         {
             //=== Delete All Roles
@@ -53,11 +71,17 @@ namespace VisitorManagment.Core.Services
             AddRolesToUser(roleId, userId);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Role GetRoleById(int roleId)
         {
             return _context.Roles.Find(roleId);
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Role> GetRoles(string roleTypeId)
         {
             List<Role> role = _context.Roles.ToList();
@@ -95,12 +119,18 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
+        /// </summary>
         public void UpdateRole(Role role)
         {
             _context.Roles.Update(role);
             _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Permission> GetPermissionsForUser(int userId)
         {
             var query = from p in _context.Permission
@@ -193,6 +223,9 @@ namespace VisitorManagment.Core.Services
             return permission;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<PermissionViewModel> GetUnAccessReciverMenuList(int roleId)
         {
             var reciverList = _context.RolePermission.Where(x => x.RoleId == roleId).Select(x => x.PermissionId).ToList();
@@ -215,5 +248,6 @@ namespace VisitorManagment.Core.Services
 
             return permission;
         }
+        #endregion
     }
 }

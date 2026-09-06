@@ -7,6 +7,12 @@ namespace VisitorManagment.Core.Classes
 {
     public class FileUploadCheck
     {
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// شرایط موردنظر را بررسی می‌کند.
+        /// </summary>
 
         public static bool CheckFileExtension(IFormFile imageName)
         {
@@ -26,6 +32,9 @@ namespace VisitorManagment.Core.Classes
         }
 
         //Upload Avatar
+        /// <summary>
+        /// شرایط موردنظر را بررسی می‌کند.
+        /// </summary>
         public static bool CheckImageFileExtension(IFormFile imageName)
         {
             if (imageName == null)
@@ -43,6 +52,7 @@ namespace VisitorManagment.Core.Classes
             return true;
         }
 
+        #endregion
     }
 
 }

@@ -20,15 +20,35 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
         }
         [BindProperty]
         public DeleteFactPersonalViewModel deleteFactPersonalViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet(int id)
         {
             deleteFactPersonalViewModel = _fileService.GetFileInformation(id);
         }
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int Id)
         {
-            _fileService.DeleteFile(Id);
+            if (Id <= 0)
+            {
+                TempData["OperationTitle"] = "خطا در حذف";
+                TempData["OperationMessage"] = "شناسه درخواست ملاقات معتبر نیست.";
+                TempData["OperationIcon"] = "error";
+                return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
+            }
 
+            _fileService.DeleteFile(Id);
+            TempData["OperationTitle"] = "حذف موفق";
+            TempData["OperationMessage"] = "درخواست ملاقات با موفقیت حذف شد.";
+            TempData["OperationIcon"] = "success";
             return RedirectToPage("/Visitor/File/PersonalNezami/ListFile");
         }
+        #endregion
     }
 }

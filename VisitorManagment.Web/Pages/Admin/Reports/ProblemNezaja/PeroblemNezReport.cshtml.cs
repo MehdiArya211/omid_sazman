@@ -33,14 +33,17 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         }
 
         [BindProperty]
-        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; }
-        public List<SimpleReportViewModel> lstModel { get; set; }
+        public List<ChartFarmandehActivityDto> BarLineDataSet { get; set; } = new List<ChartFarmandehActivityDto>();
+        public List<SimpleReportViewModel> lstModel { get; set; } = new List<SimpleReportViewModel>();
         public FarmandehReportDTO dto { get; set; }
         public ProblemOmdOrganReport dtos { get; set; }
         public ChartProblemOmdOrgan dtose { get; set; }
         public SearchPageReportProblemNezajaReportViewModel searchPageReportViewModel { get; set; }
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int filterGharargah = 0)
         {
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
@@ -192,6 +195,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         }
 
        
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int Gharargahid, int Yeganid, string startDateSearch = "", string endDateSearch = "")
         {
 
@@ -405,6 +411,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
             return Page();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetYegan(int id)
         {
             ViewData["Message"] = "گزارش فراوانی مشکلات در سطح نیروی زمینی";

@@ -34,7 +34,7 @@ namespace VisitorManagment.Core.DTOs
         public string Message { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<OrganViewModelDto> Data { get; set; }
+        public List<OrganViewModelDto> Data { get; set; } = new List<OrganViewModelDto>();
     }
     public class ApiResultOrganDto
     {
@@ -45,7 +45,7 @@ namespace VisitorManagment.Core.DTOs
         public string Message { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<OrganViewModelDto> Data { get; set; }
+        public List<OrganViewModelDto> Data { get; set; } = new List<OrganViewModelDto>();
     }
 
     public class ApiResultOrganInfoDto
@@ -77,7 +77,7 @@ namespace VisitorManagment.Core.DTOs
         public string Message { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<AllOrganViewModelDto> Data { get; set; }
+        public List<AllOrganViewModelDto> Data { get; set; } = new List<AllOrganViewModelDto>();
     }
     #endregion
 

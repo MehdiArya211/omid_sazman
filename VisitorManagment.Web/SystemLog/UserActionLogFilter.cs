@@ -17,6 +17,9 @@ namespace VisitorManagment.Web.Filters
             _logger = logger;
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public async Task OnActionExecutionAsync(
             ActionExecutingContext context,
             ActionExecutionDelegate next)

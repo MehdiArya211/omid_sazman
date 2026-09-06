@@ -20,6 +20,9 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Role> GetrcvrList(int roleId)
         {
             var rcvrList = _context.WorkFlows.Where(c => c.SndrRoleId == roleId).Select(c => c.RcvrRoleId).ToList();
@@ -30,6 +33,9 @@ namespace VisitorManagment.Core.Services
                 }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetRecieverUserListByFileId(int fileId, int userId)
         {
             var users = _context.Hameshes.Include(h => h.User)
@@ -58,6 +64,9 @@ namespace VisitorManagment.Core.Services
             return users;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Users GetRecieverUserByFileId(int fileId)
         {
 
@@ -65,6 +74,9 @@ namespace VisitorManagment.Core.Services
             return users;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetRecieverUserListBySndrRoleId(int roleId, int unitDutyCode, int unitCode, int codeGha, int fileId, int roleTypeId)
         {
             var FileId = fileId;
@@ -100,6 +112,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<Users> GetRecieverFarmandehiNezajaList(int roleId)
         {
 
@@ -122,6 +137,9 @@ namespace VisitorManagment.Core.Services
             return res;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListUserForAoudatToCartable GetRecieverUserListByFileIdDto(int fileId)
         {
             var users = _context.Hameshes.Include(h => h.User)
@@ -225,33 +243,59 @@ namespace VisitorManagment.Core.Services
         /// <param name="addUserId"></param>
         public void AddAccessToRole(List<int> reciverRoleList, int roleId, int addUserId)
         {
-
-            foreach (int item in reciverRoleList)
+            if (roleId <= 0 || reciverRoleList == null || reciverRoleList.Count == 0)
             {
-                _context.WorkFlows.Add(new WorkFlow()
+                return;
+            }
+
+            var requestedRoleIds = reciverRoleList.Where(id => id > 0 && id != roleId).Distinct().ToList();
+            var existingRoleIds = _context.WorkFlows
+                .Where(item => item.SndrRoleId == roleId && requestedRoleIds.Contains(item.RcvrRoleId))
+                .Select(item => item.RcvrRoleId)
+                .ToList();
+
+            var workFlows = requestedRoleIds
+                .Where(id => !existingRoleIds.Contains(id))
+                .Select(id => new WorkFlow
                 {
-                    RcvrRoleId = item,
+                    RcvrRoleId = id,
                     SndrRoleId = roleId,
                     RegUserId = addUserId,
-                    RegDate = DateTime.Now,
+                    RegDate = DateTime.Now
+                })
+                .ToList();
 
-                });
-                _context.SaveChanges();
+            if (workFlows.Count == 0)
+            {
+                return;
             }
 
-
+            _context.WorkFlows.AddRange(workFlows);
+            _context.SaveChanges();
         }
 
+        /// <summary>
+        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// </summary>
         public void RemoveAccessToRole(List<int> reciverRoleList, int roleId, int addUserId)
         {
-            foreach (int item in reciverRoleList)
+            if (roleId <= 0 || reciverRoleList == null || reciverRoleList.Count == 0)
             {
-                var workFlow = _context.WorkFlows.Where(x => x.SndrRoleId == roleId && x.RcvrRoleId == item).FirstOrDefault();
-
-                _context.Remove(workFlow);
-                _context.SaveChanges();
-
+                return;
             }
+
+            var requestedRoleIds = reciverRoleList.Where(id => id > 0).Distinct().ToList();
+            var workFlows = _context.WorkFlows
+                .Where(item => item.SndrRoleId == roleId && requestedRoleIds.Contains(item.RcvrRoleId))
+                .ToList();
+
+            if (workFlows.Count == 0)
+            {
+                return;
+            }
+
+            _context.WorkFlows.RemoveRange(workFlows);
+            _context.SaveChanges();
         }
     }
 }

@@ -1,10 +1,9 @@
 ﻿@page
 @model VisitorManagment.Web.Pages.Admin.SupportChatOnline.IndexModel
-@{
-
-}
+@{ ViewData["Title"] = "پشتیبانی آنلاین"; }
+<link rel="stylesheet" href="~/css/chat-professional.css" asp-append-version="true" />
 <!-- begin::main -->
-<div>
+<div class="support-chat-page" dir="rtl" data-current-user="@(User.Identity?.Name ?? string.Empty)">
 
     <div>
 
@@ -20,16 +19,19 @@
                     <div class="chat-sidebar-header">
                         <div class="d-flex">
 
+                            <div class="chat-brand-icon" aria-hidden="true"><i class="ti-headphone-alt"></i></div>
                             <div>
-                                <h6 class="mb-1">پشتیبان سامانه امید(مهدی آریانژاد)</h6>
+                                <span class="chat-kicker">مرکز پاسخ‌گویی</span>
+                                <h5 class="mb-1">پشتیبانی آنلاین سامانه امید</h5>
+                                <small id="supportConnectionStatus" class="chat-connection-status">در حال اتصال...</small>
                             </div>
                           
                         </div>
                         <form>
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="جستجو">
+                                <input type="search" id="chatRoomSearch" class="form-control" placeholder="جستجو در گفت‌وگوها" aria-label="جستجو در گفت‌وگوها">
                                 <div class="input-group-append">
-                                    <button class="btn btn-outline-light" type="button">
+                                    <button class="btn btn-outline-light" type="button" aria-label="جستجو">
                                         <i class="ti-search"></i>
                                     </button>
                                 </div>
@@ -48,19 +50,10 @@
                         <div class="tab-content pt-3" id="pills-tabContent">
                             <div class="tab-pane fade show active" id="pills-home" role="tabpanel"
                                  aria-labelledby="pills-home-tab">
-                                <p class="small mb-0">گفت‌گوهای اخیر</p>
+                                <div class="chat-list-heading"><span>گفت‌گوهای اخیر</span><small>برای پاسخ، یک گفتگو را انتخاب کنید</small></div>
                                 <div class="chat-lists">
                                     <div class="list-group list-group-flush">
-                                        <a href="#"
-                                           class="list-group-item d-flex align-items-center link-1 pl-0 pr-0 pb-3 pt-3">
-                                            <div class="pr-3">
-                                                <div class="avatar avatar-sm avatar-state-danger">
-                                                    <span class="avatar-title bg-success rounded-circle"></span>
-                                                </div>
-                                            </div>
-                                            <div id="roomList">
-                                            </div>
-                                        </a>
+                                        <div id="roomList" class="chat-room-list" aria-live="polite"></div>
 
                                     </div>
                                 </div>
@@ -76,30 +69,26 @@
 
                     <!-- begin::chat header -->
                     <div class="chat-header border-bottom">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center w-100">
+
+                            <button type="button" class="chat-mobile-back mobile-chat-close-btn" aria-label="بازگشت به گفتگوها"><i class="ti-arrow-right"></i></button>
+                            <div class="active-chat-avatar" aria-hidden="true"><i class="ti-user"></i></div>
 
                             <div>
-                                <h6 class="mb-1">پیام ها</h6>
-                                <div class="m-0 small text-success">در حال نوشتن...</div>
+                                <h6 class="mb-1" id="activeChatTitle">یک گفت‌وگو را انتخاب کنید</h6>
+                                <div class="m-0 small text-muted" id="activeChatMeta">پیام‌های کاربر همراه تاریخ و ساعت نمایش داده می‌شود</div>
                             </div>
-                            <div class="ml-auto">
-                                <ul class="nav align-items-center">
-                                    <li class="ml-4 mobile-chat-close-btn">
-                                        <a href="#" class="btn btn-sm btn-danger">
-                                            <i data-feather="x" class="width-18 height-18"></i>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
+                            <div class="chat-message-search"><i class="ti-search"></i><input id="adminMessageSearch" type="search" placeholder="جستجو در پیام‌ها"></div>
                         </div>
                     </div>
                     <!-- end::chat header -->
                     <!-- begin::messages -->
-                    <div>
-                        <div class="message-item">
-                            <div class="message-item-content">
-                                <ul id="chatMessage">
+                    <div class="chat-conversation-body">
+                        <div class="support-message-scroll">
+                            <div class="support-message-content">
+                                <ul id="chatMessage" aria-live="polite">
                                 </ul>
+                                <div id="chatEmptyState" class="chat-empty-state"><i class="ti-comments"></i><strong>گفت‌وگویی انتخاب نشده است</strong><span>از فهرست کاربران یک گفت‌وگو را باز کنید.</span></div>
                             </div>
                         </div>
 
@@ -107,15 +96,19 @@
                     <!-- end::messages -->
                     <!-- begin::chat footer -->
                     <div class="chat-footer border-top">
-                        <form class="d-flex" id="answerForm">
-                            <div class="flex-grow-1">
-                                <input id="answerText" type="text" class="form-control" placeholder="پیام خود را بنویسید">
+                        <div id="adminTypingIndicator" class="chat-typing" hidden><span></span><span></span><span></span><em>کاربر در حال نوشتن است</em></div>
+                        <div id="adminReplyPreview" class="chat-reply-composer" hidden>
+                            <div><strong>پاسخ به <span data-reply-sender></span></strong><p data-reply-message></p></div>
+                            <button type="button" data-cancel-reply aria-label="لغو پاسخ"><i class="ti-close"></i></button>
+                        </div>
+                        <form class="chat-compose" id="answerForm" novalidate>
+                            <input id="adminAttachmentInput" class="chat-file-input" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip">
+                            <button class="chat-attach-button" id="adminAttachButton" type="button" title="ارسال فایل یا تصویر"><i class="ti-clip"></i></button>
+                            <div class="chat-compose__input">
+                                <textarea id="answerText" rows="1" maxlength="2000" inputmode="text" autocomplete="off" placeholder="پیام خود را بنویسید..." disabled></textarea>
+                                <small>Enter برای ارسال · Shift+Enter برای خط جدید</small>
                             </div>
-                            <div class="chat-footer-buttons d-flex">
-                                <button class="btn btn-primary" type="submit">
-                                    <i data-feather="send" class="width-15 height-15"></i>
-                                </button>
-                            </div>
+                            <button class="chat-send-button" id="answerSendButton" type="button" disabled aria-label="ارسال پیام"><i class="ti-location-arrow"></i><span>ارسال</span></button>
                         </form>
                     </div>
                     <!-- end::messages -->
@@ -134,22 +127,5 @@
 </div>
 @section GetInformationPersonal
     {
-    <script src="~/systemchatonline/supportsignalrservice.js"></script>
-    <script>
-        $(function () {
-            $(document).on('click', '.chat-block .chat-sidebar .chat-sidebar-content .chat-lists a', function () {
-                var chat_content = $('.chat-block .chat-content');
-
-                // Open chat screen
-                chat_content.addClass('mobile-open');
-
-                // Scroll resize
-                chat_content.find('.messages').scrollTop(chat_content.find('.messages').get(0).scrollHeight, -1).niceScroll({
-                    horizrailenabled: false
-                }).resize();
-
-                return false;
-            });
-        });
-    </script>
+    <script src="~/systemchatonline/supportsignalrservice.js" asp-append-version="true"></script>
     }

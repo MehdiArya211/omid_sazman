@@ -31,7 +31,14 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         public List<PermissionViewModel> ListAccsessPersonal { get; set; }
         public List<PermissionViewModel> ListUnAccsessPersonal { get; set; }
 
-        public int? RoleId;
+        [BindProperty(SupportsGet = true)]
+        public int? RoleId { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet(int? roleId = 0)
         {
@@ -60,8 +67,17 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         }
 
 
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostAddAccess(int roleId , List<int> permissionIds)
         {
+            if (roleId <= 0 || permissionIds == null || permissionIds.Count == 0)
+            {
+                SetOperationNotification("انتخاب دسترسی", "حداقل یک منو را برای افزودن انتخاب کنید.", "warning");
+                return RedirectToPage(new { roleId });
+            }
+
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
 
             ViewData["PermissionList"] = new SelectList(_permissionService.GetAllPermission(), "PermissionId", "PermissionTitle");
@@ -74,13 +90,21 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
 
 
             _rolePermissionService.AddPermissionToRole(roleId, permissionIds);
-            ViewData["ShowForm"] = true;
-            ViewData["RoleId"] = roleId;
-            return Redirect("/Admin/rolepermission/mainindex?roleId=" + roleId);
+            SetOperationNotification("ثبت موفق", "دسترسی منوهای انتخاب‌شده با موفقیت اضافه شد.", "success");
+            return RedirectToPage(new { roleId });
         }
 
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostRemoveAccess(int roleId, List<int> permissionIds)
         {
+            if (roleId <= 0 || permissionIds == null || permissionIds.Count == 0)
+            {
+                SetOperationNotification("انتخاب دسترسی", "حداقل یک منو را برای حذف انتخاب کنید.", "warning");
+                return RedirectToPage(new { roleId });
+            }
+
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
 
             ViewData["PermissionList"] = new SelectList(_permissionService.GetAllPermission(), "PermissionId", "PermissionTitle");
@@ -93,9 +117,19 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
 
 
             _rolePermissionService.RemovePermissionToRole(roleId, permissionIds);
-            ViewData["ShowForm"] = true;
-            ViewData["RoleId"] = roleId;
-            return Redirect("/Admin/rolepermission/mainindex?roleId=" + roleId) ;
+            SetOperationNotification("حذف موفق", "دسترسی منوهای انتخاب‌شده با موفقیت حذف شد.", "success");
+            return RedirectToPage(new { roleId });
         }
+
+        /// <summary>
+        /// پیام نتیجه عملیات مدیریت دسترسی را برای نمایش پس از انتقال صفحه تنظیم می‌کند.
+        /// </summary>
+        private void SetOperationNotification(string title, string message, string icon)
+        {
+            TempData["OperationTitle"] = title;
+            TempData["OperationMessage"] = message;
+            TempData["OperationIcon"] = icon;
+        }
+        #endregion
     }
 }

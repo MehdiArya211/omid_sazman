@@ -10,6 +10,9 @@ namespace VisitorManagment.Core.Services.SystemLog
 {
     public class UserActionLogger : IUserActionLogger
     {
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public Task LogAsync(UserActionLog log)
         {
             Log.ForContext("LogType", "UserAction")

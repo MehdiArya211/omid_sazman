@@ -9,6 +9,9 @@ namespace VisitorManagment.Core.Security
 
 
 
+        /// <summary>
+        /// مقدار ورودی را به قالب موردنظر تبدیل می‌کند.
+        /// </summary>
         public static string EncodePasswordMd5(string pass) //Encrypt using MD5   
         {
             Byte[] originalBytes;

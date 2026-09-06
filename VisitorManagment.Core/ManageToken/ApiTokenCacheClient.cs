@@ -36,6 +36,9 @@ namespace ITOWebApiClient
             _cache = cache;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public async Task<string> GetApiToken(string api_name, string api_scope, string secret,string username, string password)
         {
             var accessToken = GetFromCache(api_name);
@@ -61,6 +64,9 @@ namespace ITOWebApiClient
             return newAccessToken.AccessToken;
         }
 
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         private async Task<AccessTokenItem> getApiToken(string api_name, string api_scope, string secret, string username, string password)
         {
             try
@@ -113,6 +119,9 @@ namespace ITOWebApiClient
             }
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         private void AddToCache(string key, AccessTokenItem accessTokenItem)
         {
             var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(cacheExpirationInDays));
@@ -123,6 +132,9 @@ namespace ITOWebApiClient
             }
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         private AccessTokenItem GetFromCache(string key)
         {
             var item = _cache.GetString(key);

@@ -29,6 +29,12 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingHold
         [BindProperty]
         public MeetingHoldViewModel meetingHoldViewModel { get; set; }
         public SMSInfoViewModel smsInfoViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public void OnGet(int id)
         {
@@ -44,6 +50,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingHold
 
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetHamesh(int membermeetingid, int titlemeetingid)
         {
             var result = _meetingService.getHmaeshByFileId(membermeetingid, titlemeetingid);
@@ -51,6 +60,9 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingHold
 
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int meetingId, int personId, int ActionTypeId, List<int> rcvrId)
 
         {
@@ -68,5 +80,6 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingHold
 
             return RedirectToPage("/Visitor/Meets/MeetingInfo/MeetingHold/CreateMeetingHold");
         }
+        #endregion
     }
 }

@@ -31,14 +31,17 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
         [BindProperty]
        
         //مدل گزارش دایره ای براساس نوع اقدامات
-        public List<HameshRequestGhaModel> lstRequestPieModel { get; set; }
+        public List<HameshRequestGhaModel> lstRequestPieModel { get; set; } = new List<HameshRequestGhaModel>();
         public ReqoestGhaReportViewModal PieDto { get; set; }
         
         //مدل نمودار میله ای گزارش فراوانی مشکلات
-        public List<ProblemReportViewModel> lstChartModel { get; set; }     
+        public List<ProblemReportViewModel> lstChartModel { get; set; } = new List<ProblemReportViewModel>();
         public ChartProblemOmdRequestGha chartDto { get; set; }
         public SearchPageReportRequestGhaReportViewModel searchPageReportViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet()
         {
             searchPageReportViewModel = new SearchPageReportRequestGhaReportViewModel();
@@ -452,6 +455,9 @@ namespace VisitorManagment.Web.Pages.Admin.Reports
             #endregion
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int GharargahId, int RoleId, string startDateSearch = "", string endDateSearch = "")
         {
             var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);

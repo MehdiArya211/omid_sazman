@@ -32,6 +32,12 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         [BindProperty]
         //public CreateUserViewModel CreateUserViewModel { get; set; }
         public EditUserViewModel editUserViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
 
         public IActionResult OnGet(int id)
         {
@@ -52,6 +58,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return Page();
         }
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalId0(string personalno)
         {
             var result = new FactPersonalViewModel();
@@ -140,6 +149,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public JsonResult OnGetGetPersonalId(string personalno)
         {
             if (string.IsNullOrWhiteSpace(personalno))
@@ -172,8 +184,20 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(string password, int userId, string fname, string lname, string rankTitle)
         {
+            var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
+            ViewData["RolesTitle"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
+
+            if (editUserViewModel == null || userId <= 0)
+            {
+                ModelState.AddModelError("", "اطلاعات کاربر معتبر نیست.");
+                return Page();
+            }
+
             editUserViewModel.RankTitle = rankTitle;
             if (editUserViewModel.UserRolesId == 0)
             {
@@ -197,9 +221,13 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             _permissionService.EditRolesToUser(editUserViewModel.UserRolesId, userId);
 
 
+            TempData["OperationTitle"] = "ویرایش موفق";
+            TempData["OperationMessage"] = "اطلاعات کاربر با موفقیت ویرایش شد.";
+            TempData["OperationIcon"] = "success";
             return Redirect("/Admin/Users");
 
         }
 
+        #endregion
     }
 }

@@ -25,6 +25,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             _apiTokenClient = apiTokenClient;
             _webApiService = webApiService;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet()
         {
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

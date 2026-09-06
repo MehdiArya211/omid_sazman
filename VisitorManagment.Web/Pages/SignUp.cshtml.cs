@@ -24,11 +24,20 @@ namespace VisitorManagment.Web.Pages
 
         [BindProperty]
         public SignUpViewModel signUpViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet()
         {
 
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
             
@@ -55,5 +64,6 @@ namespace VisitorManagment.Web.Pages
 
             
         }
+        #endregion
     }
 }

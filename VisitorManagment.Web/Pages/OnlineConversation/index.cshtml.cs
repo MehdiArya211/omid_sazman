@@ -47,6 +47,9 @@ namespace NVC.Web.Pages
         /// </summary>
         public CollectionSpecificationPersonalViewModel collectionSpecificationPersonalViewModel { get; set; }
 
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public void OnGet(int pageId = 1, int filterMeetingStatus = 1, string filterCaption = "")
         {
 
@@ -77,6 +80,9 @@ namespace NVC.Web.Pages
         }
 
         #region نمایش اعضای جلسه با انتخاب تاریخ جلسه
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetListPersonal(int meetingId)
         {
             var meetingIdFinal = HttpContext.Session.GetString("meetingId") ?? meetingId.ToString();
@@ -104,6 +110,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region خلاصه وضعیت نفر
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetInfoPersonal(int fileId)
         {
             #region initial property
@@ -158,6 +167,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region لیست هامش های ثبت شده
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetAllListHamesh()
         {
             listHameshViewModel = new ListHameshViewModel();
@@ -174,6 +186,9 @@ namespace NVC.Web.Pages
 
 
         #region Tashvighat
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashvighat(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -208,6 +223,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region Tanbihat
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTanbihat(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -240,6 +258,9 @@ namespace NVC.Web.Pages
 
         #region Entegalat
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetEnteghal(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -272,6 +293,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region Aele
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetAeleh(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -300,6 +324,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region Maskan
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatMaskan(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -338,6 +365,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region Tashilat DabirKhaneh
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatDabirKhaneh(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -377,6 +407,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region TashilatDastor
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatDastor(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -410,6 +443,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region تسهیلات دیگر
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatOther(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -442,6 +478,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region تسهیلات بلاعوض
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetTashilatBelaavaz(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -480,6 +519,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region Exam
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetExam(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -515,6 +557,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region فیش 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetFish(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -546,6 +591,9 @@ namespace NVC.Web.Pages
         #endregion
 
         #region معسرین 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetGetMoeeser(string personalCode)
         {
             var personCode = HttpContext.Session.GetObjectFromJson<string>("personalCode");
@@ -604,6 +652,9 @@ namespace NVC.Web.Pages
         #endregion
 
 
+        /// <summary>
+        /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
+        /// </summary>
         public IActionResult OnGetDeletePersonFromListMeeting(int fileId)
         {
             var result = _meetingService.ChangeStatusPersonInMeeting(fileId);

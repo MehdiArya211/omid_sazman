@@ -20,6 +20,9 @@ namespace VisitorManagment.Core.Services.Reports
 
         #region گزارش عملکرد قرارگاه و یگان
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<HameshRequestGhaModel> GetTotalHelpAmountForServiceType(int GharargahId, int RoleId, DateTime? startDateEnglish, DateTime? endDateEnglish)
         {
 
@@ -148,6 +151,9 @@ namespace VisitorManagment.Core.Services.Reports
 
         #endregion
         #region سرویس فراوانی مشکلات ViwFiles
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemAllNez> GetPeroblemAllNez()
         {
             var strAnd = " AND ";
@@ -180,6 +186,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemGhaReport> GetPeroblemGhaNez()
         {
             var strAnd = " AND ";
@@ -210,6 +219,9 @@ namespace VisitorManagment.Core.Services.Reports
                 CodGhaTitle = c.CodGhaTitle,
             }).ToList();
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<ProblemOmdOrganReport> GetPeroblemOmdOrganNez(int OmdOrganId, int YeganId)
         {
             var strAnd = " AND ";
@@ -254,6 +266,9 @@ namespace VisitorManagment.Core.Services.Reports
             }).ToList();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ChartProblemOmdOrgan GetProblemCountOmdOrganInfo(int OmdOrganId, int YeganId)
         {
             var model = new ChartProblemOmdOrgan();
@@ -313,13 +328,18 @@ namespace VisitorManagment.Core.Services.Reports
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<HameshActionTypeModel> GetNomrehArzyabiGharargah(int actionTypeId, DateTime? startDateEnglish, DateTime? endDateEnglish)
         {
             var strAnd = " AND ";
 
             var schemaAndTableName = _context.GetSqlServerTableName<ViwHamesh>();
             //--- Default = rptByProvince = true 
-            var sqlQuery = $"SELECT count(Id) as TCount, RoleTypeId,RoleTypeTitle,ActionTypeId,ActionTypeTitle,CodGha,CodGhaTitle , UnitCode , UnitTitle,UserId,RequestSubjectId,RequestSubjectTitle,RegDate ";
+            // ستون‌های عددی View در بعضی داده‌های قدیمی NULL هستند؛ تبدیل صریح از
+            // بروز SqlBuffer.get_Int32 هنگام ساخت مدل گزارش جلوگیری می‌کند.
+            var sqlQuery = $"SELECT count(Id) as TCount, ISNULL(RoleTypeId,0) AS RoleTypeId,ISNULL(RoleTypeTitle,N'') AS RoleTypeTitle,ISNULL(ActionTypeId,0) AS ActionTypeId,ISNULL(ActionTypeTitle,N'') AS ActionTypeTitle,CodGha,ISNULL(CodGhaTitle,N'') AS CodGhaTitle,ISNULL(UnitCode,0) AS UnitCode,ISNULL(UnitTitle,N'') AS UnitTitle,ISNULL(UserId,0) AS UserId,ISNULL(RequestSubjectId,0) AS RequestSubjectId,ISNULL(RequestSubjectTitle,N'') AS RequestSubjectTitle,RegDate ";
 
             sqlQuery += $" FROM  { schemaAndTableName} ";
 
@@ -381,7 +401,7 @@ namespace VisitorManagment.Core.Services.Reports
                      }).OrderBy(x => x.TCount).ToList();
             }
 
-            if (startDateEnglish != null && startDateEnglish != null)
+            if (startDateEnglish != null && endDateEnglish != null)
             {
 
                 return _context.ViwHamesh.FromSqlRaw(sqlQuery)

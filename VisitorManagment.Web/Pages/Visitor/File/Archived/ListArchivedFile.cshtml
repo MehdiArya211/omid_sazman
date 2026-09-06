@@ -25,12 +25,12 @@
 </div>
 <!-- end::page-header -->
 
-<div class="container-fluid">
+<div class="container-fluid archived-requests-page">
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <h4>لیست درخواست ملاقات های آرشیو شده</h4>
+                    <div class="archive-page-heading"><span><i class="ti-archive"></i></span><div><h4>درخواست‌های ملاقات بایگانی‌شده</h4><p>مشاهده جزئیات و گردش کامل درخواست‌های خاتمه‌یافته</p></div></div>
 
                     <div asp-validation-summary="ModelOnly" class="text-danger">
                     </div>
@@ -55,7 +55,7 @@
                             @if (@Model.listviewmodel.count == 0)
                             {
                                 <tr>
-                                    <td style="color:red ">موردی یافت نشد!</td>
+                                    <td colspan="9" class="text-center text-muted">رکوردی در بایگانی یافت نشد</td>
                                 </tr>
                             }
 
@@ -378,4 +378,3 @@
     }
 </script>
 }
-

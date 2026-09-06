@@ -440,6 +440,9 @@ namespace VisitorManagment.Core.Services
         //    return AddToFile(file);
 
         //}
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public BaseResult AddFile(FactPersonalViewModel person)
         {
             #region اعتبارسنجی اولیه
@@ -687,6 +690,9 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         private BaseResult SaveUploadedFile(
     IFormFile uploadedFile,
     string folderName,
@@ -2491,20 +2497,21 @@ namespace VisitorManagment.Core.Services
 
             #region Search
 
-            //if (!string.IsNullOrEmpty(filterCaption))
-            //{
-            //    listFile = listFile.Where(u => u.PersonalCode.Contains(filterCaption));
-            //}
+            if (!string.IsNullOrWhiteSpace(filterCaption))
+            {
+                var term = filterCaption.Trim();
+                listFile = listFile.Where(u => u.Personal.PersonalCode.Contains(term) ||
+                    u.Personal.FirstName.Contains(term) || u.Personal.LastName.Contains(term));
+            }
 
-            //if (filterGharargah != "" && filterGharargah != null)
-            //{
-            //    listFile = listFile.Where(t => t.CodGha == int.Parse(filterGharargah));
-            //}
+            if (int.TryParse(filterGharargah, out var gharargahId) && gharargahId > 0)
+                listFile = listFile.Where(t => t.CodGha == gharargahId);
 
-            //if (requestsubject != 0)
-            //{
-            //    listFile = listFile.Where(t => t.RequestSubjectId == requestsubject);
-            //}
+            if (requestsubject > 0)
+                listFile = listFile.Where(t => t.RequestSubjectId == requestsubject);
+
+            if (filterAvamerSadereh == 1)
+                listFile = listFile.Where(t => t.IsMeetingHold);
             #endregion
 
             ListFileViewModel list = new ListFileViewModel() { };

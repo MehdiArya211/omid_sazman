@@ -9,6 +9,12 @@ namespace VisitorManagment.Web
 
     public class Program
     {
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
+
         public static void Main(string[] args)
         {
             // پیکربندی اولیه Serilog
@@ -40,6 +46,9 @@ namespace VisitorManagment.Web
             }
         }
 
+        /// <summary>
+        /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
+        /// </summary>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 // اتصال Serilog به Host برنامه
@@ -52,5 +61,6 @@ namespace VisitorManagment.Web
                     //جهت دسترسی IP های سرور کسترل در لینوکس
                     webBuilder.UseUrls("http://*:5000", "https://*:5001");
                 });
+        #endregion
     }
 }

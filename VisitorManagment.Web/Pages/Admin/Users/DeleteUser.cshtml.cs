@@ -22,6 +22,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         }
 
         public InformationUserViewModel InformationUserViewModel { get; set; }
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
         public IActionResult OnGet(int id)
         {
             //کاربر غیر ادمین صفحه رو بهش نشون نده
@@ -39,14 +42,28 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return Page();
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost(int UserId)
         {
+            if (UserId <= 0)
+            {
+                TempData["OperationTitle"] = "خطا در حذف";
+                TempData["OperationMessage"] = "شناسه کاربر معتبر نیست.";
+                TempData["OperationIcon"] = "error";
+                return RedirectToPage("Index");
+            }
+
             _userService.DeleteUser(UserId);
             #region لاگ ، سامانه فجر
             var userName = User.FindFirst("UserName").Value;
             string UserIdLog = User.FindFirst("Id").Value;
            // _webApiService.AddLog(UserIdLog, userName, "Admin/Users/DeleteUser");
             #endregion
+            TempData["OperationTitle"] = "حذف موفق";
+            TempData["OperationMessage"] = "کاربر با موفقیت حذف شد.";
+            TempData["OperationIcon"] = "success";
             return RedirectToPage("Index");
         }
     }

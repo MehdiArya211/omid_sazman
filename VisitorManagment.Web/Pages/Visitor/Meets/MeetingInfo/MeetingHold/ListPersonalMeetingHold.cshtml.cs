@@ -26,14 +26,22 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.MeetingHold
             _fileService = fileService;
         }
         [BindProperty]
-        public ListMeetingHoldViewModel listMeetingHoldViewModel { get; set; }
-
-        public void OnGet(int id, int pageId = 1, string filterCaption = "")
+        public ListMeetingHoldViewModel listMeetingHoldViewModel { get; set; } = new ListMeetingHoldViewModel
         {
+            MeetingHolds = new List<MeetingHoldInfoViewModel>()
+        };
 
-            listMeetingHoldViewModel = _meetingService.GetPersonalMemberForMeetingList(id, pageId, filterCaption);
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+        public IActionResult OnGet(int id, int pageId = 1, string filterCaption = "")
+        {
+            if (id <= 0) return BadRequest("شناسه جلسه معتبر نیست.");
+            listMeetingHoldViewModel = _meetingService.GetPersonalMemberForMeetingList(id, Math.Max(pageId, 1), filterCaption?.Trim() ?? "")
+                ?? new ListMeetingHoldViewModel { MeetingHolds = new List<MeetingHoldInfoViewModel>() };
+            listMeetingHoldViewModel.MeetingHolds = listMeetingHoldViewModel.MeetingHolds ?? new List<MeetingHoldInfoViewModel>();
             ViewData["meetingId"] = id;
+            return Page();
         }
     }
 }
-

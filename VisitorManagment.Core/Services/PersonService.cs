@@ -35,12 +35,24 @@ namespace VisitorManagment.Core.Services
             apiUrlTanbihat = _configuration.GetSection("ItoWebApiUrl").GetSection("TanbihatUrl").Value;
             _client = new HttpClient();
         }
+        #region اعضا و متدهای کلاس
 
+
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
+
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Personal GetPersonalByPersonalCode(string personalCode)
         {
             return _context.Personals.Where(p => p.PersonalCode == personalCode).SingleOrDefault();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public FactSpecificationPersonalViewModel GetPersonalForEdit(int personalId)
         {
             var person = GetPersonByPersonalId(personalId);
@@ -81,6 +93,9 @@ namespace VisitorManagment.Core.Services
             return editPerson;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public Personal GetPersonByPersonalId(int personsalId)
         {
             return _context.Personals.Where(p => p.Id == personsalId).SingleOrDefault();
@@ -89,6 +104,9 @@ namespace VisitorManagment.Core.Services
         //*************************************************************************************
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public FactSpecificationPersonalViewModel GetPersonalByPersonalNo(int fileId)
         {
             var personalCode = _context.Files.Find(fileId).PersonalCode.ToString();
@@ -100,6 +118,9 @@ namespace VisitorManagment.Core.Services
             return person;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<TashvighatInfoViewModel> GetTashvighatByPersonalNo(int fileId)
         {
             var personalCode = _context.Files.Find(fileId).PersonalCode.ToString();
@@ -113,6 +134,9 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<TanbihatInfoViewModel> GetTanbihatByPersonalNo(int fileId)
         {
             var personalCode = _context.Files.Find(fileId).PersonalCode.ToString();
@@ -123,6 +147,9 @@ namespace VisitorManagment.Core.Services
 
             return Tanbihat;
         }
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public ListFileViewModel GetFile(int FileId)
         {
             var personalCode = _context.Files.Find(FileId).PersonalCode.ToString();
@@ -140,6 +167,9 @@ namespace VisitorManagment.Core.Services
             return list;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<FarmandehInfo> GetFarmandehInfos()
         {
             var result = _context.UserRoles.Include(x => x.Role).Include(x => x.User)
@@ -153,6 +183,9 @@ namespace VisitorManagment.Core.Services
             return result;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<FarmandehInfo> GetKarshenashAnsarInfos()
         {
 
@@ -167,6 +200,9 @@ namespace VisitorManagment.Core.Services
             return result;
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public List<FarmandehInfo> GetFarmandehAndKarshenasInfos()
         {
             var result = _context.UserRoles.Include(x => x.Role).Include(x => x.User)
@@ -182,12 +218,18 @@ namespace VisitorManagment.Core.Services
 
 
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public string GetAvatarUserByPrsnCd(int prsnCd)
         {
             var prsnCode = prsnCd.ToString();
             return _context.Users.Where(_ => _.UserName == prsnCode).Select(_ => _.UserAvatar).FirstOrDefault();
         }
 
+        /// <summary>
+        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// </summary>
         public FarmandehReportDTO GetPrsnInfoByPrsnId(string personalCode)
         {
             return _context.UserRoles.AsSplitQuery().Include(_ => _.User)
@@ -204,6 +246,7 @@ namespace VisitorManagment.Core.Services
         }
 
 
+        #endregion
     }
 
 

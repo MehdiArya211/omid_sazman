@@ -8,6 +8,9 @@ namespace VisitorManagment.Core.Convertors
     {
 
         //================ 3
+        /// <summary>
+        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// </summary>
         public static string FixedEmail(string email)
         {
             return email.Trim().ToLower();

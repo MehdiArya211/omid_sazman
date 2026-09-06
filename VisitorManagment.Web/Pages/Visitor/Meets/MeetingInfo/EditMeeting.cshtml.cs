@@ -19,6 +19,12 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
         }
         [BindProperty]
         public EditMeetingViewModel editMeetingViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet(int id)
         {
             ViewData["MeetingPlaceList"] = new SelectList(_meetingService.GetMeetingPlace(), "Id", "Title");
@@ -28,14 +34,35 @@ namespace VisitorManagment.Web.Pages.Visitor.File.MeetingInfo
             editMeetingViewModel = _meetingService.GetMeetingForEdit(id);
         }
 
+        /// <summary>
+        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPost()
         {
+            if (!ModelState.IsValid)
+            {
+                OnGet(editMeetingViewModel?.Id ?? 0);
+                return Page();
+            }
+            if (editMeetingViewModel.Id <= 0 || editMeetingViewModel.MeetingStatusId <= 0 ||
+                editMeetingViewModel.MeetingPlaceId <= 0 || editMeetingViewModel.BoseMeetingId <= 0 ||
+                editMeetingViewModel.ClerkMeetingId <= 0)
+            {
+                ModelState.AddModelError("", "اطلاعات جلسه و گزینه‌های انتخابی را کامل کنید.");
+                OnGet(editMeetingViewModel.Id);
+                return Page();
+            }
+
             editMeetingViewModel.EditUserId = int.Parse(User.FindFirst("Id").Value);
             //edit table Meeting
             _meetingService.EditMeeting(editMeetingViewModel);
             _smsService.SendSmsToMemberAddToMeeting(editMeetingViewModel.Id);
 
+            TempData["OperationTitle"] = "ویرایش موفق";
+            TempData["OperationMessage"] = "جلسه با موفقیت ویرایش شد.";
+            TempData["OperationIcon"] = "success";
             return RedirectToPage("/Visitor/Meets/MeetingInfo/Index");
         }
+        #endregion
     }
 }

@@ -36,6 +36,12 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
         public ListFileReferenceViewModel listviewmodel { get; set; }
         public List<Users> users { get; set; }
        // public List<int> listFileViewModel { get; set; }
+        #region اعضا و متدهای کلاس
+
+        /// <summary>
+        /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
+        /// </summary>
+
         public void OnGet(int id, int pageId = 1, string filterCaption = "", int SubjectId = 0, int filterCodGha = 0)
         {
             ViewData["RequestSubjects"] = new SelectList(_meetingService.GetRequestSubjects(), "Id", "Title");
@@ -49,6 +55,9 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
         }
 
 
+        /// <summary>
+        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// </summary>
         public IActionResult OnPostDeletePersonFromMeeting(int FileId)
         {
             _meetingService.DeletePersonInMeeting(FileId);
@@ -56,5 +65,6 @@ namespace VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting
             return RedirectToPage("/Visitor/Meets/ReferenceToMeeting/EditReferenceToMeeting");
 
         }
+        #endregion
     }
 }
