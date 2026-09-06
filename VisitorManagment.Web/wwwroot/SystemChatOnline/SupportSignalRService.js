@@ -22,7 +22,7 @@
     }
 
     function scrollToLatestMessage() {
-        var panel = messages.closest(".message-item");
+        var panel = messages.closest(".support-message-scroll");
         if (panel) panel.scrollTop = panel.scrollHeight;
     }
 
