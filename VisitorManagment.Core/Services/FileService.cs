@@ -1463,6 +1463,67 @@ namespace VisitorManagment.Core.Services
         /// <param name="roleTypeId"></param>
         /// <param name="personalCode"></param>
         /// <returns></returns>
+        public DashboardRequestStatistics GetDashboardRequestStatistics(
+            string unitDutyCode,
+            string unitCode,
+            string codeGha,
+            string roleTypeId,
+            string personalCode)
+        {
+            var files = _context.Files.AsNoTracking().AsQueryable();
+
+            switch (roleTypeId)
+            {
+                case "1":
+                    files = files.Where(file => file.Personal.PersonalCode == personalCode);
+                    break;
+                case "2":
+                    if (!int.TryParse(unitDutyCode, out var parsedUnitDutyCode))
+                        return new DashboardRequestStatistics();
+                    files = files.Where(file => file.Personal.UnitDutyCode == parsedUnitDutyCode);
+                    break;
+                case "3":
+                case "12":
+                case "200":
+                case "201":
+                case "202":
+                case "203":
+                case "600":
+                case "601":
+                    if (!int.TryParse(unitCode, out var parsedUnitCode))
+                        return new DashboardRequestStatistics();
+                    files = files.Where(file => file.Personal.UnitCode == parsedUnitCode);
+                    break;
+                case "4":
+                    if (!int.TryParse(codeGha, out var parsedGhaCode))
+                        return new DashboardRequestStatistics();
+                    files = files.Where(file => file.Personal.CodGha == parsedGhaCode);
+                    break;
+            }
+
+            // شناسه فایل، شناسه یکتای درخواست است. هر درخواست فقط یک بار در آمار می‌آید.
+            var uniqueRequests = files
+                .Select(file => new { file.Id, file.FileStatusId })
+                .Distinct();
+
+            var statistics = uniqueRequests
+                .GroupBy(_ => 1)
+                .Select(group => new DashboardRequestStatistics
+                {
+                    TotalRequests = group.Count(),
+                    ResolvedRequests = group.Count(file => file.FileStatusId == 1),
+                    OpinionRequests = group.Count(file => file.FileStatusId == 2),
+                    ReturnedRequests = group.Count(file => file.FileStatusId == 3),
+                    OtherRequests = group.Count(file =>
+                        file.FileStatusId != 1 &&
+                        file.FileStatusId != 2 &&
+                        file.FileStatusId != 3)
+                })
+                .SingleOrDefault();
+
+            return statistics ?? new DashboardRequestStatistics();
+        }
+
         public int GetFileCount(string unitDutyCode, string unitCode, string codeGha, string roleTypeId, string personalCode)
         {
 
