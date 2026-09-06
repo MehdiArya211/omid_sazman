@@ -72,16 +72,21 @@
         messages = document.getElementById("Messages"); status = document.getElementById("chatConnectionStatus");
         emptyState = document.getElementById("clientChatEmptyState"); replyPreview = document.getElementById("clientReplyPreview");
         var page = document.querySelector(".client-chat-page"); currentUser = page ? (page.dataset.currentUser || "").trim().toLowerCase() : "";
-        if (!form || !input || !messages) return; button = form.querySelector("button[type=submit]");
-        form.addEventListener("submit", async function (event) {
-            event.preventDefault(); var text = input.value.trim();
+        if (!form || !input || !messages) return; button = document.getElementById("clientSendButton");
+        if (!button) return;
+        async function sendMessage(event) {
+            if (event) event.preventDefault();
+            var text = input.value.trim();
             if (!text || connection.state !== signalR.HubConnectionState.Connected) return;
             button.disabled = true;
             try { await connection.invoke("SendNewMessage", "", text, selectedReply ? selectedReply.id : null); input.value = ""; resizeComposer(); clearReply(); }
             catch (_) { setState("ارسال ناموفق؛ اتصال را بررسی کنید", false); }
             finally { button.disabled = connection.state !== signalR.HubConnectionState.Connected; input.focus(); }
-        });
-        input.addEventListener("keydown", function (event) { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); } });
+        }
+        // فرم هیچ‌وقت اجازه submit معمولی و Refresh صفحه را ندارد.
+        form.addEventListener("submit", function (event) { event.preventDefault(); sendMessage(event); });
+        button.addEventListener("click", sendMessage);
+        input.addEventListener("keydown", function (event) { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendMessage(event); } });
         input.addEventListener("input", resizeComposer);
         messages.addEventListener("click", function (event) {
             var reply = event.target.closest(".chat-reply-button");
