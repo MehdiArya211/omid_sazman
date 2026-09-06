@@ -43,12 +43,12 @@
                         <div><strong>پاسخ به <span data-reply-sender></span></strong><p data-reply-message></p></div>
                         <button type="button" data-cancel-reply aria-label="لغو پاسخ"><i class="ti-close"></i></button>
                     </div>
-                    <form class="chat-compose" id="NewMessageForm">
+                    <form class="chat-compose" id="NewMessageForm" novalidate>
                         <div class="chat-compose__input">
                             <textarea rows="1" maxlength="2000" inputmode="text" autocomplete="off" placeholder="پیام خود را بنویسید..." id="MessageInput"></textarea>
                             <small>Enter برای ارسال · Shift+Enter برای خط جدید</small>
                         </div>
-                        <button class="chat-send-button" type="submit" aria-label="ارسال پیام"><i class="ti-location-arrow"></i><span>ارسال</span></button>
+                        <button class="chat-send-button" id="clientSendButton" type="button" aria-label="ارسال پیام"><i class="ti-location-arrow"></i><span>ارسال</span></button>
                     </form>
                 </div>
                 <!-- end::chat footer -->
