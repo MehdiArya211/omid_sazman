@@ -6,6 +6,7 @@
     var chat = new signalR.HubConnectionBuilder().withUrl("/chathub?support=true").build();
     var reconnectTimers = [];
     var roomList, messages, form, input, sendButton, search, emptyState, currentUser, replyPreview;
+    var messageSearch, fileInput, attachButton, typingIndicator, typingTimer = null, lastDateKey = "";
     var selectedReply = null;
 
     function setEmptyState(title, description, icon) {
@@ -64,10 +65,13 @@
         var normalizedSender = sender.trim().toLowerCase();
         var isSupport = forceSupport === true || normalizedSender.indexOf("پشتیبان") !== -1 || (currentUser && normalizedSender === currentUser);
         li.classList.toggle("is-support", isSupport);
+        li.classList.toggle("is-deleted", item.isDeleted === true);
+        var messageDate = new Date(item.time), dateKey = Number.isNaN(messageDate.getTime()) ? "" : messageDate.toISOString().slice(0, 10);
+        if (dateKey && dateKey !== lastDateKey) { var divider=document.createElement("li");divider.className="chat-date-divider";divider.textContent=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric"}).format(messageDate);messages.appendChild(divider);lastDateKey=dateKey; }
         li.dataset.messageId = item.id || "";
         li._chatMessage = item;
-        meta.textContent = sender + " · " + formatPersianDate(item.time);
-        body.textContent = item.message || "";
+        meta.textContent = sender + " · " + formatPersianDate(item.time) + (item.editedAt ? " · ویرایش‌شده" : "");
+        body.textContent = item.isDeleted ? "این پیام حذف شده است" : (item.message || "");
         if (item.replyToMessage) {
             var quote = document.createElement("button");
             quote.type = "button"; quote.className = "chat-message-reply";
@@ -77,10 +81,10 @@
             quote.querySelector("span").textContent = item.replyToMessage;
             li.appendChild(quote);
         }
-        var replyButton = document.createElement("button");
-        replyButton.type = "button"; replyButton.className = "chat-reply-button"; replyButton.title = "پاسخ به این پیام";
-        replyButton.innerHTML = '<i class="ti-back-left"></i><span>پاسخ</span>';
-        li.appendChild(meta); li.appendChild(body); li.appendChild(replyButton); messages.appendChild(li); hideEmptyState(); scrollToLatestMessage();
+        li.appendChild(meta); li.appendChild(body);
+        if (item.attachmentUrl && !item.isDeleted) { var attachment=document.createElement("a");attachment.className="chat-attachment";attachment.href=item.attachmentUrl;attachment.target="_blank";attachment.rel="noopener";if((item.attachmentContentType||"").indexOf("image/")===0){var img=document.createElement("img");img.src=item.attachmentUrl;img.alt=item.attachmentName||"تصویر";attachment.appendChild(img);}var label=document.createElement("span");label.innerHTML='<i class="ti-file"></i> ';label.appendChild(document.createTextNode(item.attachmentName||"دریافت فایل"));attachment.appendChild(label);li.appendChild(attachment); }
+        if (!item.isDeleted) { var actions=document.createElement("div");actions.className="chat-message-actions";actions.innerHTML='<button type="button" data-action="reply" title="پاسخ"><i class="ti-back-left"></i></button><button type="button" data-action="copy" title="کپی"><i class="ti-files"></i></button>'+(isSupport?'<button type="button" data-action="edit" title="ویرایش"><i class="ti-pencil"></i></button><button type="button" data-action="delete" title="حذف"><i class="ti-trash"></i></button>':'');li.appendChild(actions); }
+        var delivery=document.createElement("small");delivery.className="chat-delivery";delivery.textContent=isSupport?(item.isRead?"✓✓ خوانده شد":(item.isDelivered?"✓✓ تحویل شد":"✓ ارسال شد")):"";li.appendChild(delivery);messages.appendChild(li);hideEmptyState();scrollToLatestMessage();
     }
     function loadRooms(rooms) {
         roomList.textContent = "";
@@ -97,7 +101,7 @@
             link.dataset.id = room.id; link.dataset.title = room.title || "گفت‌گوی بدون عنوان";
             var title = document.createElement("span"), preview = document.createElement("span"), time = document.createElement("time"), count = document.createElement("span");
             title.className = "chat-room-item__title"; preview.className = "chat-room-item__message"; time.className = "chat-room-item__time"; count.className = "chat-room-item__count";
-            title.textContent = link.dataset.title; preview.textContent = room.lastMessage || "بدون پیام"; time.textContent = formatPersianDate(room.lastMessageTime); count.textContent = room.messageCount || 0;
+            title.textContent = link.dataset.title; preview.textContent = room.lastMessage || "بدون پیام"; time.textContent = formatPersianDate(room.lastMessageTime); count.textContent = room.unreadCount || 0; count.hidden = !room.unreadCount;
             link.appendChild(title); link.appendChild(preview); link.appendChild(time); link.appendChild(count); roomList.appendChild(link);
         });
     }
@@ -107,9 +111,10 @@
         if (previousRoomId && previousRoomId !== id && chat.state === signalR.HubConnectionState.Connected) {
             chat.invoke("LeaveRoom", previousRoomId).catch(function (error) { console.warn("LeaveRoom failed", error); });
         }
-        activeRoomId = id; messages.textContent = "";
+        activeRoomId = id; messages.textContent = ""; lastDateKey = "";
         setEmptyState("در حال دریافت پیام‌ها...", "لطفاً چند لحظه صبر کنید.", "ti-reload");
         roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.classList.toggle("active", x === button); });
+        var unreadBadge = button.querySelector(".chat-room-item__count"); if (unreadBadge) { unreadBadge.textContent = "0"; unreadBadge.hidden = true; }
         document.getElementById("activeChatTitle").textContent = button.dataset.title;
         document.getElementById("activeChatMeta").textContent = "تاریخ و ساعت پیام‌ها به تقویم شمسی";
         var content = document.querySelector(".support-chat-page .chat-content"); if (content) content.classList.add("mobile-open");
@@ -174,6 +179,7 @@
         roomList = document.getElementById("roomList"); messages = document.getElementById("chatMessage");
         form = document.getElementById("answerForm"); input = document.getElementById("answerText");
         search = document.getElementById("chatRoomSearch"); emptyState = document.getElementById("chatEmptyState"); replyPreview = document.getElementById("adminReplyPreview");
+        messageSearch=document.getElementById("adminMessageSearch");fileInput=document.getElementById("adminAttachmentInput");attachButton=document.getElementById("adminAttachButton");typingIndicator=document.getElementById("adminTypingIndicator");
         var page = document.querySelector(".support-chat-page"); currentUser = page ? (page.dataset.currentUser || "").trim().toLowerCase() : "";
         if (!roomList || !messages || !form || !input) return; sendButton = document.getElementById("answerSendButton");
         if (!sendButton) return;
@@ -186,6 +192,7 @@
         });
         support.on("newSupportMessage", function (roomId, value, message, time) {
             var incoming = normalizeMessage(value, message, time);
+            support.invoke("MarkAsDelivered", roomId).catch(function () {});
             var room = roomList.querySelector('[data-id="' + roomId + '"]');
             if (room) {
                 room.querySelector(".chat-room-item__message").textContent = incoming.message || "";
@@ -193,10 +200,19 @@
                 var count = room.querySelector(".chat-room-item__count"); count.textContent = (parseInt(count.textContent, 10) || 0) + 1;
                 roomList.prepend(room);
             } else { support.invoke("RefreshRooms").catch(function () {}); }
+            if (String(roomId) === String(activeRoomId) && !messages.querySelector('[data-message-id="' + (incoming.id || '') + '"]')) {
+                appendMessage(incoming);
+                support.invoke("LoadMessage", activeRoomId).catch(function () {});
+            }
             if (window.Swal && document.hidden) Swal.fire({toast:true,position:"top-start",icon:"info",title:"پیام جدید از " + (incoming.sender || "کاربر"),text:incoming.message || "",showConfirmButton:false,timer:5000});
         });
-        chat.on("getNewMessage", appendMessage);
+        // پیام‌های زنده از SupportHub دریافت می‌شوند تا پاسخ پشتیبان دوبار نمایش داده نشود.
         support.on("messageSent", function (item) { appendMessage(item, null, null, true); });
+        support.on("messageUpdated", function (roomOrItem, item) { var roomId=item?roomOrItem:null,data=item||roomOrItem;if(!roomId||String(roomId)===String(activeRoomId))updateMessage(data); });
+        support.on("messageDeleted", function (roomOrItem, item) { var roomId=item?roomOrItem:null,data=item||roomOrItem;if(!roomId||String(roomId)===String(activeRoomId))updateMessage(data); });
+        support.on("messagesRead", function (roomId, ids) { if(String(roomId)===String(activeRoomId)) markRead(ids); });
+        support.on("messagesDelivered", function (roomId, ids) { if(String(roomId)===String(activeRoomId)) markDelivered(ids); });
+        support.on("typingChanged", function (roomId, _, typing) { if(typingIndicator&&String(roomId)===String(activeRoomId))typingIndicator.hidden=!typing; });
         roomList.addEventListener("click", function (event) { var button = event.target.closest(".chat-room-item"); if (button) switchRoom(button).catch(console.error); });
         async function sendMessage(event) {
             if (event) event.preventDefault();
@@ -213,14 +229,17 @@
         input.addEventListener("keydown", function (event) { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendMessage(event); } });
         input.addEventListener("input", resizeComposer);
         messages.addEventListener("click", function (event) {
-            var button = event.target.closest(".chat-reply-button");
-            if (button) { selectReply(button.closest("li")._chatMessage); return; }
+            var action=event.target.closest("[data-action]");
+            if(action){var data=action.closest("li")._chatMessage,kind=action.dataset.action;if(kind==="reply")selectReply(data);if(kind==="copy")navigator.clipboard.writeText(data.message||"");if(kind==="edit"){var text=window.prompt("ویرایش پیام",data.message||"");if(text!==null&&text.trim())support.invoke("EditMessage",activeRoomId,data.id,text.trim()).catch(showActionError);}if(kind==="delete"&&window.confirm("این پیام حذف شود؟"))support.invoke("DeleteMessage",activeRoomId,data.id).catch(showActionError);return;}
             var quote = event.target.closest(".chat-message-reply");
             if (quote && quote.dataset.replyTarget) {
                 var target = messages.querySelector('[data-message-id="' + quote.dataset.replyTarget + '"]');
                 if (target) { target.scrollIntoView({ behavior:"smooth", block:"center" }); target.classList.add("is-highlighted"); window.setTimeout(function () { target.classList.remove("is-highlighted"); }, 1300); }
             }
         });
+        if(messageSearch)messageSearch.addEventListener("input",function(){var q=messageSearch.value.trim().toLowerCase();messages.querySelectorAll("li:not(.chat-date-divider)").forEach(function(x){x.hidden=!!q&&!x.textContent.toLowerCase().includes(q);});});
+        if(attachButton&&fileInput){attachButton.addEventListener("click",function(){fileInput.click();});fileInput.addEventListener("change",function(){sendFile(fileInput.files[0]);});}
+        input.addEventListener("input",function(){if(!activeRoomId)return;support.invoke("Typing",activeRoomId,true).catch(function(){});window.clearTimeout(typingTimer);typingTimer=window.setTimeout(function(){support.invoke("Typing",activeRoomId,false).catch(function(){});},1200);});
         if (replyPreview) replyPreview.querySelector("[data-cancel-reply]").addEventListener("click", clearReply);
         var close = document.querySelector(".mobile-chat-close-btn");
         if (close) close.addEventListener("click", function (event) { event.preventDefault(); var content = document.querySelector(".support-chat-page .chat-content"); if (content) content.classList.remove("mobile-open"); });
@@ -245,4 +264,9 @@
             console.error("Chat connection failed", error);
         }
     });
+    function updateMessage(item){var li=messages.querySelector('[data-message-id="'+item.id+'"]');if(!li)return;li._chatMessage=item;li.classList.toggle("is-deleted",!!item.isDeleted);var body=li.querySelector(".chat-message-body");if(body)body.textContent=item.isDeleted?"این پیام حذف شده است":(item.message||"");var meta=li.querySelector(".chat-message-meta");if(meta)meta.textContent=(item.sender||"کاربر")+" · "+formatPersianDate(item.time)+(item.editedAt?" · ویرایش‌شده":"");if(item.isDeleted)li.querySelectorAll(".chat-attachment,.chat-message-actions").forEach(function(x){x.remove();});}
+    function markRead(ids){(ids||[]).forEach(function(id){var x=messages.querySelector('[data-message-id="'+id+'"] .chat-delivery');if(x)x.textContent="✓✓ خوانده شد";});}
+    function markDelivered(ids){(ids||[]).forEach(function(id){var x=messages.querySelector('[data-message-id="'+id+'"] .chat-delivery');if(x&&x.textContent!=="✓✓ خوانده شد")x.textContent="✓✓ تحویل شد";});}
+    function showActionError(){window.alert("انجام عملیات پیام ممکن نشد.");}
+    function sendFile(file){if(!file||!activeRoomId)return;if(file.size>5*1024*1024){window.alert("حجم فایل باید کمتر از ۵ مگابایت باشد.");fileInput.value="";return;}var reader=new FileReader();reader.onload=function(){var base64=String(reader.result).split(",")[1]||"";support.invoke("SendAttachment",activeRoomId,file.name,file.type,base64,input.value.trim(),selectedReply?selectedReply.id:null).then(function(){input.value="";fileInput.value="";clearReply();}).catch(showActionError);};reader.readAsDataURL(file);}
 })();
