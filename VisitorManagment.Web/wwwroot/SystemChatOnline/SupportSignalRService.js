@@ -102,8 +102,11 @@
         });
     }
     async function switchRoom(button) {
-        var id = button.dataset.id; if (!id || id === activeRoomId) return;
-        if (activeRoomId && chat.state === signalR.HubConnectionState.Connected) await chat.invoke("LeaveRoom", activeRoomId);
+        var id = button.dataset.id; if (!id) return;
+        var previousRoomId = activeRoomId;
+        if (previousRoomId && previousRoomId !== id && chat.state === signalR.HubConnectionState.Connected) {
+            chat.invoke("LeaveRoom", previousRoomId).catch(function (error) { console.warn("LeaveRoom failed", error); });
+        }
         activeRoomId = id; messages.textContent = "";
         setEmptyState("در حال دریافت پیام‌ها...", "لطفاً چند لحظه صبر کنید.", "ti-reload");
         roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.classList.toggle("active", x === button); });
@@ -112,16 +115,30 @@
         var content = document.querySelector(".support-chat-page .chat-content"); if (content) content.classList.add("mobile-open");
         input.disabled = false; input.removeAttribute("disabled"); sendButton.disabled = false; clearReply();
         try {
-            await chat.invoke("JoinRoom", id);
+            // تاریخچه فقط به اتصال پشتیبانی وابسته است؛ خرابی اتصال دوم نباید مانع نمایش پیام‌ها شود.
             await support.invoke("LoadMessage", id);
+            if (chat.state === signalR.HubConnectionState.Connected) {
+                chat.invoke("JoinRoom", id).catch(function (error) {
+                    console.warn("JoinRoom failed", error);
+                    reconnect(chat, function () { return chat.invoke("JoinRoom", activeRoomId); });
+                });
+            } else {
+                reconnect(chat, function () { return chat.invoke("JoinRoom", activeRoomId); });
+            }
             window.setTimeout(function () {
                 if (!messages.children.length && activeRoomId === id) setEmptyState("پیامی وجود ندارد", "این گفت‌وگو هنوز پیامی ندارد.", "ti-comment-alt");
             }, 300);
         } catch (error) {
-            activeRoomId = ""; input.disabled = true; sendButton.disabled = true;
+            input.disabled = true; sendButton.disabled = true;
             setEmptyState("دریافت پیام‌ها ناموفق بود", "ارتباط با سرور برقرار نشد؛ دوباره تلاش کنید.", "ti-alert");
             throw error;
         }
+    }
+    function syncChatViewport() {
+        var page = document.querySelector(".support-chat-page");
+        if (!page) return;
+        var top = Math.max(0, page.getBoundingClientRect().top);
+        page.style.setProperty("--chat-viewport-height", Math.max(480, window.innerHeight - top - 10) + "px");
     }
     async function start(connection) {
         if (connection.state === signalR.HubConnectionState.Disconnected) await connection.start();
@@ -149,6 +166,10 @@
         }, 2000);
     }
     document.addEventListener("DOMContentLoaded", async function () {
+        document.documentElement.classList.add("chat-page-lock");
+        document.body.classList.add("chat-page-lock");
+        syncChatViewport();
+        window.addEventListener("resize", syncChatViewport);
         window.localStorage.removeItem("omid-support-unread-count");
         roomList = document.getElementById("roomList"); messages = document.getElementById("chatMessage");
         form = document.getElementById("answerForm"); input = document.getElementById("answerText");
@@ -158,7 +179,11 @@
         if (!sendButton) return;
         support.on("GetRooms", loadRooms);
         support.on("supportRoomOpened", function () { support.invoke("RefreshRooms").catch(function () {}); });
-        support.on("getNewMessage", function (items) { (items || []).forEach(function (m) { appendMessage(m); }); });
+        support.on("getNewMessage", function (items) {
+            messages.textContent = "";
+            (Array.isArray(items) ? items : []).forEach(function (m) { appendMessage(m); });
+            if (!items || !items.length) setEmptyState("پیامی وجود ندارد", "این گفت‌وگو هنوز پیامی ندارد.", "ti-comment-alt");
+        });
         support.on("newSupportMessage", function (roomId, value, message, time) {
             var incoming = normalizeMessage(value, message, time);
             var room = roomList.querySelector('[data-id="' + roomId + '"]');
