@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ITOWebApiClient;
+using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VisitorManagment.Core.DTOs.ReportsAdmin;
@@ -40,6 +41,11 @@ namespace VisitorManagment.Web.Pages.Visitor
         public List<ProblemReportViewModel> lstChartModel { get; set; }
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageAllUnitCodeForGhaReportViewModel searchPageUnitCodeReportViewModel { get; set; }
+        public DashboardRequestStatistics Statistics { get; private set; } = new DashboardRequestStatistics();
+        public string UserDisplayName { get; private set; }
+        public string UserUnitTitle { get; private set; }
+        public string UserIpAddress { get; private set; }
+        public string LoginDateTime { get; private set; }
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
         /// </summary>
@@ -47,14 +53,21 @@ namespace VisitorManagment.Web.Pages.Visitor
         {
 
             #region مودال اطلاعات سیستمی نفر لاگین کرده
-            var userId = User.FindFirst("Id").Value;
-            var userName = User.FindFirst("UserName").Value;
-            ViewData["FullName"] = _userService.GetInfoUserLoginHistory(int.Parse(userName));
+            var userName = User.FindFirst("UserName")?.Value ?? string.Empty;
+            UserDisplayName = User.FindFirst("FullName")?.Value ?? "کاربر سامانه";
+            UserUnitTitle = User.FindFirst("UnitCodeTitle")?.Value ?? "یگان سازمانی";
+            UserIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "نامشخص";
+            LoginDateTime = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+
+            if (int.TryParse(userName, out var personalNumber))
+            {
+                ViewData["FullName"] = _userService.GetInfoUserLoginHistory(personalNumber);
+            }
             #endregion
             //
             #region بدست آوردن رتبه یگان 
-            var unitCode = User.FindFirst("UnitCode").Value ?? 300000.ToString();
-            var codeGha = User.FindFirst("CodGha").Value ?? 300000.ToString();
+            var unitCode = User.FindFirst("UnitCode")?.Value ?? "300000";
+            var codeGha = User.FindFirst("CodGha")?.Value ?? "300000";
             //var departmentTypeId = User.FindFirst("DepartmentTypeId").Value;
             //var listAllUnitHamvand = _rankingService.GetListUnitWithDepartmentTypeId(int.Parse(departmentTypeId));
             //var index = "";
@@ -82,17 +95,16 @@ namespace VisitorManagment.Web.Pages.Visitor
 
 
 
-            var unitDutyCode = User.FindFirst("UnitDutyCode").Value;
-            var unitCodeTitle = User.FindFirst("UnitCodeTitle").Value;
-            var codeGhaTitle = User.FindFirst("CodGhaTitle").Value;
-            var personalCode = User.FindFirst("PersonalCode").Value;
-           
-            var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
-            //
-            ViewData["AllFileCount"] = _fileService.GetFileCount(unitDutyCode, unitCode, codeGha, roleTypeId.ToString(), personalCode);
-            ViewData["EghdamShode"] = _fileService.GetFileCountEghdamShode(unitDutyCode, unitCode, codeGha, roleTypeId.ToString(), personalCode);
-            ViewData["SabteNazariye"] = _fileService.GetFileCountSabteNazariye(unitDutyCode, unitCode, codeGha, roleTypeId.ToString(), personalCode);
-            ViewData["RadeDarkhastVaAodat"] = _fileService.GetFileCountRadeDarkhastVaAodat(unitDutyCode, unitCode, codeGha, roleTypeId.ToString(), personalCode);
+            var unitDutyCode = User.FindFirst("UnitDutyCode")?.Value ?? string.Empty;
+            var personalCode = User.FindFirst("PersonalCode")?.Value ?? string.Empty;
+            var roleTypeId = User.FindFirst("RoleTypeId")?.Value ?? string.Empty;
+
+            Statistics = _fileService.GetDashboardRequestStatistics(
+                unitDutyCode,
+                unitCode,
+                codeGha,
+                roleTypeId,
+                personalCode);
 
             #region رتبه بندی
 
