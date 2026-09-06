@@ -67,7 +67,17 @@
             reconnectTimer = window.setTimeout(start, 5000);
         }
     }
+    function syncChatViewport() {
+        var page = document.querySelector(".client-chat-page");
+        if (!page) return;
+        var top = Math.max(0, page.getBoundingClientRect().top);
+        page.style.setProperty("--chat-viewport-height", Math.max(480, window.innerHeight - top - 10) + "px");
+    }
     document.addEventListener("DOMContentLoaded", function () {
+        document.documentElement.classList.add("chat-page-lock");
+        document.body.classList.add("chat-page-lock");
+        syncChatViewport();
+        window.addEventListener("resize", syncChatViewport);
         form = document.getElementById("NewMessageForm"); input = document.getElementById("MessageInput");
         messages = document.getElementById("Messages"); status = document.getElementById("chatConnectionStatus");
         emptyState = document.getElementById("clientChatEmptyState"); replyPreview = document.getElementById("clientReplyPreview");
