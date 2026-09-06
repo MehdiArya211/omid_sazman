@@ -33,3 +33,27 @@
 .support-chat-page #chatMessage li.is-highlighted,.client-chat-page #Messages li.is-highlighted{animation:chat-message-highlight 1.3s ease}@keyframes chat-message-highlight{0%,100%{box-shadow:0 6px 18px rgba(25,72,84,.08)}45%{box-shadow:0 0 0 5px rgba(33,165,160,.25),0 8px 24px rgba(13,120,144,.22)}}
 @media(max-width:991px){.support-chat-page .chat-sidebar{flex:0 0 100%;max-width:100%}.chat-mobile-back{display:grid;place-items:center}.support-chat-page .chat-content{max-width:100%}.support-chat-page .message-item,.client-chat-page #MessagePanel{padding:18px}}
 @media(max-width:575px){.chat-brand-icon{width:40px;height:40px;flex-basis:40px}.support-chat-page .chat-header,.client-chat-page .chat-header{min-height:68px;padding:12px 14px!important}.support-chat-page .message-item,.client-chat-page #MessagePanel{padding:14px 10px}.support-chat-page .chat-footer,.client-chat-page .chat-footer{padding:10px!important}.chat-send-button{min-width:50px;width:50px;padding:0}.chat-send-button span{display:none}.chat-compose__input small{display:none}.chat-reply-button{opacity:1}.support-chat-page #chatMessage li,.client-chat-page #Messages li{max-width:86%;min-width:120px}}
+
+/* Chat layout v3: مستقل از breakpointها و استایل قدیمی قالب */
+.support-chat-page,.client-chat-page{box-sizing:border-box;width:100%;max-width:1600px;min-width:0;padding:14px}
+.support-chat-page>div,.support-chat-page .container-fluid,.client-chat-page>div{width:100%;min-width:0;height:100%;padding:0}
+.support-chat-page .chat-block,.client-chat-page .chat-block{position:relative!important;display:flex!important;width:100%!important;max-width:100%!important;height:clamp(560px,calc(100dvh - 145px),920px);min-height:0;margin:0!important;flex-wrap:nowrap!important;overflow:hidden!important}
+.support-chat-page .chat-sidebar{display:flex!important;width:340px!important;max-width:340px!important;height:100%;min-width:290px;flex:0 0 340px!important;padding:0!important}
+.support-chat-page .chat-content,.client-chat-page .chat-content{position:relative!important;inset:auto!important;display:flex!important;width:auto!important;max-width:none!important;height:100%!important;min-width:0!important;flex:1 1 0!important;padding:0!important;overflow:hidden!important;transform:none!important}
+.support-chat-page .chat-conversation-body,.client-chat-page #MessagePanel{width:100%;min-width:0;flex:1 1 0!important}
+.support-chat-page .chat-footer,.client-chat-page .chat-footer{width:100%;min-width:0}
+.chat-compose{width:100%;margin:0}
+
+@media(max-width:767px){
+    .support-chat-page,.client-chat-page{padding:6px}
+    .support-chat-page .chat-block,.client-chat-page .chat-block{height:calc(100dvh - 76px);min-height:480px;border-radius:16px}
+    .support-chat-page .chat-sidebar{width:100%!important;max-width:100%!important;min-width:0;flex-basis:100%!important}
+    .support-chat-page .chat-content{position:absolute!important;inset:0!important;z-index:20;width:100%!important;height:100%!important;visibility:hidden;opacity:0;pointer-events:none;transform:translateX(-105%)!important;transition:transform .24s ease,opacity .2s ease,visibility .2s}
+    .support-chat-page .chat-content.mobile-open{visibility:visible;opacity:1;pointer-events:auto;transform:translateX(0)!important}
+    .chat-mobile-back{display:grid!important;place-items:center}
+}
+
+@media(min-width:768px) and (max-width:1200px){
+    .support-chat-page .chat-sidebar{width:310px!important;max-width:310px!important;flex-basis:310px!important}
+    .support-chat-page .chat-content{display:flex!important;visibility:visible!important;opacity:1!important}
+}
