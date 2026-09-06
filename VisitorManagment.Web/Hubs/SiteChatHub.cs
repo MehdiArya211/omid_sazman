@@ -27,7 +27,7 @@ namespace VisitorManagment.Web.Hubs
         /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
         /// </summary>
 
-        public async Task SendNewMessage(string Sender, string Message)
+        public async Task SendNewMessage(string Sender, string Message, Guid? replyToMessageId = null)
         {
             if (string.IsNullOrWhiteSpace(Message)) return;
             var roomId = await _chatRoomService.GetChatRoomForConnection(Context.ConnectionId);
@@ -37,12 +37,13 @@ namespace VisitorManagment.Web.Hubs
                 Message = Message.Trim(),
                 Sender = Context.User.Identity.Name ?? Sender ?? "کاربر",
                 Time = DateTime.Now,
+                ReplyToMessageId = replyToMessageId
             };
 
-            await _messageService.SaveChatMessage(roomId,messageDto);
+            messageDto = await _messageService.SaveChatMessage(roomId,messageDto);
             await Clients.Groups(roomId.ToString())
-                .SendAsync("getNewMessage", messageDto.Sender, messageDto.Message, messageDto.Time);
-            await _supportHub.Clients.All.SendAsync("newSupportMessage", roomId, messageDto.Sender, messageDto.Message, messageDto.Time);
+                .SendAsync("getNewMessage", messageDto);
+            await _supportHub.Clients.All.SendAsync("newSupportMessage", roomId, messageDto);
         }
 
         /// <summary>
@@ -91,7 +92,16 @@ namespace VisitorManagment.Web.Hubs
             if (history.Count > 0)
                 await Clients.Caller.SendAsync("loadChatHistory", history);
             else
-                await Clients.Caller.SendAsync("getNewMessage", "پشتیبانی سامانه امید", "سلام وقت بخیر 👋 . چطور می‌توانم کمکتان کنم؟", DateTime.Now);
+            {
+                var welcomeMessage = await _messageService.SaveChatMessage(roomId, new MessageDto
+                {
+                    Sender = "پشتیبانی سامانه امید",
+                    Message = "سلام، وقت بخیر 👋 چطور می‌توانم کمکتان کنم؟",
+                    Time = DateTime.Now
+                });
+                await Clients.Caller.SendAsync("getNewMessage", welcomeMessage);
+                await _supportHub.Clients.All.SendAsync("supportRoomOpened", roomId);
+            }
             await base.OnConnectedAsync();
         }
 

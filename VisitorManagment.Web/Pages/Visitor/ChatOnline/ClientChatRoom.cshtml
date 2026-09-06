@@ -4,7 +4,7 @@
     Layout = "_Layout";
 }
 <link rel="stylesheet" href="~/css/chat-professional.css" asp-append-version="true" />
-<div class="client-chat-page" dir="rtl">
+<div class="client-chat-page" dir="rtl" data-current-user="@ViewBag.FullName">
 
     <!-- begin::chat block -->
     <div class=" h-100">
@@ -20,6 +20,7 @@
                 <div class="chat-header border-bottom">
                     <div class="d-flex align-items-center">
 
+                        <div class="chat-brand-icon" aria-hidden="true"><i class="ti-headphone-alt"></i></div>
                         <div>
                             <span class="chat-kicker">ارتباط مستقیم</span>
                             <h5 class="mb-1">پشتیبانی آنلاین سامانه امید</h5>
@@ -31,24 +32,23 @@
                 <!-- end::chat header -->
                 <!-- begin::messages -->
                 <div class="messages" id="MessagePanel">
-                    <div >
-                        <ul class="message-item-content" id="Messages">
-                        </ul>
-                    </div>
+                    <ul class="message-item-content" id="Messages" aria-live="polite"></ul>
+                    <div id="clientChatEmptyState" class="chat-empty-state"><i class="ti-comments"></i><strong>در حال آماده‌سازی گفتگو...</strong><span>پیام‌های شما در این قسمت نمایش داده می‌شود.</span></div>
 
                 </div>
                 <!-- end::messages -->
                 <!-- begin::chat footer -->
                 <div class="chat-footer border-top" id="SendNewMessage">
-                    <form class="d-flex" id="NewMessageForm">
-                        <div class="flex-grow-1">
-                            <textarea class="form-control" rows="1" maxlength="2000" placeholder="پیام خود را بنویسید؛ Enter برای ارسال" id="MessageInput"></textarea>
+                    <div id="clientReplyPreview" class="chat-reply-composer" hidden>
+                        <div><strong>پاسخ به <span data-reply-sender></span></strong><p data-reply-message></p></div>
+                        <button type="button" data-cancel-reply aria-label="لغو پاسخ"><i class="ti-close"></i></button>
+                    </div>
+                    <form class="chat-compose" id="NewMessageForm">
+                        <div class="chat-compose__input">
+                            <textarea rows="1" maxlength="2000" inputmode="text" autocomplete="off" placeholder="پیام خود را بنویسید..." id="MessageInput"></textarea>
+                            <small>Enter برای ارسال · Shift+Enter برای خط جدید</small>
                         </div>
-                        <div class="chat-footer-buttons d-flex">
-                            <button class="btn btn-primary" type="submit">
-                                <i data-feather="send" class="width-15 height-15"></i>
-                            </button>
-                        </div>
+                        <button class="chat-send-button" type="submit" aria-label="ارسال پیام"><i class="ti-location-arrow"></i><span>ارسال</span></button>
                     </form>
                 </div>
                 <!-- end::chat footer -->
@@ -67,6 +67,6 @@
 <!-- end::main -->
 @section GetInformationPersonal
     {
-    <script src="~/SystemChatOnline/SignalRService.js"></script>
+    <script src="~/SystemChatOnline/SignalRService.js" asp-append-version="true"></script>
 
     }

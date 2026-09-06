@@ -98,6 +98,9 @@ namespace VisitorManagment.DataLayer.Context
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ChatMessage>()
+                .Property(message => message.ReplyToMessage)
+                .HasMaxLength(180);
             modelBuilder.Entity<Users>()
               .HasQueryFilter(u => !u.IsDelete);
             modelBuilder.Entity<Files>()

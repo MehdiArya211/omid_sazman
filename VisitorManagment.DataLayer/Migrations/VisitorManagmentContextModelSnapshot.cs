@@ -322,6 +322,16 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("ReplyToMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReplyToMessage")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("ReplyToSender")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Sender")
                         .HasColumnType("nvarchar(max)");
 

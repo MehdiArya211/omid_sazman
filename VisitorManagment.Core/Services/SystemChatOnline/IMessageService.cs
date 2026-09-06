@@ -9,7 +9,7 @@ namespace VisitorManagment.Core.Services.SystemChatOnline
 {
     public interface IMessageService
     {
-        Task SaveChatMessage(Guid RoomId, MessageDto message);
+        Task<MessageDto> SaveChatMessage(Guid RoomId, MessageDto message);
         Task<List<MessageDto>> GetChatMessage(Guid RoomId);
     }
 }

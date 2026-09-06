@@ -57,7 +57,7 @@ namespace VisitorManagment.Web.Hubs
         /// <summary>
         /// اطلاعات را به مقصد موردنظر ارسال می‌کند.
         /// </summary>
-        public async Task SendMessage(Guid roomId,string text)
+        public async Task SendMessage(Guid roomId,string text, Guid? replyToMessageId = null)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
             var message = new MessageDto
@@ -65,14 +65,17 @@ namespace VisitorManagment.Web.Hubs
                 Sender = Context.User.Identity.Name,
                 Message = text.Trim(),
                 Time = DateTime.Now,
+                ReplyToMessageId = replyToMessageId
             };
 
-            await _messageService.SaveChatMessage(roomId, message);
+            message = await _messageService.SaveChatMessage(roomId, message);
 
             await _siteChathub.Clients.Group(roomId.ToString())
-                .SendAsync("getNewMessage", message.Sender, message.Message, message.Time);
+                .SendAsync("getNewMessage", message);
+            await Clients.Caller.SendAsync("messageSent", message);
                 
         }
+
         #endregion
     }
 }

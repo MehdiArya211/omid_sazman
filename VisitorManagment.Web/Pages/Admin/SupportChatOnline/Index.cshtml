@@ -19,6 +19,7 @@
                     <div class="chat-sidebar-header">
                         <div class="d-flex">
 
+                            <div class="chat-brand-icon" aria-hidden="true"><i class="ti-headphone-alt"></i></div>
                             <div>
                                 <span class="chat-kicker">مرکز پاسخ‌گویی</span>
                                 <h5 class="mb-1">پشتیبانی آنلاین سامانه امید</h5>
@@ -49,7 +50,7 @@
                         <div class="tab-content pt-3" id="pills-tabContent">
                             <div class="tab-pane fade show active" id="pills-home" role="tabpanel"
                                  aria-labelledby="pills-home-tab">
-                                <p class="small mb-0">گفت‌گوهای اخیر</p>
+                                <div class="chat-list-heading"><span>گفت‌گوهای اخیر</span><small>برای پاسخ، یک گفتگو را انتخاب کنید</small></div>
                                 <div class="chat-lists">
                                     <div class="list-group list-group-flush">
                                         <div id="roomList" class="chat-room-list" aria-live="polite"></div>
@@ -68,20 +69,14 @@
 
                     <!-- begin::chat header -->
                     <div class="chat-header border-bottom">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center w-100">
+
+                            <button type="button" class="chat-mobile-back mobile-chat-close-btn" aria-label="بازگشت به گفتگوها"><i class="ti-arrow-right"></i></button>
+                            <div class="active-chat-avatar" aria-hidden="true"><i class="ti-user"></i></div>
 
                             <div>
                                 <h6 class="mb-1" id="activeChatTitle">یک گفت‌وگو را انتخاب کنید</h6>
                                 <div class="m-0 small text-muted" id="activeChatMeta">پیام‌های کاربر همراه تاریخ و ساعت نمایش داده می‌شود</div>
-                            </div>
-                            <div class="ml-auto">
-                                <ul class="nav align-items-center">
-                                    <li class="ml-4 mobile-chat-close-btn">
-                                        <a href="#" class="btn btn-sm btn-danger">
-                                            <i data-feather="x" class="width-18 height-18"></i>
-                                        </a>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>
@@ -100,15 +95,16 @@
                     <!-- end::messages -->
                     <!-- begin::chat footer -->
                     <div class="chat-footer border-top">
-                        <form class="d-flex" id="answerForm">
-                            <div class="flex-grow-1">
-                                <textarea id="answerText" class="form-control" rows="1" maxlength="2000" placeholder="پاسخ خود را بنویسید؛ Enter برای ارسال و Shift+Enter برای خط جدید" disabled></textarea>
+                        <div id="adminReplyPreview" class="chat-reply-composer" hidden>
+                            <div><strong>پاسخ به <span data-reply-sender></span></strong><p data-reply-message></p></div>
+                            <button type="button" data-cancel-reply aria-label="لغو پاسخ"><i class="ti-close"></i></button>
+                        </div>
+                        <form class="chat-compose" id="answerForm">
+                            <div class="chat-compose__input">
+                                <textarea id="answerText" rows="1" maxlength="2000" inputmode="text" autocomplete="off" placeholder="پیام خود را بنویسید..." disabled></textarea>
+                                <small>Enter برای ارسال · Shift+Enter برای خط جدید</small>
                             </div>
-                            <div class="chat-footer-buttons d-flex">
-                                <button class="btn btn-primary" type="submit" disabled>
-                                    <i data-feather="send" class="width-15 height-15"></i>
-                                </button>
-                            </div>
+                            <button class="chat-send-button" type="submit" disabled aria-label="ارسال پیام"><i class="ti-location-arrow"></i><span>ارسال</span></button>
                         </form>
                     </div>
                     <!-- end::messages -->
@@ -127,5 +123,5 @@
 </div>
 @section GetInformationPersonal
     {
-    <script src="~/systemchatonline/supportsignalrservice.js"></script>
+    <script src="~/systemchatonline/supportsignalrservice.js" asp-append-version="true"></script>
     }
