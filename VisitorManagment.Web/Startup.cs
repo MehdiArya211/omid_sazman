@@ -42,7 +42,7 @@ namespace VisitorManagment.Web
             services.AddRazorPages();
             //تغییر روتینگ پیش فرض سامانه
            // services.AddMvc().AddRazorPagesOptions(options => options.Conventions.AddPageRoute("/UpdateSamane", ""));
-            services.AddSignalR();
+            services.AddSignalR(options => options.MaximumReceiveMessageSize = 7 * 1024 * 1024);
             //دو خط زیر برای سیشن
             services.AddSession();
             services.AddMvc();
@@ -147,15 +147,15 @@ namespace VisitorManagment.Web
         /// </summary>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseDeveloperExceptionPage();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                // در محیط عملیاتی جزئیات فنی خطا نباید به کاربر نمایش داده شود.
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/Error");
             }
             // خط زیر برای سیشن
             app.UseSession();
