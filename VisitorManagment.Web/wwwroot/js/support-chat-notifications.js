@@ -1,7 +1,8 @@
 (function () {
     "use strict";
     if (!window.signalR || window.location.pathname.toLowerCase().indexOf("/admin/supportchatonline") === 0) return;
-    var connection = new signalR.HubConnectionBuilder().withUrl("/supporthub").withAutomaticReconnect([0, 2000, 5000, 10000]).build();
+    var connection = new signalR.HubConnectionBuilder().withUrl("/supporthub").build();
+    var reconnectTimer = null;
     var storageKey = "omid-support-unread-count";
     var count = parseInt(window.localStorage.getItem(storageKey) || "0", 10) || 0;
     var isSupportPage = window.location.pathname.toLowerCase().indexOf("/admin/supportchatonline") === 0;
@@ -24,7 +25,13 @@
         var item = value && typeof value === "object" ? value : { sender:value, message:message };
         if (!isSupportPage) show(item.sender, item.message);
     });
-    function start() { if (connection.state === signalR.HubConnectionState.Disconnected) connection.start().catch(function () { window.setTimeout(start, 5000); }); }
+    function start() {
+        if (connection.state !== signalR.HubConnectionState.Disconnected) return;
+        connection.start().then(function () {
+            if (reconnectTimer) { window.clearTimeout(reconnectTimer); reconnectTimer = null; }
+        }).catch(function () { reconnectTimer = window.setTimeout(start, 5000); });
+    }
+    connection.onclose(function () { reconnectTimer = window.setTimeout(start, 2000); });
     if (isSupportPage) { count = 0; window.localStorage.removeItem(storageKey); }
     updateBadge();
     start();
