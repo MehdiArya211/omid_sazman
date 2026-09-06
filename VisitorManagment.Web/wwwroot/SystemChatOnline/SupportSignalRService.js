@@ -154,7 +154,8 @@
         form = document.getElementById("answerForm"); input = document.getElementById("answerText");
         search = document.getElementById("chatRoomSearch"); emptyState = document.getElementById("chatEmptyState"); replyPreview = document.getElementById("adminReplyPreview");
         var page = document.querySelector(".support-chat-page"); currentUser = page ? (page.dataset.currentUser || "").trim().toLowerCase() : "";
-        if (!roomList || !messages || !form || !input) return; sendButton = form.querySelector("button[type=submit]");
+        if (!roomList || !messages || !form || !input) return; sendButton = document.getElementById("answerSendButton");
+        if (!sendButton) return;
         support.on("GetRooms", loadRooms);
         support.on("supportRoomOpened", function () { support.invoke("RefreshRooms").catch(function () {}); });
         support.on("getNewMessage", function (items) { (items || []).forEach(function (m) { appendMessage(m); }); });
@@ -172,15 +173,19 @@
         chat.on("getNewMessage", appendMessage);
         support.on("messageSent", function (item) { appendMessage(item, null, null, true); });
         roomList.addEventListener("click", function (event) { var button = event.target.closest(".chat-room-item"); if (button) switchRoom(button).catch(console.error); });
-        form.addEventListener("submit", async function (event) {
-            event.preventDefault(); var text = input.value.trim(); if (!text || !activeRoomId) return;
+        async function sendMessage(event) {
+            if (event) event.preventDefault();
+            var text = input.value.trim(); if (!text || !activeRoomId || support.state !== signalR.HubConnectionState.Connected) return;
             sendButton.disabled = true;
             try { await support.invoke("SendMessage", activeRoomId, text, selectedReply ? selectedReply.id : null); input.value = ""; resizeComposer(); clearReply(); }
             catch (error) { if (window.Swal) Swal.fire({icon:"error",title:"ارسال انجام نشد",text:"ارتباط با سرور را بررسی و دوباره تلاش کنید."}); else window.alert("ارسال پیام انجام نشد. دوباره تلاش کنید."); }
             finally { sendButton.disabled = support.state !== signalR.HubConnectionState.Connected; input.focus(); }
-        });
+        }
+        // حتی در صورت خطای SignalR، submit معمولی نباید صفحه را Refresh کند.
+        form.addEventListener("submit", function (event) { event.preventDefault(); sendMessage(event); });
+        sendButton.addEventListener("click", sendMessage);
         if (search) search.addEventListener("input", function () { var q = search.value.trim().toLowerCase(); roomList.querySelectorAll(".chat-room-item").forEach(function (x) { x.hidden = q && !x.textContent.toLowerCase().includes(q); }); });
-        input.addEventListener("keydown", function (event) { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); } });
+        input.addEventListener("keydown", function (event) { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendMessage(event); } });
         input.addEventListener("input", resizeComposer);
         messages.addEventListener("click", function (event) {
             var button = event.target.closest(".chat-reply-button");
