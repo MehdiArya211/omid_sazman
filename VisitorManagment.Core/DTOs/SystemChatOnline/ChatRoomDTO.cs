@@ -17,5 +17,6 @@ namespace VisitorManagment.Core.DTOs.SystemChatOnline
         public string LastMessage { get; set; }
         public DateTime? LastMessageTime { get; set; }
         public int MessageCount { get; set; }
+        public int UnreadCount { get; set; }
     }
 }
