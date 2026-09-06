@@ -1,8 +1,10 @@
 (function () {
     "use strict";
     var activeRoomId = "";
-    var support = new signalR.HubConnectionBuilder().withUrl("/supporthub").withAutomaticReconnect().build();
-    var chat = new signalR.HubConnectionBuilder().withUrl("/chathub?support=true").withAutomaticReconnect().build();
+    // نسخه SignalR موجود در پروژه reconnect خودکار داخلی ندارد.
+    var support = new signalR.HubConnectionBuilder().withUrl("/supporthub").build();
+    var chat = new signalR.HubConnectionBuilder().withUrl("/chathub?support=true").build();
+    var reconnectTimers = [];
     var roomList, messages, form, input, sendButton, search, emptyState, currentUser, replyPreview;
     var selectedReply = null;
 
@@ -124,6 +126,28 @@
     async function start(connection) {
         if (connection.state === signalR.HubConnectionState.Disconnected) await connection.start();
     }
+    function setConnectionState(text, connected) {
+        var state = document.getElementById("supportConnectionStatus");
+        if (state) { state.textContent = text; state.classList.toggle("is-online", connected); }
+        if (input) input.disabled = !connected || !activeRoomId;
+        if (sendButton) sendButton.disabled = !connected || !activeRoomId;
+    }
+    function reconnect(connection, afterConnected) {
+        var index = connection === support ? 0 : 1;
+        if (reconnectTimers[index]) window.clearTimeout(reconnectTimers[index]);
+        reconnectTimers[index] = window.setTimeout(async function tryReconnect() {
+            try {
+                await start(connection);
+                reconnectTimers[index] = null;
+                if (afterConnected) await afterConnected();
+                if (support.state === signalR.HubConnectionState.Connected && chat.state === signalR.HubConnectionState.Connected) {
+                    setConnectionState("آنلاین", true);
+                }
+            } catch (_) {
+                reconnectTimers[index] = window.setTimeout(tryReconnect, 5000);
+            }
+        }, 2000);
+    }
     document.addEventListener("DOMContentLoaded", async function () {
         window.localStorage.removeItem("omid-support-unread-count");
         roomList = document.getElementById("roomList"); messages = document.getElementById("chatMessage");
@@ -170,10 +194,25 @@
         if (replyPreview) replyPreview.querySelector("[data-cancel-reply]").addEventListener("click", clearReply);
         var close = document.querySelector(".mobile-chat-close-btn");
         if (close) close.addEventListener("click", function (event) { event.preventDefault(); var content = document.querySelector(".support-chat-page .chat-content"); if (content) content.classList.remove("mobile-open"); });
-        support.onreconnecting(function () { var state = document.getElementById("supportConnectionStatus"); if (state) { state.textContent="در حال اتصال مجدد..."; state.classList.remove("is-online"); } input.disabled = true; sendButton.disabled = true; });
-        support.onreconnected(function () { var state = document.getElementById("supportConnectionStatus"); if (state) { state.textContent="آنلاین"; state.classList.add("is-online"); } support.invoke("RefreshRooms").catch(function () {}); if (activeRoomId) { input.disabled=false; sendButton.disabled=false; } });
-        chat.onreconnected(function () { if (activeRoomId) chat.invoke("JoinRoom", activeRoomId).catch(function () {}); });
-        try { await Promise.all([start(support), start(chat)]); var state = document.getElementById("supportConnectionStatus"); if (state) { state.textContent="آنلاین"; state.classList.add("is-online"); } }
-        catch (error) { var state = document.getElementById("supportConnectionStatus"); if (state) state.textContent="ارتباط برقرار نشد"; setEmptyState("اتصال به چت برقرار نشد", "صفحه را تازه‌سازی کنید یا وضعیت شبکه را بررسی کنید.", "ti-alert"); console.error("Chat connection failed", error); }
+        support.onclose(function () {
+            setConnectionState("در حال اتصال مجدد...", false);
+            reconnect(support, function () { return support.invoke("RefreshRooms"); });
+        });
+        chat.onclose(function () {
+            setConnectionState("در حال اتصال مجدد...", false);
+            reconnect(chat, function () { return activeRoomId ? chat.invoke("JoinRoom", activeRoomId) : Promise.resolve(); });
+        });
+        try { await Promise.all([start(support), start(chat)]); setConnectionState("آنلاین", true); }
+        catch (error) {
+            setConnectionState("در حال اتصال مجدد...", false);
+            setEmptyState("اتصال به چت برقرار نشد", "سامانه به‌صورت خودکار دوباره تلاش می‌کند.", "ti-alert");
+            if (support.state === signalR.HubConnectionState.Disconnected) {
+                reconnect(support, function () { return support.invoke("RefreshRooms"); });
+            }
+            if (chat.state === signalR.HubConnectionState.Disconnected) {
+                reconnect(chat, function () { return activeRoomId ? chat.invoke("JoinRoom", activeRoomId) : Promise.resolve(); });
+            }
+            console.error("Chat connection failed", error);
+        }
     });
 })();
