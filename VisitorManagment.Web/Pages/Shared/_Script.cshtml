@@ -96,11 +96,15 @@
 @*<script type="text/javascript" src="/lib/signalr/dist/browser/signalr.min.js"></script>*@
 <script src="~/js/adapter-latest.js"></script>
 
-<link rel="stylesheet" href="/vendors/dropzone/dropzone.js" type="text/css">
+<script src="/vendors/dropzone/dropzone.js"></script>
 
 @*ارتباط تصویری*@
 <script src="/lib/signalr/dist/browser/signalr.min.js"></script>
-<script src="~/onlineconvercsation/js/NezRTC.js"></script>
+@* اسکریپت تماس فقط در صفحات تماس بارگذاری می‌شود؛ اجرای عمومی آن صفحات چت را مختل می‌کرد. *@
+@if (Context.Request.Path.StartsWithSegments("/OnlineConversation"))
+{
+    <script src="~/onlineconvercsation/js/NezRTC.js"></script>
+}
 
 <script src="~/onlineconvercsation/js/enjoyhint.min.js"></script>
 @*ارتباط تصویری*@
