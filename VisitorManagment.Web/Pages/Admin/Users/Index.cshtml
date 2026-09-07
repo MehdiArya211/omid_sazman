@@ -2,21 +2,9 @@
 @using VisitorManagment.Core.Convertors
 @model VisitorManagment.Web.Pages.Admin.Users.IndexModel
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "مدیریت کاربران";
 }
-
-
-<!doctype html>
-
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>سامانه ملاقات عمومی (امید) نزاجا</title>
-
-</head>
-
+<link rel="stylesheet" href="~/css/users-index.css" asp-append-version="true" />
 <!-- begin::main -->
 <div class="page-header">
     <div class="container-fluid d-sm-flex justify-content-between">
@@ -36,48 +24,27 @@
         </nav>
     </div>
 </div>
-<div class="container-fluid">
+<div class="container-fluid users-index-page">
 
 
 
     <div class="card">
         <div class="card-body">
 
-            <h4>لیست کاربران</h4>
-            <hr />
-
-            <br />
-            <div class="container">
-                <div class="row d-flex justify-content-center">
-                    <div class="col-md-9">
-                        <form>
-                            <div class="input-group mb-3">
-                                <input name="filterUserName" type="text" class="form-control"
-                                       aria-label="Example text with button addon"
-                                       placeholder="جستجو..." autofocus
-                                       aria-describedby="button-addon1">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="submit"
-                                            id="button-addon1">
-                                        <i data-feather="search"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-
-                    </div>
-                </div>
+            <div class="users-index-heading">
+                <div><span>مدیریت متمرکز حساب‌ها</span><h4>فهرست کاربران سامانه</h4><p>کاربر موردنظر را بدون بارگذاری مجدد صفحه پیدا و مدیریت کنید.</p></div>
+                <a asp-page="CreateUsers" class="btn btn-success"><i class="ti-plus mr-2"></i> افزودن کاربر جدید</a>
             </div>
 
-            <div class="col-md-12" style="margin: 10px 0;">
-                <a style="color:white" asp-page="CreateUsers" class="btn btn-success btn-pulse">
-                    <i class="ti-plus mr-2"></i>  افزودن کاربر جدید
-                </a>
-                <br>
+            <div class="user-live-filters" role="search" aria-label="جست‌وجوی زنده کاربران">
+                <label><span>کد پرسنلی</span><div><i class="ti-id-badge"></i><input id="userPersonnelFilter" type="search" autocomplete="off" placeholder="مثلاً 95003599" /></div></label>
+                <label><span>نام یگان</span><div><i class="ti-home"></i><input id="userUnitFilter" type="search" autocomplete="off" placeholder="نام یگان خدمتی" /></div></label>
+                <label><span>نقش کاربر</span><div><i class="ti-user"></i><input id="userRoleFilter" type="search" autocomplete="off" placeholder="عنوان نقش" /></div></label>
+                <button id="clearUserFilters" type="button"><i class="ti-reload"></i> پاک‌کردن فیلترها</button>
             </div>
-            <hr />
+
             <div class="table-responsive">
-                <table id="dataTable" class="table table-striped table-bordered">
+                <table id="dataTable" class="table table-striped table-bordered" data-datatable>
                     <thead>
                         <tr>
                             <th>ردیف</th>
@@ -155,3 +122,35 @@
     <!-- end::main-content -->
 </div>
 <!-- end::main -->
+
+@section Scripts {
+    <script>
+        (function ($) {
+            "use strict";
+            $(function () {
+                var table = $("#dataTable").DataTable();
+                var personnel = $("#userPersonnelFilter");
+                var unit = $("#userUnitFilter");
+                var role = $("#userRoleFilter");
+                var timer;
+
+                function applyFilters() {
+                    table.column(2).search(personnel.val().trim());
+                    table.column(4).search(unit.val().trim());
+                    table.column(6).search(role.val().trim()).draw();
+                }
+
+                personnel.add(unit).add(role).on("input", function () {
+                    window.clearTimeout(timer);
+                    timer = window.setTimeout(applyFilters, 180);
+                });
+
+                $("#clearUserFilters").on("click", function () {
+                    personnel.add(unit).add(role).val("");
+                    table.columns([2, 4, 6]).search("").draw();
+                    personnel.trigger("focus");
+                });
+            });
+        })(window.jQuery);
+    </script>
+}
