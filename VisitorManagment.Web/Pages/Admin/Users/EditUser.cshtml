@@ -97,6 +97,12 @@
                 <input type="password" name="password" class="form-control">
                 <p class="help-block">در صورت وارد کردن کلمه عبور ، کلمه عبور کاربر تغییر خواهد کرد</p>
             </div>
+            <div class="col-md-6 mb-3">
+                <label class="d-flex align-items-center p-3 border rounded bg-light" for="dashboardAccess">
+                    <input id="dashboardAccess" asp-for="editUserViewModel.HasDashboardAccess" class="ml-2" />
+                    <span><strong>دسترسی اختصاصی داشبورد مدیریتی</strong><small class="d-block text-muted mt-1">فیلترها و نمودارهای مدیریتی برای این کاربر نمایش داده شود.</small></span>
+                </label>
+            </div>
 
             <div class="col-md-12 mb-6 ">
                 <div class="panel panel-default">

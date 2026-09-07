@@ -1470,7 +1470,7 @@ namespace VisitorManagment.Core.Services
             string codeGha,
             string roleTypeId,
             string personalCode,
-            int periodMonths = 6,
+            int periodMonths = 0,
             int? selectedUnitCode = null)
         {
             var files = _context.Files.AsNoTracking().AsQueryable();
@@ -1504,7 +1504,7 @@ namespace VisitorManagment.Core.Services
                     break;
             }
 
-            periodMonths = new[] { 1, 3, 6, 12 }.Contains(periodMonths) ? periodMonths : 6;
+            periodMonths = new[] { 0, 3, 6, 12 }.Contains(periodMonths) ? periodMonths : 0;
 
             // گزینه‌های یگان فقط از داده‌هایی ساخته می‌شوند که کاربر اجازه مشاهده آن‌ها را دارد.
             var availableUnits = files
@@ -1522,10 +1522,11 @@ namespace VisitorManagment.Core.Services
                 files = files.Where(file => file.Personal.UnitCode == selectedUnitCode.Value);
 
             var today = DateTime.Today;
-            var rangeStart = periodMonths == 1
-                ? today.AddDays(-29)
+            var rangeStart = periodMonths == 0
+                ? (DateTime?)null
                 : new DateTime(today.Year, today.Month, 1).AddMonths(-(periodMonths - 1));
-            files = files.Where(file => file.RegDate >= rangeStart);
+            if (rangeStart.HasValue)
+                files = files.Where(file => file.RegDate >= rangeStart.Value);
 
             // شناسه فایل، شناسه یکتای درخواست است. هر درخواست فقط یک بار در آمار می‌آید.
             var uniqueRequests = files
@@ -1550,38 +1551,27 @@ namespace VisitorManagment.Core.Services
             statistics = statistics ?? new DashboardRequestStatistics();
             statistics.AvailableUnits = availableUnits;
 
-            if (periodMonths == 1)
-            {
-                var dailyRows = files
-                    .GroupBy(file => file.RegDate.Date)
-                    .Select(group => new
-                    {
-                        Date = group.Key,
-                        TotalRequests = group.Count(),
-                        ResolvedRequests = group.Count(file => file.FileStatusId == 1),
-                        OpinionRequests = group.Count(file => file.FileStatusId == 2),
-                        ReturnedRequests = group.Count(file => file.FileStatusId == 3)
-                    })
-                    .ToList();
-                var dailyCalendar = new PersianCalendar();
-                for (var dayOffset = 0; dayOffset < 30; dayOffset++)
+            statistics.UnitBreakdown = files
+                .GroupBy(file => file.Personal.UnitTitle)
+                .Select(group => new DashboardUnitStatistics
                 {
-                    var day = rangeStart.AddDays(dayOffset);
-                    var row = dailyRows.FirstOrDefault(item => item.Date == day);
-                    statistics.MonthlyTrend.Add(new DashboardMonthlyRequestStatistics
-                    {
-                        Label = dailyCalendar.GetMonth(day).ToString("00") + "/" + dailyCalendar.GetDayOfMonth(day).ToString("00"),
-                        TotalRequests = row == null ? 0 : row.TotalRequests,
-                        ResolvedRequests = row == null ? 0 : row.ResolvedRequests,
-                        OpinionRequests = row == null ? 0 : row.OpinionRequests,
-                        ReturnedRequests = row == null ? 0 : row.ReturnedRequests
-                    });
-                }
-                return statistics;
-            }
+                    UnitTitle = group.Key ?? "بدون عنوان یگان",
+                    RequestCount = group.Count()
+                })
+                .OrderByDescending(unit => unit.RequestCount)
+                .Take(10)
+                .ToList();
 
             var currentMonth = new DateTime(today.Year, today.Month, 1);
-            var firstMonth = currentMonth.AddMonths(-(periodMonths - 1));
+            var firstRequestDate = periodMonths == 0
+                ? files.Select(file => (DateTime?)file.RegDate).Min()
+                : null;
+            var firstMonth = periodMonths == 0 && firstRequestDate.HasValue
+                ? new DateTime(firstRequestDate.Value.Year, firstRequestDate.Value.Month, 1)
+                : currentMonth.AddMonths(-(periodMonths - 1));
+            var monthCount = periodMonths == 0
+                ? ((currentMonth.Year - firstMonth.Year) * 12) + currentMonth.Month - firstMonth.Month + 1
+                : periodMonths;
             var monthlyRows = files
                 .Where(file => file.RegDate >= firstMonth)
                 .GroupBy(file => new { file.RegDate.Year, file.RegDate.Month })
@@ -1597,7 +1587,7 @@ namespace VisitorManagment.Core.Services
                 .ToList();
 
             var persianCalendar = new PersianCalendar();
-            for (var monthOffset = 0; monthOffset < periodMonths; monthOffset++)
+            for (var monthOffset = 0; monthOffset < monthCount; monthOffset++)
             {
                 var monthDate = firstMonth.AddMonths(monthOffset);
                 var row = monthlyRows.FirstOrDefault(item =>

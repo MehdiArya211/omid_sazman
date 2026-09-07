@@ -233,6 +233,7 @@ namespace VisitorManagment.Core.Services
             editUser.CodGhaTitle = editUserViewModel.CodGhaTitle;
             editUser.CodGha = editUserViewModel.CodGha;
             editUser.IsActive = true;
+            editUser.HasDashboardAccess = editUserViewModel.HasDashboardAccess;
             editUser.EditDate = DateTime.Now;
             editUser.UserName = editUserViewModel.UserName;
             editUser.EditUserId = EditUserId;
@@ -352,6 +353,7 @@ namespace VisitorManagment.Core.Services
                 CodGhaTitle = c.CodGhaTitle,
                 CodGha = c.CodGha,
                 AvatarName = c.UserAvatar,
+                HasDashboardAccess = c.HasDashboardAccess,
 
                 UserRolesTitle = role == null ? null : role.Title,
                 UserRolesId = roleId

@@ -91,6 +91,8 @@ namespace VisitorManagment.Core.DTOs
         public int UserRolesId { get; set; }
         public string CommanderName { get; set; }
         public string CommanderPersonalCode { get; set; }
+        [Display(Name = "دسترسی اختصاصی به داشبورد مدیریتی")]
+        public bool HasDashboardAccess { get; set; }
 
     }
 

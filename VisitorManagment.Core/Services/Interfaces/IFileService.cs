@@ -221,7 +221,7 @@ namespace VisitorManagment.Core.Services.Interfaces
             string codeGha,
             string roleTypeId,
             string personalCode,
-            int periodMonths = 6,
+            int periodMonths = 0,
             int? selectedUnitCode = null);
 
         /// <summary>

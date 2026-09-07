@@ -24,11 +24,12 @@ namespace VisitorManagment.Web.Pages.Visitor
         private readonly IHameshService _hameshService;
         private readonly ApiTokenCacheClient _apiTokenClient;
         private readonly IRequestGhaReportService _requestGhaReportService;
+        private readonly IPermissionService _permissionService;
 
         public IndexModel(IFileService fileService, IWebApiService webApiService,
             ICartableService cartableService, IUserService userService, 
             IHameshService hameshService, ApiTokenCacheClient apiTokenClient , IRequestGhaReportService requestGhaReportService
-            ,IRankingService rankingService)
+            ,IRankingService rankingService, IPermissionService permissionService)
         {
             _fileService = fileService;
             _webApiService = webApiService;
@@ -38,6 +39,7 @@ namespace VisitorManagment.Web.Pages.Visitor
             _apiTokenClient = apiTokenClient;
             _requestGhaReportService = requestGhaReportService;
             _rankingService = rankingService;
+            _permissionService = permissionService;
         }
 
         public List<ProblemReportViewModel> lstChartModel { get; set; }
@@ -48,14 +50,15 @@ namespace VisitorManagment.Web.Pages.Visitor
         public string UserUnitTitle { get; private set; }
         public string UserIpAddress { get; private set; }
         public string LoginDateTime { get; private set; }
-        public int SelectedPeriod { get; private set; } = 6;
+        public int SelectedPeriod { get; private set; }
         public int? SelectedUnitCode { get; private set; }
+        public bool CanViewManagementDashboard { get; private set; }
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
         /// </summary>
-        public void OnGet(int period = 6, int? selectedUnitCode = null)
+        public void OnGet(int period = 0, int? selectedUnitCode = null)
         {
-            SelectedPeriod = new[] { 1, 3, 6, 12 }.Contains(period) ? period : 6;
+            SelectedPeriod = new[] { 0, 3, 6, 12 }.Contains(period) ? period : 0;
             SelectedUnitCode = selectedUnitCode;
 
             #region مودال اطلاعات سیستمی نفر لاگین کرده
@@ -104,6 +107,14 @@ namespace VisitorManagment.Web.Pages.Visitor
             var unitDutyCode = User.FindFirst("UnitDutyCode")?.Value ?? string.Empty;
             var personalCode = User.FindFirst("PersonalCode")?.Value ?? string.Empty;
             var roleTypeId = User.FindFirst("RoleTypeId")?.Value ?? string.Empty;
+            var roleTitle = User.FindFirst("RoleTypeTitle")?.Value ?? string.Empty;
+            var userId = int.TryParse(User.FindFirst("Id")?.Value, out var parsedUserId) ? parsedUserId : 0;
+            var hasUserAccess = userId > 0 && (_userService.GetUserByUserId(userId)?.HasDashboardAccess ?? false);
+            var hasRoleAccess = userId > 0 && _permissionService.GetPermissionsForUser(userId)
+                .Any(permission => permission.MenuUrl == "#management-dashboard");
+            var isAnsarCommander = roleTitle.Contains("انصار") &&
+                (roleTitle.Contains("ف ق") || roleTitle.Contains("فرمانده قرارگاه"));
+            CanViewManagementDashboard = roleTypeId == "100" || isAnsarCommander || hasUserAccess || hasRoleAccess;
 
             Statistics = _fileService.GetDashboardRequestStatistics(
                 unitDutyCode,
