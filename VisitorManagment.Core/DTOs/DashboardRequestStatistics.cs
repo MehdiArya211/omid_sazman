@@ -13,6 +13,8 @@ namespace VisitorManagment.Core.DTOs
         public int OtherRequests { get; set; }
         public System.Collections.Generic.List<DashboardMonthlyRequestStatistics> MonthlyTrend { get; set; }
             = new System.Collections.Generic.List<DashboardMonthlyRequestStatistics>();
+        public System.Collections.Generic.List<DashboardUnitOption> AvailableUnits { get; set; }
+            = new System.Collections.Generic.List<DashboardUnitOption>();
 
         public int CompletedRequests => ResolvedRequests + OpinionRequests;
         public int CompletionPercentage => TotalRequests == 0
@@ -30,5 +32,11 @@ namespace VisitorManagment.Core.DTOs
         public int ResolvedRequests { get; set; }
         public int OpinionRequests { get; set; }
         public int ReturnedRequests { get; set; }
+    }
+
+    public class DashboardUnitOption
+    {
+        public int UnitCode { get; set; }
+        public string UnitTitle { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ITOWebApiClient;
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VisitorManagment.Core.DTOs;
@@ -47,11 +48,15 @@ namespace VisitorManagment.Web.Pages.Visitor
         public string UserUnitTitle { get; private set; }
         public string UserIpAddress { get; private set; }
         public string LoginDateTime { get; private set; }
+        public int SelectedPeriod { get; private set; } = 6;
+        public int? SelectedUnitCode { get; private set; }
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
         /// </summary>
-        public void OnGet()
+        public void OnGet(int period = 6, int? selectedUnitCode = null)
         {
+            SelectedPeriod = new[] { 1, 3, 6, 12 }.Contains(period) ? period : 6;
+            SelectedUnitCode = selectedUnitCode;
 
             #region مودال اطلاعات سیستمی نفر لاگین کرده
             var userName = User.FindFirst("UserName")?.Value ?? string.Empty;
@@ -105,7 +110,9 @@ namespace VisitorManagment.Web.Pages.Visitor
                 unitCode,
                 codeGha,
                 roleTypeId,
-                personalCode);
+                personalCode,
+                SelectedPeriod,
+                SelectedUnitCode);
 
             #region رتبه بندی
 

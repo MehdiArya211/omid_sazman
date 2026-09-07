@@ -47,32 +47,35 @@ namespace VisitorManagment.Web.Hubs
 
     public class OnlineUsersHub : Hub
     {
-        private static HashSet<string> ConnectedUsers = new();
+        private static readonly ConcurrentDictionary<string, string> Connections = new();
 
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
         /// </summary>
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
-            ConnectedUsers.Add(Context.ConnectionId);
-            Console.WriteLine($"[Hub] Connected: {Context.ConnectionId}, Total: {ConnectedUsers.Count}");
-
-            Clients.All.SendAsync("UpdateOnlineUsers", ConnectedUsers.Count, ConnectedUsers.ToList());
-
-            return base.OnConnectedAsync();
+            var identity = Context.User?.FindFirst("PersonalCode")?.Value
+                ?? Context.User?.Identity?.Name
+                ?? Context.ConnectionId;
+            Connections[Context.ConnectionId] = identity;
+            await NotifyClients();
+            await base.OnConnectedAsync();
         }
 
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
         /// </summary>
-        public override Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
-            ConnectedUsers.Remove(Context.ConnectionId);
-            Console.WriteLine($"[Hub] Disconnected: {Context.ConnectionId}, Total: {ConnectedUsers.Count}");
+            Connections.TryRemove(Context.ConnectionId, out _);
+            await NotifyClients();
+            await base.OnDisconnectedAsync(exception);
+        }
 
-            Clients.All.SendAsync("UpdateOnlineUsers", ConnectedUsers.Count, ConnectedUsers.ToList());
-
-            return base.OnDisconnectedAsync(exception);
+        private Task NotifyClients()
+        {
+            var uniqueUsers = Connections.Values.Distinct().ToList();
+            return Clients.All.SendAsync("UpdateOnlineUsers", uniqueUsers.Count, uniqueUsers);
         }
     }
 

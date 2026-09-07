@@ -220,7 +220,9 @@ namespace VisitorManagment.Core.Services.Interfaces
             string unitCode,
             string codeGha,
             string roleTypeId,
-            string personalCode);
+            string personalCode,
+            int periodMonths = 6,
+            int? selectedUnitCode = null);
 
         /// <summary>
         /// تعداد کل درخواست‌های ثبت شده بر اساس سطح دسترسی کاربر

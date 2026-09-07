@@ -15,7 +15,7 @@
             <p>ثبت، گردش، بررسی و پیگیری درخواست‌های ملاقات در یک مسیر شفاف، سریع و قابل رصد.</p>
             <div class="omid-dashboard__identity">
                 <span><i class="fa fa-building-o"></i>@Model.UserUnitTitle</span>
-                <span><i class="fa fa-circle omid-dashboard__online-dot"></i>اتصال فعال</span>
+                <span><i class="fa fa-circle omid-dashboard__online-dot"></i><b id="onlineUsersCount">۱</b> کاربر آنلاین</span>
             </div>
         </div>
         <div class="omid-dashboard__hero-visual" aria-hidden="true">
@@ -30,6 +30,11 @@
             <div><span>نمای کلی</span><h2 id="statisticsTitle">آمار دقیق درخواست‌ها</h2></div>
             <p>هر درخواست بر اساس شناسه یکتا و فقط یک مرتبه محاسبه شده است.</p>
         </div>
+        <form method="get" class="omid-dashboard__filters" aria-label="فیلتر آمار مدیریتی">
+            <div class="omid-filter-field"><label for="dashboardPeriod"><i class="fa fa-calendar"></i> بازه زمانی</label><select id="dashboardPeriod" name="period"><option value="1" selected="@(Model.SelectedPeriod == 1)">یک‌ماهه</option><option value="3" selected="@(Model.SelectedPeriod == 3)">سه‌ماهه</option><option value="6" selected="@(Model.SelectedPeriod == 6)">شش‌ماهه</option><option value="12" selected="@(Model.SelectedPeriod == 12)">یک‌ساله</option></select></div>
+            <div class="omid-filter-field omid-filter-field--unit"><label for="dashboardUnit"><i class="fa fa-building-o"></i> یگان</label><select id="dashboardUnit" name="selectedUnitCode"><option value="">همه یگان‌های قابل مشاهده</option>@foreach (var unit in Model.Statistics.AvailableUnits){<option value="@unit.UnitCode" selected="@(Model.SelectedUnitCode == unit.UnitCode)">@unit.UnitTitle</option>}</select></div>
+            <button type="submit"><i class="fa fa-filter"></i> اعمال فیلتر</button>
+        </form>
         <div class="omid-stat-grid">
             <article class="omid-stat-card omid-stat-card--total"><div class="omid-stat-card__icon"><i class="fa fa-folder-open-o"></i></div><div><span>کل درخواست‌ها</span><strong>@Model.Statistics.TotalRequests.ToString("N0")</strong><small>در محدوده دسترسی شما</small></div></article>
             <article class="omid-stat-card omid-stat-card--resolved"><div class="omid-stat-card__icon"><i class="fa fa-check"></i></div><div><span>اقدام‌شده</span><strong>@Model.Statistics.ResolvedRequests.ToString("N0")</strong><small>درخواست‌های تعیین تکلیف‌شده</small></div></article>
@@ -40,16 +45,16 @@
 
     <section class="omid-dashboard__charts" aria-labelledby="managementChartsTitle">
         <div class="omid-dashboard__section-heading omid-dashboard__section-heading--charts">
-            <div><span>تحلیل مدیریتی</span><h2 id="managementChartsTitle">روند شش‌ماهه درخواست‌ها</h2></div>
+            <div><span>تحلیل مدیریتی</span><h2 id="managementChartsTitle">روند درخواست‌ها در بازه انتخابی</h2></div>
             <p>نمایش روند درخواست‌های یکتا در محدوده دسترسی فعلی</p>
         </div>
         <div class="omid-chart-grid">
             <article class="omid-chart-card">
-                <header><div class="omid-chart-card__icon"><i class="fa fa-line-chart"></i></div><div><h3>روند کل ملاقات‌ها</h3><p>تغییر تعداد درخواست‌های ثبت‌شده در شش ماه اخیر</p></div></header>
+                <header><div class="omid-chart-card__icon"><i class="fa fa-line-chart"></i></div><div><h3>روند کل ملاقات‌ها</h3><p>تغییر تعداد درخواست‌های ثبت‌شده در بازه انتخابی</p></div><label class="omid-chart-type">نوع نمودار<select data-chart-target="total"><option value="line">خطی</option><option value="bar">ستونی</option><option value="radar">راداری</option></select></label></header>
                 <div class="omid-chart-canvas"><canvas id="totalRequestsTrend" aria-label="نمودار روند کل ملاقات‌ها" role="img"></canvas></div>
             </article>
             <article class="omid-chart-card">
-                <header><div class="omid-chart-card__icon"><i class="fa fa-area-chart"></i></div><div><h3>مقایسه وضعیت رسیدگی</h3><p>مقایسه اقدام، نظریه و عودت در هر ماه</p></div></header>
+                <header><div class="omid-chart-card__icon"><i class="fa fa-area-chart"></i></div><div><h3>مقایسه وضعیت رسیدگی</h3><p>مقایسه اقدام، نظریه و عودت در بازه انتخابی</p></div><label class="omid-chart-type">نوع نمودار<select data-chart-target="status"><option value="line">خطی</option><option value="bar">ستونی</option><option value="radar">راداری</option></select></label></header>
                 <div class="omid-chart-legend"><span class="is-resolved">اقدام‌شده</span><span class="is-opinion">ثبت نظریه</span><span class="is-returned">عودت</span></div>
                 <div class="omid-chart-canvas"><canvas id="statusRequestsTrend" aria-label="نمودار مقایسه وضعیت درخواست‌ها" role="img"></canvas></div>
             </article>
@@ -115,13 +120,13 @@
                 }
             };
 
-            new Chart(document.getElementById("totalRequestsTrend"), {
+            var totalChart = new Chart(document.getElementById("totalRequestsTrend"), {
                 type: "line",
                 data: { labels: labels, datasets: [{ label: "کل ملاقات‌ها", data: trend.map(function (item) { return item.TotalRequests; }), borderColor: "#9a62c2", backgroundColor: "rgba(186,116,223,.16)", pointBackgroundColor: "#fff", pointBorderColor: "#9a62c2", pointBorderWidth: 3, pointRadius: 4, pointHoverRadius: 6, borderWidth: 3, lineTension: .35, fill: true }] },
                 options: commonOptions
             });
 
-            new Chart(document.getElementById("statusRequestsTrend"), {
+            var statusChart = new Chart(document.getElementById("statusRequestsTrend"), {
                 type: "line",
                 data: { labels: labels, datasets: [
                     { label: "اقدام‌شده", data: trend.map(function (item) { return item.ResolvedRequests; }), borderColor: "#3674bd", backgroundColor: "rgba(54,116,189,.05)", pointBackgroundColor: "#3674bd", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
@@ -129,6 +134,20 @@
                     { label: "عودت", data: trend.map(function (item) { return item.ReturnedRequests; }), borderColor: "#b17a27", backgroundColor: "rgba(177,122,39,.05)", pointBackgroundColor: "#b17a27", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false }
                 ] },
                 options: commonOptions
+            });
+            var charts = { total: totalChart, status: statusChart };
+            function changeChartType(key, type) {
+                var currentChart = charts[key];
+                var chartData = currentChart.config.data;
+                var canvas = currentChart.canvas;
+                currentChart.destroy();
+                charts[key] = new Chart(canvas, { type: type, data: chartData, options: commonOptions });
+            }
+            Array.prototype.forEach.call(document.querySelectorAll("[data-chart-target]"), function (select) {
+                var key = select.getAttribute("data-chart-target");
+                var savedType = window.localStorage.getItem("omid-dashboard-chart-" + key);
+                if (["line", "bar", "radar"].indexOf(savedType) >= 0) { select.value = savedType; changeChartType(key, savedType); }
+                select.addEventListener("change", function () { changeChartType(key, select.value); window.localStorage.setItem("omid-dashboard-chart-" + key, select.value); });
             });
         })();
     </script>

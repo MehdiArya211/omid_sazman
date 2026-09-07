@@ -1469,7 +1469,9 @@ namespace VisitorManagment.Core.Services
             string unitCode,
             string codeGha,
             string roleTypeId,
-            string personalCode)
+            string personalCode,
+            int periodMonths = 6,
+            int? selectedUnitCode = null)
         {
             var files = _context.Files.AsNoTracking().AsQueryable();
 
@@ -1502,6 +1504,29 @@ namespace VisitorManagment.Core.Services
                     break;
             }
 
+            periodMonths = new[] { 1, 3, 6, 12 }.Contains(periodMonths) ? periodMonths : 6;
+
+            // گزینه‌های یگان فقط از داده‌هایی ساخته می‌شوند که کاربر اجازه مشاهده آن‌ها را دارد.
+            var availableUnits = files
+                .Where(file => file.Personal.UnitCode.HasValue)
+                .Select(file => new DashboardUnitOption
+                {
+                    UnitCode = file.Personal.UnitCode.Value,
+                    UnitTitle = file.Personal.UnitTitle
+                })
+                .Distinct()
+                .OrderBy(unit => unit.UnitTitle)
+                .ToList();
+
+            if (selectedUnitCode.HasValue && availableUnits.Any(unit => unit.UnitCode == selectedUnitCode.Value))
+                files = files.Where(file => file.Personal.UnitCode == selectedUnitCode.Value);
+
+            var today = DateTime.Today;
+            var rangeStart = periodMonths == 1
+                ? today.AddDays(-29)
+                : new DateTime(today.Year, today.Month, 1).AddMonths(-(periodMonths - 1));
+            files = files.Where(file => file.RegDate >= rangeStart);
+
             // شناسه فایل، شناسه یکتای درخواست است. هر درخواست فقط یک بار در آمار می‌آید.
             var uniqueRequests = files
                 .Select(file => new { file.Id, file.FileStatusId })
@@ -1523,9 +1548,40 @@ namespace VisitorManagment.Core.Services
                 .SingleOrDefault();
 
             statistics = statistics ?? new DashboardRequestStatistics();
+            statistics.AvailableUnits = availableUnits;
 
-            var currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-            var firstMonth = currentMonth.AddMonths(-5);
+            if (periodMonths == 1)
+            {
+                var dailyRows = files
+                    .GroupBy(file => file.RegDate.Date)
+                    .Select(group => new
+                    {
+                        Date = group.Key,
+                        TotalRequests = group.Count(),
+                        ResolvedRequests = group.Count(file => file.FileStatusId == 1),
+                        OpinionRequests = group.Count(file => file.FileStatusId == 2),
+                        ReturnedRequests = group.Count(file => file.FileStatusId == 3)
+                    })
+                    .ToList();
+                var dailyCalendar = new PersianCalendar();
+                for (var dayOffset = 0; dayOffset < 30; dayOffset++)
+                {
+                    var day = rangeStart.AddDays(dayOffset);
+                    var row = dailyRows.FirstOrDefault(item => item.Date == day);
+                    statistics.MonthlyTrend.Add(new DashboardMonthlyRequestStatistics
+                    {
+                        Label = dailyCalendar.GetMonth(day).ToString("00") + "/" + dailyCalendar.GetDayOfMonth(day).ToString("00"),
+                        TotalRequests = row == null ? 0 : row.TotalRequests,
+                        ResolvedRequests = row == null ? 0 : row.ResolvedRequests,
+                        OpinionRequests = row == null ? 0 : row.OpinionRequests,
+                        ReturnedRequests = row == null ? 0 : row.ReturnedRequests
+                    });
+                }
+                return statistics;
+            }
+
+            var currentMonth = new DateTime(today.Year, today.Month, 1);
+            var firstMonth = currentMonth.AddMonths(-(periodMonths - 1));
             var monthlyRows = files
                 .Where(file => file.RegDate >= firstMonth)
                 .GroupBy(file => new { file.RegDate.Year, file.RegDate.Month })
@@ -1541,7 +1597,7 @@ namespace VisitorManagment.Core.Services
                 .ToList();
 
             var persianCalendar = new PersianCalendar();
-            for (var monthOffset = 0; monthOffset < 6; monthOffset++)
+            for (var monthOffset = 0; monthOffset < periodMonths; monthOffset++)
             {
                 var monthDate = firstMonth.AddMonths(monthOffset);
                 var row = monthlyRows.FirstOrDefault(item =>
@@ -1657,802 +1713,7 @@ namespace VisitorManagment.Core.Services
                     break;
 
                 case "2":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 1 && f.Personal.UnitDutyCode == int.Parse(unitDutyCode)).Count();
-                    break;
-
-                case "3":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 1 && f.Personal.UnitCode == int.Parse(unitCode)).Count();
-                    break;
-
-                case "4":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 1 && f.Personal.CodGha == int.Parse(codeGha)).Count();
-                    break;
-
-                //case "5":
-                //    fileCount = _context.Files.Where(f => f.FileStatusId == 2).Count();
-                //    break;
-
-                default:
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 1).Count();
-                    break;
-            }
-
-            //var fileCount = _context.Files.Where(f => f.FileStatusId == 2).Count();
-
-            return fileCount;
-        }
-        /// <summary>
-        /// محاسبه تعداد درخواست‌های ثبت نظریه بر اساس نقش و محدوده دسترسی.
-        /// </summary>
-        public int GetFileCountSabteNazariye(string unitDutyCode, string unitCode, string codeGha, string roleTypeId, string personalCode)
-        {
-            var fileCount = 0;
-
-            switch (roleTypeId)
-            {
-                case "1":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 2 && f.Personal.PersonalCode == personalCode).Count();
-                    break;
-
-                case "2":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 2 && f.Personal.UnitDutyCode == int.Parse(unitDutyCode)).Count();
-                    break;
-
-                case "3":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 2 && f.Personal.UnitCode == int.Parse(unitCode)).Count();
-                    break;
-
-                case "4":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 2 && f.Personal.CodGha == int.Parse(codeGha)).Count();
-                    break;
-
-                //case "5":
-                //    fileCount = _context.Files.Where(f => f.FileStatusId == 2).Count();
-                //    break;
-
-                default:
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 2).Count();
-                    break;
-            }
-
-            //var fileCount = _context.Files.Where(f => f.FileStatusId == 2).Count();
-
-            return fileCount;
-        }
-        /// <summary>
-        /// محاسبه تعداد درخواست‌های رد یا عودت‌شده بر اساس نقش و محدوده دسترسی.
-        /// </summary>
-        public int GetFileCountRadeDarkhastVaAodat(string unitDutyCode, string unitCode, string codeGha, string roleTypeId, string personalCode)
-        {
-            var fileCount = 0;
-
-            switch (roleTypeId)
-            {
-                case "1":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 3 && f.Personal.PersonalCode == personalCode).Count();
-                    break;
-
-                case "2":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 3 && f.Personal.UnitDutyCode == int.Parse(unitDutyCode)).Count();
-                    break;
-
-                case "3":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 3 && f.Personal.UnitCode == int.Parse(unitCode)).Count();
-                    break;
-
-                case "4":
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 3 && f.Personal.CodGha == int.Parse(codeGha)).Count();
-                    break;
-
-                //case "5":
-                //    fileCount = _context.Files.Where(f => f.FileStatusId == 3).Count();
-                //    break;
-
-                default:
-                    fileCount = _context.Files.Where(f => f.FileStatusId == 3).Count();
-                    break;
-            }
-
-            //var fileCount = _context.Files.Where(f => f.FileStatusId == 3).Count();
-
-            return fileCount;
-        }
-        //public int GetFileCountDarEntezar()
-        //{
-        //    var fileCount = _context.Files.Where(f => f.FileStatusId == 5).Count();
-        //    return fileCount;
-        //}
-        //public int GetFileSabtDarLsitMolaghat()
-        //{
-        //    var fileCount = _context.Files.Where(f => f.FileStatusId == 5).Count();
-        //    return fileCount;
-        //}
-
-
-        #endregion
-
-        #region edit file
-        /// <summary>
-        /// ویرایش اطلاعات درخواست ملاقات.
-        /// </summary>
-        public BaseResult EditFile(EditFactPersonalViewModel file)
-        {
-            var editfile = GetFileByFileId(file.Id);
-            var codGhaTitle = _webApiService.GetGharargah().Data
-                .Where(x => x.Id == file.CodGha)
-                .Select(x => x.Title)
-                .FirstOrDefault();
-
-
-            #region پر کردن ویو مدل
-            editfile.FileTypeId = file.FileTypeId;
-            editfile.PersonalCode = file.PersonalCode;
-            editfile.Personal.MelliCode = file.MelliCode;
-            editfile.Personal.FirstName = file.FirstName;
-            editfile.Personal.LastName = file.LastName;
-            editfile.Personal.RankTitle = file.RankTitle;
-            editfile.Personal.BranchTitle = file.BranchTitle;
-            editfile.Personal.DRSAD_JA = file.DRSAD_JA;
-            editfile.Personal.DRSAD_JB = file.DRSAD_JB;
-            editfile.Personal.IsarStatus = file.IsarStatus;
-            editfile.Personal.TOT_AML2 = file.TOT_AML2;
-            editfile.Personal.TOT_AML = file.TOT_AML;
-            editfile.UnitDutyTitle = file.UnitDutyTitle;
-            editfile.UnitTitle = file.UnitTitle;
-            editfile.CodGha = file.CodGha.Value;
-            editfile.CodGhaTitle = codGhaTitle;
-            editfile.RequestSubjectId = file.RequestSubjectId;
-            editfile.PriorityId = file.PriorityId;
-            editfile.FileStatusId = file.FileStatusId;
-            editfile.Addres = file.Addres;
-            editfile.Phone = file.Phone;
-            editfile.Attachment = file.AttachmentFileName;
-            editfile.FishAttachment = file.FishAttacmentFileName;
-            editfile.RequestDescription = file.RequestDescription;
-            editfile.ProblemDescription = file.ProblemDescription;
-            editfile.EditDate = DateTime.Now;
-            editfile.EditUserId = file.EditUserId;
-            #region Save File
-
-            if (file.Attachment != null)
-            {
-                string imagePath = "";
-                editfile.Attachment = NameGenerator.GenerateUniqCode() + Path.GetExtension(file.Attachment.FileName);
-                imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/FileAttachment", editfile.Attachment);
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    file.Attachment.CopyTo(stream);
-                }
-            }
-            if (file.Attachment == null)
-            {
-                editfile.Attachment = "Default.png";
-            }
-
-            if (file.FishAttachmnet != null)
-            {
-                string imagePath = "";
-                editfile.FishAttachment = NameGenerator.GenerateUniqCode() + Path.GetExtension(file.FishAttachmnet.FileName);
-                imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/FishAttachment", editfile.FishAttachment);
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    file.FishAttachmnet.CopyTo(stream);
-                }
-            }
-            if (file.FishAttachmnet == null)
-            {
-                editfile.FishAttachment = "Default.png";
-            }
-            #endregion
-            #endregion
-
-            return UpdateFile(editfile);
-        }
-
-
-        /// <summary>
-        /// به‌روزرسانی فایل در دیتابیس.
-        /// </summary>
-        public BaseResult UpdateFile(Files file)
-        {
-            _context.Update(file);
-            var res = _context.SaveChanges();
-
-            if (res == 1)
-            {
-                return new BaseResult()
-                {
-                    Message = ",ویرایش درخواست ملاقات با موفقیت انجام شد",
-                    Model = file,
-                    Status = true
-                };
-            }
-
-            return new BaseResult()
-            {
-                Message = ",ویرایش درخواست ملاقات با خطا مواجه شد",
-                Model = file,
-                Status = false
-            };
-        }
-
-
-        #endregion
-
-        #region edit personal
-        /// <summary>
-        /// ویرایش اطلاعات پرسنل.
-        /// </summary>
-        public BaseResult EditPersonal(EditFactPersonalViewModel personal)
-        {
-            var editpersonal = GetPersonalByPersonalId(personal.PersonalId);
-            #region پر کردن ویو مدل
-            editpersonal.PersonalCode = personal.PersonalCode;
-            editpersonal.MelliCode = personal.MelliCode;
-            editpersonal.FirstName = personal.FirstName;
-            editpersonal.LastName = personal.LastName;
-            editpersonal.RankTitle = personal.RankTitle;
-            editpersonal.BranchTitle = personal.BranchTitle;
-            editpersonal.DRSAD_JA = personal.DRSAD_JA;
-            editpersonal.DRSAD_JB = personal.DRSAD_JB;
-            editpersonal.IsarStatus = personal.IsarStatus;
-            editpersonal.TOT_AML2 = personal.TOT_AML2;
-            editpersonal.TOT_AML = personal.TOT_AML;
-            editpersonal.UnitDutyTitle = personal.UnitDutyTitle;
-            editpersonal.UnitTitle = personal.UnitTitle;
-            editpersonal.CodGhaTitle = personal.CodGhaTitle;
-            editpersonal.Addres = personal.Addres;
-            editpersonal.Phone = personal.Phone;
-            editpersonal.EditDate = DateTime.Now;
-            editpersonal.EditUserId = personal.EditUserId;
-            #region Save Avatar
-
-            if (personal.PersonalAvatar != null)
-            {
-                string imagePath = "";
-                if (personal.PersonalAvatarName != "Default.jpg")
-                {
-                    imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/PersonalAvatar", personal.PersonalAvatarName);
-
-                    if (File.Exists(imagePath))
-                    {
-                        File.Delete(imagePath);
-                    }
-
-                }
-
-                editpersonal.PersonalAvatar = "Default.png";
-                editpersonal.PersonalAvatar = NameGenerator.GenerateUniqCode() + Path.GetExtension(personal.PersonalAvatar.FileName);
-                imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/PersonalAvatar", editpersonal.PersonalAvatar);
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    personal.PersonalAvatar.CopyTo(stream);
-                }
-
-
-            }
-
-
-            #endregion
-            #endregion
-
-            return UpdatePersonal(editpersonal);
-        }
-
-        /// <summary>
-        /// به‌روزرسانی اطلاعات پرسنل در دیتابیس.
-        /// </summary>
-        public BaseResult UpdatePersonal(Personal personal)
-        {
-            _context.Update(personal);
-            var res = _context.SaveChanges();
-
-            if (res == 1)
-            {
-                return new BaseResult()
-                {
-                    Message = ",ویرایش موفق",
-                    Model = personal,
-                    Status = true
-                };
-            }
-
-            return new BaseResult()
-            {
-                Message = ",ویرایش ناموفق",
-                Model = personal,
-                Status = false
-            };
-
-        }
-
-        /// <summary>
-        /// دریافت پرسنل بر اساس شناسه پرسنل.
-        /// </summary>
-        public Personal GetPersonalByPersonalId(int PersonalId)
-        {
-            return _context.Personals.Where(p => p.Id == PersonalId).SingleOrDefault();
-        }
-
-
-        #endregion
-
-        #region Delete File
-
-        /// <summary>
-        /// دریافت اطلاعات خلاصه درخواست برای عملیات حذف.
-        /// </summary>
-        public DeleteFactPersonalViewModel GetFileInformation(int FileId)
-        {
-            var file = GetFileByFileId(FileId);
-            DeleteFactPersonalViewModel information = new DeleteFactPersonalViewModel()
-            {
-                Id = file.Id,
-                PersonalCode = file.PersonalCode,
-                FirstName = file.FirstName,
-                LastName = file.LastName,
-                ReqSubTitle = file.RequestSubject.Title,
-
-            };
-
-            return information;
-        }
-
-
-        /// <summary>
-        /// حذف منطقی درخواست ملاقات.
-        /// </summary>
-        public void DeleteFile(int Id)
-        {
-            var file = GetFileByFileId(Id);
-
-            file.IsDelete = true;
-
-            UpdateFile(file);
-        }
-
-
-        /// <summary>
-        /// دریافت کدهای پرسنلی جهت جستجوی AutoComplete.
-        /// </summary>
-        public List<string> GetFileForAutoCompliteSearch(string term)
-        {
-            return _context.Files.Where(p => p.Personal.PersonalCode.Contains(term)).Select(p => p.PersonalCode).Distinct().ToList();
-        }
-
-        #endregion
-
-        #region UserAccess
-        /// <summary>
-        /// دریافت لیست نقش‌ها.
-        /// </summary>
-        public List<Role> GetRoles()
-        {
-            return _context.Roles.ToList();
-        }
-
-        /// <summary>
-        /// دریافت نقش بر اساس نوع نقش.
-        /// </summary>
-        public Role GetRoleTitleByRoleType(int roleTypeId)
-        {
-            var res = _context.Roles.Where(x => x.RoleType == roleTypeId).SingleOrDefault();
-
-            return res;
-        }
-
-        /// <summary>
-        /// دریافت نقش‌های مربوط به معاونت‌ها.
-        /// </summary>
-        public List<Role> GetRolesJustMooavenatHa()
-        {
-            return _context.Roles.Where(x => x.RoleType == 5 || x.RoleType == 6 || x.RoleType == 7).OrderBy(x => x.RoleType).ToList();
-        }
-
-        /// <summary>
-        /// دریافت شناسه فایل بر اساس شناسه فایل.
-        /// </summary>
-        public int GetFileIdByFileId(int FileId)
-        {
-            return _context.Files.Where(u => u.Id == FileId).Select(u => u.Id).SingleOrDefault();
-        }
-
-        /// <summary>
-        /// دریافت شناسه فایل‌ها بر اساس شناسه جلسه.
-        /// </summary>
-        public List<int> GetFileIdByMeetingId(int meetingId)
-        {
-            return _context.Files.Where(u => u.MeetingId == meetingId).Select(u => u.Id).ToList();
-        }
-
-        /// <summary>
-        /// دریافت شناسه پرسنل بر اساس شناسه فایل.
-        /// </summary>
-        public int GetPersonalIdByFileId(int fileId)
-        {
-            return _context.Files.Where(u => u.Id == fileId).Select(u => u.PersonalId).SingleOrDefault();
-        }
-
-        /// <summary>
-        /// ثبت فایل صوتی جلسه برای درخواست.
-        /// </summary>
-        public BaseResult AddVoiceRecordToFile(IFormFile voiceRecord, int fileId)
-        {
-            var File = GetFile(fileId);
-
-            #region Save File
-
-            if (voiceRecord != null)
-            {
-                string imagePath = "";
-                File.VoiceRecord = NameGenerator.GenerateUniqCode() + Path.GetExtension(voiceRecord.FileName);
-                imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/VoiceRecords", File.VoiceRecord);
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    voiceRecord.CopyTo(stream);
-                }
-            }
-            else
-            {
-                File.VoiceRecord = "";
-            }
-
-
-            #endregion
-
-            _context.Update(File);
-            var res = _context.SaveChanges();
-
-            if (res > 0)
-            {
-                return new BaseResult
-                {
-                    Message = "ویس جلسه با موفقیت ثبت گردید",
-                    Status = true
-                };
-            }
-            return new BaseResult
-            {
-                Message = "ویس جلسه با خطا مواجه گردید",
-                Status = false
-            };
-
-        }
-
-
-        #endregion
-
-        #region Update Picture Personel When Create File
-        /// <summary>
-        /// تغییر تصویر پرسنل هنگام ثبت درخواست.
-        /// </summary>
-        public void ChangePicturePersonelWhenCreateFile(IFormFile personalAvatar, int personalId)
-        {
-            var Person = _context.Personals.Where(x => x.Id == personalId).SingleOrDefault();
-            #region Save Avatar
-
-            if (personalAvatar != null)
-            {
-                string imagePath = "";
-                Person.PersonalAvatar = NameGenerator.GenerateUniqCode() + Path.GetExtension(personalAvatar.FileName);
-                imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/PersonalAvatar", Person.PersonalAvatar);
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    personalAvatar.CopyTo(stream);
-                }
-            }
-            else
-            {
-                Person.PersonalAvatar = "";
-            }
-            _context.Update(Person);
-            _context.SaveChanges();
-            #endregion
-
-        }
-
-
-        #endregion
-
-        /// <summary>
-        /// ثبت لیست پیوست‌های دستور برای درخواست.
-        /// </summary>
-        public BaseResult AddListAttachDastorToFile(List<IFormFile> listAttachDastor, int fileId)
-        {
-            // var File = GetFile(fileId);
-            var attachDastor = new FileAttachment();
-
-            #region Save File
-
-            if (listAttachDastor != null)
-            {
-
-                foreach (var item in listAttachDastor)
-                {
-                    attachDastor.FileId = fileId;
-                    string imagePath = "";
-                    attachDastor.FileUplodeAttacmentDastor = NameGenerator.GenerateUniqCode() + Path.GetExtension(item.FileName);
-                    imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/AttachDastor", attachDastor.FileUplodeAttacmentDastor);
-                    using (var stream = new FileStream(imagePath, FileMode.Create))
-                    {
-                        item.CopyTo(stream);
-                    }
-                }
-
-            }
-            else
-            {
-                attachDastor.FileUplodeAttacmentDastor = "";
-            }
-            _context.FileAttachments.Add(attachDastor);
-            var res = _context.SaveChanges();
-
-            #endregion
-
-            if (res > 0)
-            {
-                return new BaseResult
-                {
-                    Message = "ثبت موفق",
-                    Status = true
-                };
-            }
-
-            return new BaseResult
-            {
-                Message = "ثبت ناموفق",
-                Status = false
-            };
-        }
-
-        /// <summary>
-        /// فعال‌سازی وضعیت برگزاری جلسه برای درخواست.
-        /// </summary>
-        public BaseResult ActiveFiledMettingHoldFile(int fileId)
-        {
-            var file = _context.Files.Where(x => x.Id == fileId).FirstOrDefault();
-            file.IsMeetingHold = true;
-            _context.Update(file);
-            var res = _context.SaveChanges();
-
-            if (res > 0)
-            {
-                return new BaseResult
-                {
-                    Message = "وضعیت برگزاری جلسه با موفقیت ثبت شد",
-                    Status = true
-                };
-            }
-            return new BaseResult
-            {
-                Message = "وضعیت برگزاری جلسه با خطا مواجه  شد",
-                Status = false
-            };
-
-
-        }
-
-
-        /// <summary>
-        /// دریافت لیست درخواست‌های کارتابل معاونت برای پایش.
-        /// </summary>
-        public ListFileViewModel GetListFileForPayeshMoavenat(int filterMoavenat = 0)
-        {
-            // دریافت شناسه کاربر بر اساس نقش
-            var userId = _context.UserRoles.Include(x => x.User)
-                .Where(x => x.RoleId == filterMoavenat && !x.User.IsDelete)
-                .Select(x => x.UserId)
-                .FirstOrDefault();
-
-            // فیلتر کردن فایل‌ها در کارتابل
-            var filesInCartable = _context.Cartables
-                .Include(x => x.File)
-                    .ThenInclude(x => x.Personal)
-                    .Include(x => x.File.RequestSubject)
-                    .Include(x => x.File.FileStatus)
-                    .Include(x => x.File.Priority)
-                .Where(x => x.RcvrUserId == userId && !x.File.IsDelete && !x.File.IsArchived && !x.IsDone)
-                .ToList() // تبدیل به لیست برای پردازش در حافظه
-                .GroupBy(t => t.FileId) // گروه‌بندی بر اساس FileId
-                .Select(g => g.FirstOrDefault()) // انتخاب اولین رکورد از هر گروه
-                .Select(t => new FactPersonalViewModel
-                {
-                    Id = t.File.Id,
-                    AddUserId = t.File.Personal.RegUserId,
-                    FirstName = t.File.Personal.FirstName,
-                    LastName = t.File.Personal.LastName,
-                    PersonalCode = t.File.Personal.PersonalCode,
-                    MelliCode = t.File.Personal.MelliCode,
-                    ReqSubTitle = t.File.RequestSubject.Title,
-                    FileStatusTitle = t.File.FileStatus.Title,
-                    PriorityTitle = t.File.Priority.Title,
-                    RankTitle = t.File.RankTitle,
-                    JobDes = t.File.JobDes,
-                    Phone = t.File.Phone,
-                    StatuseTitle = t.File.StatusTitle,
-                    BranchTitle = t.File.BranchTitle,
-                    UnitDutyTitle = t.File.UnitDutyTitle,
-                    UnitTitle = t.File.UnitTitle,
-                    CodGhaTitle = t.File.CodGhaTitle,
-                    RegDate = t.RegDate
-                })
-                .OrderByDescending(u => u.RegDate)
-                .ToList();
-
-            // ایجاد مدل نتیجه
-            var list1 = new ListFileViewModel
-            {
-                count = filesInCartable.Count,
-                PageCount = (int)Math.Ceiling(filesInCartable.Count / 10.0), // تعداد صفحات
-                files = filesInCartable
-            };
-
-            return list1;
-        }
-
-
-        /// <summary>
-        /// دریافت لیست درخواست‌ها بدون اعمال فیلتر.
-        /// </summary>
-        public ListFileViewModel GetListFileWithoutFilter()
-        {
-
-
-            //var filesInCartable = _context.Cartables.Where(x => x.RcvrUserId == userId).ToList();
-
-            #region MyRegion
-            IQueryable<Cartable> files = _context.Cartables.Include(f => f.File);
-            var take1 = 10;
-            //var skip1 = (pageId - 1) * take1;
-
-            ListFileViewModel list1 = new ListFileViewModel() { };
-            //list1.CurrentPage = pageId;
-            //list1.skip = skip1;
-            list1.count = files.Count();
-            list1.PageCount = (int)Math.Ceiling(files.Count() / (double)take1);// result.Count() / take;
-
-            list1.files = files.Select(t => new FactPersonalViewModel()
-            {
-                Id = t.File.Id,
-                AddUserId = t.File.Personal.RegUserId,
-                FirstName = t.File.Personal.FirstName,
-                LastName = t.File.Personal.LastName,
-                PersonalCode = t.File.Personal.PersonalCode,
-                MelliCode = t.File.Personal.MelliCode,
-                ReqSubTitle = t.File.RequestSubject.Title,
-                FileStatusTitle = t.File.FileStatus.Title,
-                PriorityTitle = t.File.Priority.Title,
-                RankTitle = t.File.RankTitle,
-                JobDes = t.File.JobDes,
-                Phone = t.File.Phone,
-                StatuseTitle = t.File.StatusTitle,
-                BranchTitle = t.File.BranchTitle,
-                UnitDutyTitle = t.File.UnitDutyTitle,
-                UnitTitle = t.File.UnitTitle,
-                CodGhaTitle = t.File.CodGhaTitle,
-                RegDate = t.RegDate
-            }).OrderByDescending(u => u.RegDate).ToList();
-            #endregion
-
-            return list1;
-        }
-
-        /// <summary>
-        /// تعداد درخواست های داخل کارتابل معاونت ها
-        /// </summary>
-        /// <returns></returns>
-        public ListCountCartableMoavenat GetListCountCartableMoavenat1()
-        {
-            var model = new ListCountCartableMoavenat();
-            ///****************************************************************************
-            var KarshenasGharargahAnsarNezajaUserId = _context.Roles.Include(x => x.UserRoles)
-                .ThenInclude(x => x.User).Where(x => x.RoleType == 5)
-                .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var countKartableKarshenasGharargahAnsar = _context.Cartables.Include(x => x.File)
-                .Where(x => x.RcvrUserId == KarshenasGharargahAnsarNezajaUserId.FirstOrDefault()
-                && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false)
-                .Count();
-
-            var countKartableKarshenasGharargahAnsar2 = _context.Cartables.Include(x => x.File)
-                .Where(x => x.RcvrUserId == KarshenasGharargahAnsarNezajaUserId.FirstOrDefault()
-                && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false)
-                .ToList();
-            //******************************************************************************
-
-            var KarbarNezajaUserId = _context.Roles.Include(x => x.UserRoles)
-                .ThenInclude(x => x.User).Where(x => x.RoleType == 7)
-                .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountKarbarNezaja = _context.Cartables.Include(x => x.File)
-                .Where(x => x.RcvrUserId == KarbarNezajaUserId.FirstOrDefault()
-                && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false)
-                .Count();
-
-            //******************************************************************************
-
-            var MNEnsaniUserId = _context.Roles.Include(x => x.UserRoles)
-                    .ThenInclude(x => x.User).Where(x => x.RoleId == 8)
-                    .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountMNEnsani = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == MNEnsaniUserId.FirstOrDefault() &&
-                 x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false)
-                 .Count();
-
-            //******************************************************************************
-
-            var MMohandesiUserId = _context.Roles.Include(x => x.UserRoles)
-        .ThenInclude(x => x.User).Where(x => x.RoleId == 9)
-        .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountMMohandesi = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == MMohandesiUserId.FirstOrDefault()
-                 && x.File.IsDelete == false && x.File.IsArchived == false
-                 && x.IsDone == false)
-                 .Count();
-
-            //******************************************************************************
-
-            var MTarhVaBarnamehUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 16)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountMTarhVaBarnameh = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == MTarhVaBarnamehUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
-
-            //******************************************************************************
-
-            var MAmozeshUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 18)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountMAmozesh = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == MAmozeshUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
-
-            //******************************************************************************
-
-            var MAmadVaPoshUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 20)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountMAmadVaPosh = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == MAmadVaPoshUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
-
-            //******************************************************************************
-
-            var MHoghoghiVaGhazayiUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 21)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountMHoghoghiVaGhazayi = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == MHoghoghiVaGhazayiUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
-
-            //******************************************************************************
-
-
-            var BazresiNezajaUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 19)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountBazresiNezaja = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == BazresiNezajaUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
-
-            //******************************************************************************
-
-            var FHavapeymayiUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 32)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
-
-            var CountFHavapeymayi = _context.Cartables.Include(x => x.File)
-                 .Where(x => x.RcvrUserId == FHavapeymayiUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
-
-            //******************************************************************************
-
-            var DarayiUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 35)
-.Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
+                    fileCount = _context.Files.Where(f => f.FileStatusId == 1 && f.Personal.UnitDutyCode == int.Parse(uni�N{��$z{-���jם => x.UserId)).FirstOrDefault();
 
             var CountDarayi = _context.Cartables.Include(x => x.File)
                  .Where(x => x.RcvrUserId == DarayiUserId.FirstOrDefault() && x.File.IsDelete == false && x.File.IsArchived == false && x.IsDone == false).Count();
