@@ -55,6 +55,11 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             ViewData["RolesTitle"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
 
             editUserViewModel = _userService.GetUserForShowInEditMode(id);
+            if (editUserViewModel == null)
+            {
+                return NotFound();
+            }
+
             return Page();
         }
 
