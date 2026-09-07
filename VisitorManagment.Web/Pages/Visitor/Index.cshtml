@@ -1,5 +1,7 @@
 @page
 @model VisitorManagment.Web.Pages.Visitor.IndexModel
+@using System.Linq
+@using System.Text.Json
 @{
     ViewData["Title"] = "داشبورد سامانه امید";
 }
@@ -33,6 +35,24 @@
             <article class="omid-stat-card omid-stat-card--resolved"><div class="omid-stat-card__icon"><i class="fa fa-check"></i></div><div><span>اقدام‌شده</span><strong>@Model.Statistics.ResolvedRequests.ToString("N0")</strong><small>درخواست‌های تعیین تکلیف‌شده</small></div></article>
             <article class="omid-stat-card omid-stat-card--opinion"><div class="omid-stat-card__icon"><i class="fa fa-commenting-o"></i></div><div><span>ثبت نظریه</span><strong>@Model.Statistics.OpinionRequests.ToString("N0")</strong><small>درخواست‌های دارای وضعیت نظریه</small></div></article>
             <article class="omid-stat-card omid-stat-card--returned"><div class="omid-stat-card__icon"><i class="fa fa-reply"></i></div><div><span>عودت یا رد شده</span><strong>@Model.Statistics.ReturnedRequests.ToString("N0")</strong><small>نیازمند اصلاح یا پیگیری</small></div></article>
+        </div>
+    </section>
+
+    <section class="omid-dashboard__charts" aria-labelledby="managementChartsTitle">
+        <div class="omid-dashboard__section-heading omid-dashboard__section-heading--charts">
+            <div><span>تحلیل مدیریتی</span><h2 id="managementChartsTitle">روند شش‌ماهه درخواست‌ها</h2></div>
+            <p>نمایش روند درخواست‌های یکتا در محدوده دسترسی فعلی</p>
+        </div>
+        <div class="omid-chart-grid">
+            <article class="omid-chart-card">
+                <header><div class="omid-chart-card__icon"><i class="fa fa-line-chart"></i></div><div><h3>روند کل ملاقات‌ها</h3><p>تغییر تعداد درخواست‌های ثبت‌شده در شش ماه اخیر</p></div></header>
+                <div class="omid-chart-canvas"><canvas id="totalRequestsTrend" aria-label="نمودار روند کل ملاقات‌ها" role="img"></canvas></div>
+            </article>
+            <article class="omid-chart-card">
+                <header><div class="omid-chart-card__icon"><i class="fa fa-area-chart"></i></div><div><h3>مقایسه وضعیت رسیدگی</h3><p>مقایسه اقدام، نظریه و عودت در هر ماه</p></div></header>
+                <div class="omid-chart-legend"><span class="is-resolved">اقدام‌شده</span><span class="is-opinion">ثبت نظریه</span><span class="is-returned">عودت</span></div>
+                <div class="omid-chart-canvas"><canvas id="statusRequestsTrend" aria-label="نمودار مقایسه وضعیت درخواست‌ها" role="img"></canvas></div>
+            </article>
         </div>
     </section>
 
@@ -71,6 +91,45 @@
             "use strict";
             var button = document.getElementById("sessionInfoButton");
             if (button && window.jQuery) button.addEventListener("click", function () { window.jQuery("#sessionInfoModal").modal("show"); });
+
+            if (!window.Chart) return;
+            var trend = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.MonthlyTrend));
+            var labels = trend.map(function (item) { return item.Label; });
+            var gridColor = "rgba(126, 91, 151, .10)";
+            var commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 700 },
+                legend: { display: false },
+                tooltips: {
+                    mode: "index",
+                    intersect: false,
+                    backgroundColor: "rgba(63,49,80,.94)",
+                    titleFontFamily: "inherit",
+                    bodyFontFamily: "inherit",
+                    displayColors: true
+                },
+                scales: {
+                    xAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#83788e" } }],
+                    yAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#83788e" } }]
+                }
+            };
+
+            new Chart(document.getElementById("totalRequestsTrend"), {
+                type: "line",
+                data: { labels: labels, datasets: [{ label: "کل ملاقات‌ها", data: trend.map(function (item) { return item.TotalRequests; }), borderColor: "#9a62c2", backgroundColor: "rgba(186,116,223,.16)", pointBackgroundColor: "#fff", pointBorderColor: "#9a62c2", pointBorderWidth: 3, pointRadius: 4, pointHoverRadius: 6, borderWidth: 3, lineTension: .35, fill: true }] },
+                options: commonOptions
+            });
+
+            new Chart(document.getElementById("statusRequestsTrend"), {
+                type: "line",
+                data: { labels: labels, datasets: [
+                    { label: "اقدام‌شده", data: trend.map(function (item) { return item.ResolvedRequests; }), borderColor: "#3674bd", backgroundColor: "rgba(54,116,189,.05)", pointBackgroundColor: "#3674bd", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
+                    { label: "ثبت نظریه", data: trend.map(function (item) { return item.OpinionRequests; }), borderColor: "#2585a3", backgroundColor: "rgba(37,133,163,.05)", pointBackgroundColor: "#2585a3", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
+                    { label: "عودت", data: trend.map(function (item) { return item.ReturnedRequests; }), borderColor: "#b17a27", backgroundColor: "rgba(177,122,39,.05)", pointBackgroundColor: "#b17a27", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false }
+                ] },
+                options: commonOptions
+            });
         })();
     </script>
 }
