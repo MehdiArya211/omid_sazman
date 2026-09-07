@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Globalization;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.DTOs.Base;
@@ -1521,7 +1522,53 @@ namespace VisitorManagment.Core.Services
                 })
                 .SingleOrDefault();
 
-            return statistics ?? new DashboardRequestStatistics();
+            statistics = statistics ?? new DashboardRequestStatistics();
+
+            var currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            var firstMonth = currentMonth.AddMonths(-5);
+            var monthlyRows = files
+                .Where(file => file.RegDate >= firstMonth)
+                .GroupBy(file => new { file.RegDate.Year, file.RegDate.Month })
+                .Select(group => new
+                {
+                    group.Key.Year,
+                    group.Key.Month,
+                    TotalRequests = group.Count(),
+                    ResolvedRequests = group.Count(file => file.FileStatusId == 1),
+                    OpinionRequests = group.Count(file => file.FileStatusId == 2),
+                    ReturnedRequests = group.Count(file => file.FileStatusId == 3)
+                })
+                .ToList();
+
+            var persianCalendar = new PersianCalendar();
+            for (var monthOffset = 0; monthOffset < 6; monthOffset++)
+            {
+                var monthDate = firstMonth.AddMonths(monthOffset);
+                var row = monthlyRows.FirstOrDefault(item =>
+                    item.Year == monthDate.Year && item.Month == monthDate.Month);
+
+                statistics.MonthlyTrend.Add(new DashboardMonthlyRequestStatistics
+                {
+                    Label = GetPersianMonthName(persianCalendar.GetMonth(monthDate)) + " " +
+                            persianCalendar.GetYear(monthDate),
+                    TotalRequests = row == null ? 0 : row.TotalRequests,
+                    ResolvedRequests = row == null ? 0 : row.ResolvedRequests,
+                    OpinionRequests = row == null ? 0 : row.OpinionRequests,
+                    ReturnedRequests = row == null ? 0 : row.ReturnedRequests
+                });
+            }
+
+            return statistics;
+        }
+
+        private static string GetPersianMonthName(int month)
+        {
+            var monthNames = new[]
+            {
+                "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+                "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+            };
+            return month >= 1 && month <= 12 ? monthNames[month - 1] : string.Empty;
         }
 
         public int GetFileCount(string unitDutyCode, string unitCode, string codeGha, string roleTypeId, string personalCode)
