@@ -89,6 +89,8 @@ namespace VisitorManagment.Core.DTOs
         [Display(Name = "نام کاربری")]
         public string UserName { get; set; }
         public int UserRolesId { get; set; }
+        public string CommanderName { get; set; }
+        public string CommanderPersonalCode { get; set; }
 
     }
 
