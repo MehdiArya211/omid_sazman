@@ -3,6 +3,7 @@ using ITOWebApiClient;
 using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.DTOs.ReportsAdmin;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.Core.Services.Interfaces.Ranking;
