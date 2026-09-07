@@ -353,7 +353,7 @@ namespace VisitorManagment.Core.Services
                 CodGha = c.CodGha,
                 AvatarName = c.UserAvatar,
 
-                UserRolesTitle = role?.Title,
+                UserRolesTitle = role == null ? null : role.Title,
                 UserRolesId = roleId
             }).SingleOrDefault();
 
