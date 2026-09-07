@@ -11,10 +11,24 @@ namespace VisitorManagment.Core.DTOs
         public int OpinionRequests { get; set; }
         public int ReturnedRequests { get; set; }
         public int OtherRequests { get; set; }
+        public System.Collections.Generic.List<DashboardMonthlyRequestStatistics> MonthlyTrend { get; set; }
+            = new System.Collections.Generic.List<DashboardMonthlyRequestStatistics>();
 
         public int CompletedRequests => ResolvedRequests + OpinionRequests;
         public int CompletionPercentage => TotalRequests == 0
             ? 0
             : (int)System.Math.Round(CompletedRequests * 100d / TotalRequests);
+    }
+
+    /// <summary>
+    /// آمار یکتای درخواست‌ها در یک ماه برای نمودار مدیریتی.
+    /// </summary>
+    public class DashboardMonthlyRequestStatistics
+    {
+        public string Label { get; set; }
+        public int TotalRequests { get; set; }
+        public int ResolvedRequests { get; set; }
+        public int OpinionRequests { get; set; }
+        public int ReturnedRequests { get; set; }
     }
 }
