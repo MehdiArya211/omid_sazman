@@ -33,9 +33,6 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
 
         [BindProperty(SupportsGet = true)]
         public int? RoleId { get; set; }
-        [BindProperty(SupportsGet = true)]
-        public int? UnitCode { get; set; }
-        public bool HasUnitProfile { get; private set; }
         #region اعضا و متدهای کلاس
 
 
@@ -43,22 +40,19 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
         /// </summary>
 
-        public void OnGet(int? roleId = 0, int? unitCode = null)
+        public void OnGet(int? roleId = 0)
         {
             RoleId = roleId;
-            UnitCode = unitCode > 0 ? unitCode : null;
 
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
-            ViewData["UnitList"] = new SelectList(_permissionService.GetUnitsForAccessManagement(), "UnitCode", "UnitTitle");
 
             ViewData["PermissionList"] = new SelectList(_permissionService.GetAllPermission(), "PermissionId", "PermissionTitle");
 
             // لیست پرسنلی که دسترسی دارد
-            ListAccsessPersonal = _permissionService.GetAccessReciverMenuList(roleId ?? 0, UnitCode);
+            ListAccsessPersonal = _permissionService.GetAccessReciverMenuList(roleId ?? 0);
 
             // لیست پرسنلی که دسترسی ندارد
-            ListUnAccsessPersonal = _permissionService.GetUnAccessReciverMenuList(roleId ?? 0, UnitCode);
-            HasUnitProfile = UnitCode.HasValue && _permissionService.HasUnitAccessProfile(roleId ?? 0, UnitCode.Value);
+            ListUnAccsessPersonal = _permissionService.GetUnAccessReciverMenuList(roleId ?? 0);
 
 
             ViewData["ShowForm"] = false;
@@ -76,12 +70,12 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
         /// <summary>
         /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
         /// </summary>
-        public IActionResult OnPostAddAccess(int roleId, int? unitCode, List<int> permissionIds)
+        public IActionResult OnPostAddAccess(int roleId , List<int> permissionIds)
         {
             if (roleId <= 0 || permissionIds == null || permissionIds.Count == 0)
             {
                 SetOperationNotification("انتخاب دسترسی", "حداقل یک منو را برای افزودن انتخاب کنید.", "warning");
-                return RedirectToPage(new { roleId, unitCode });
+                return RedirectToPage(new { roleId });
             }
 
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
@@ -95,20 +89,20 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
             ListUnAccsessPersonal = _permissionService.GetUnAccessReciverMenuList(roleId);
 
 
-            var addedCount = _rolePermissionService.AddPermissionToRole(roleId, permissionIds, unitCode);
+            var addedCount = _rolePermissionService.AddPermissionToRole(roleId, permissionIds);
             SetOperationNotification(addedCount > 0 ? "ثبت موفق" : "بدون تغییر", addedCount > 0 ? $"{addedCount} دسترسی با موفقیت به نقش اضافه شد." : "دسترسی‌های انتخاب‌شده قبلاً برای این نقش ثبت شده‌اند.", addedCount > 0 ? "success" : "info");
-            return RedirectToPage(new { roleId, unitCode });
+            return RedirectToPage(new { roleId });
         }
 
         /// <summary>
         /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
         /// </summary>
-        public IActionResult OnPostRemoveAccess(int roleId, int? unitCode, List<int> permissionIds)
+        public IActionResult OnPostRemoveAccess(int roleId, List<int> permissionIds)
         {
             if (roleId <= 0 || permissionIds == null || permissionIds.Count == 0)
             {
                 SetOperationNotification("انتخاب دسترسی", "حداقل یک منو را برای حذف انتخاب کنید.", "warning");
-                return RedirectToPage(new { roleId, unitCode });
+                return RedirectToPage(new { roleId });
             }
 
             ViewData["RoleList"] = new SelectList(_permissionService.GetAllRoles(), "RoleId", "Title");
@@ -122,24 +116,9 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
             ListUnAccsessPersonal = _permissionService.GetUnAccessReciverMenuList(roleId);
 
 
-            var removedCount = _rolePermissionService.RemovePermissionToRole(roleId, permissionIds, unitCode);
+            var removedCount = _rolePermissionService.RemovePermissionToRole(roleId, permissionIds);
             SetOperationNotification(removedCount > 0 ? "حذف موفق" : "بدون تغییر", removedCount > 0 ? $"{removedCount} دسترسی با موفقیت حذف شد." : "هیچ دسترسی ثبت‌شده‌ای برای حذف یافت نشد.", removedCount > 0 ? "success" : "info");
-            return RedirectToPage(new { roleId, unitCode });
-        }
-
-        public IActionResult OnPostResetUnitAccess(int roleId, int unitCode)
-        {
-            if (roleId <= 0 || unitCode <= 0)
-            {
-                SetOperationNotification("اطلاعات نامعتبر", "نقش و یگان معتبر انتخاب نشده است.", "warning");
-                return RedirectToPage(new { roleId, unitCode });
-            }
-
-            var reset = _rolePermissionService.ResetUnitPermissionToRole(roleId, unitCode);
-            SetOperationNotification(reset ? "بازنشانی موفق" : "بدون تغییر",
-                reset ? "دسترسی اختصاصی حذف شد و این یگان از این پس از دسترسی پایه نقش استفاده می‌کند." : "برای این یگان دسترسی اختصاصی ثبت نشده بود.",
-                reset ? "success" : "info");
-            return RedirectToPage(new { roleId, unitCode });
+            return RedirectToPage(new { roleId });
         }
 
         /// <summary>
