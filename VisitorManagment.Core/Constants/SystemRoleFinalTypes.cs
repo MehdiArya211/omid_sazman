@@ -6,13 +6,13 @@ namespace VisitorManagment.Core.Constants
     /// </summary>
     public static class SystemRoleFinalTypes
     {
-        public const int Headquarters = 1;
-        public const int UnitCommander = 2;
-        public const int AnsarExpert = 5;
-        public const int AbhadExpert = 6;
-        public const int AbhadSecretary = 7;
-        public const int AviationCommander = 9;
-        public const int RegionalCommander = 11;
+        public const int Headquarters = 1;           // سطح ستاد یا قرارگاه
+        public const int UnitCommander = 2;          // سطح فرمانده یگان
+        public const int AnsarExpert = 5;            // سطح کارشناس قرارگاه انصار
+        public const int AbhadExpert = 6;             // سطح کارشناس ابهاد
+        public const int AbhadSecretary = 7;          // سطح دبیر ابهاد
+        public const int AviationCommander = 9;      // سطح فرمانده هوانیروز
+        public const int RegionalCommander = 11;     // سطح فرمانده قرارگاه منطقه‌ای
 
         /// <summary>
         /// سطوح نهایی قابل انتخاب در فرم نقش را برمی‌گرداند.
