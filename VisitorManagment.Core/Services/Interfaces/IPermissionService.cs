@@ -28,8 +28,6 @@ namespace VisitorManagment.Core.Services.Interfaces
         #endregion
         #region province&&City
         List<Permission> GetPermissionsForUser(int userId);
-        List<UnitAccessOptionViewModel> GetUnitsForAccessManagement();
-        bool HasUnitAccessProfile(int roleId, int unitCode);
         #endregion
 
         /// <summary>
@@ -57,7 +55,6 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="roleId"></param>
         /// <returns></returns>
         List<PermissionViewModel> GetAccessReciverMenuList(int roleId);
-        List<PermissionViewModel> GetAccessReciverMenuList(int roleId, int? unitCode);
 
         /// <summary>
         /// لیست هر نقشی به چه منو هایی دسترسی ندارد
@@ -65,6 +62,5 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="roleId"></param>
         /// <returns></returns>
         List<PermissionViewModel> GetUnAccessReciverMenuList(int roleId);
-        List<PermissionViewModel> GetUnAccessReciverMenuList(int roleId, int? unitCode);
     }
 }
