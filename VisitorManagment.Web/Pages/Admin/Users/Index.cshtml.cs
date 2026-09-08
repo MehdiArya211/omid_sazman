@@ -3,6 +3,7 @@ using VisitorManagment.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
+using VisitorManagment.Web.Helpers;
 
 namespace VisitorManagment.Web.Pages.Admin.Users
 {
@@ -41,6 +42,23 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             UserForAdminViewModel = _userService.GetUsers(roleTypeId , userIdLoggin, pageId, filterEmail, filterUserName );
 
             return Page();
+        }
+
+        /// <summary>
+        /// رمز کاربر را به کد پرسنلی او بازنشانی می‌کند و تغییر رمز در اولین ورود را اجباری می‌سازد.
+        /// این عملیات صرفاً برای مدیر کل سامانه در دسترس است.
+        /// </summary>
+        public IActionResult OnPostResetPassword(int userId)
+        {
+            if (!User.IsSystemAdministrator()) return Forbid();
+
+            var resetSucceeded = _userService.ResetPasswordToPersonnelCode(userId);
+            TempData["OperationTitle"] = resetSucceeded ? "بازنشانی موفق" : "بازنشانی ناموفق";
+            TempData["OperationMessage"] = resetSucceeded
+                ? "رمز موقت کاربر برابر کد پرسنلی او شد و در اولین ورود باید آن را تغییر دهد."
+                : "کاربر موردنظر یافت نشد یا امکان بازنشانی رمز او وجود ندارد.";
+            TempData["OperationIcon"] = resetSucceeded ? "success" : "error";
+            return RedirectToPage();
         }
 
 
