@@ -51,6 +51,9 @@ namespace VisitorManagment.DataLayer.Entities.User
         [Display(Name = "وضعیت")]
         public bool IsActive { get; set; }
 
+        [Display(Name = "دسترسی اختصاصی به داشبورد مدیریتی")]
+        public bool HasDashboardAccess { get; set; }
+
         [Display(Name = "آواتار")]
         [MaxLength(200, ErrorMessage = "{0} نمی تواند بیشتر از {1} باشد")]
         public string UserAvatar { get; set; }

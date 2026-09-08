@@ -80,8 +80,13 @@
 
         if (filter.length) {
             var searchInput = filter.find("input").first();
+            // detach رویدادهای داخلی DataTables را هنگام بازچینی Toolbar حفظ می‌کند.
+            searchInput.detach();
             searchInput.attr({ placeholder: "جست‌وجو در جدول...", "aria-label": "جست‌وجو در جدول" });
             filter.empty().append($('<label class="dataTables-search-box"><i class="ti-search" aria-hidden="true"></i><span class="sr-only">جست‌وجو</span></label>').append(searchInput));
+            searchInput.off(".unifiedSearch").on("input.unifiedSearch search.unifiedSearch", function () {
+                if (api.search() !== this.value) { api.search(this.value).draw(); }
+            });
             controls.append(filter);
         }
         if (length.length) {

@@ -120,12 +120,12 @@
                 event.preventDefault();
                 fire({
                     icon: "warning",
-                    title: archiving ? "تأیید بایگانی" : "تأیید حذف",
+                    title: (submitter && submitter.dataset.confirmTitle) || form.dataset.confirmTitle || (archiving ? "تأیید بایگانی" : deleting ? "تأیید حذف" : "تأیید عملیات"),
                     text: explicitConfirm || (archiving ? "آیا مطمئن هستید که این درخواست به بایگانی منتقل شود؟" : "آیا از حذف این مورد مطمئن هستید؟ این عملیات قابل بازگشت نیست."),
                     showCancelButton: true,
-                    confirmButtonText: archiving ? "بله، بایگانی شود" : "بله، حذف شود",
+                    confirmButtonText: (submitter && submitter.dataset.confirmButton) || form.dataset.confirmButton || (archiving ? "بله، بایگانی شود" : deleting ? "بله، حذف شود" : "بله، انجام شود"),
                     cancelButtonText: "انصراف",
-                    confirmButtonColor: "#b42318",
+                    confirmButtonColor: deleting || archiving ? "#b42318" : "#3157d5",
                     cancelButtonColor: "#64748b",
                     reverseButtons: true,
                     focusCancel: true

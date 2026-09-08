@@ -233,6 +233,7 @@ namespace VisitorManagment.Core.Services
             editUser.CodGhaTitle = editUserViewModel.CodGhaTitle;
             editUser.CodGha = editUserViewModel.CodGha;
             editUser.IsActive = true;
+            editUser.HasDashboardAccess = editUserViewModel.HasDashboardAccess;
             editUser.EditDate = DateTime.Now;
             editUser.UserName = editUserViewModel.UserName;
             editUser.EditUserId = EditUserId;
@@ -334,7 +335,7 @@ namespace VisitorManagment.Core.Services
             var roleId = _context.UserRoles.Where(u => u.UserId == userId).Select(u => u.RoleId).SingleOrDefault();
             Role role = _context.Roles.Where(r => r.RoleId == roleId).SingleOrDefault();
 
-            return _context.Users.Where(u => u.Id == userId).Select(c => new EditUserViewModel()
+            var model = _context.Users.Where(u => u.Id == userId).Select(c => new EditUserViewModel()
             {
                 UserId = c.Id,
                 UserName = c.UserName,
@@ -352,10 +353,34 @@ namespace VisitorManagment.Core.Services
                 CodGhaTitle = c.CodGhaTitle,
                 CodGha = c.CodGha,
                 AvatarName = c.UserAvatar,
+                HasDashboardAccess = c.HasDashboardAccess,
 
-                UserRolesTitle = role.Title,
+                UserRolesTitle = role == null ? null : role.Title,
                 UserRolesId = roleId
             }).SingleOrDefault();
+
+            if (model == null)
+            {
+                return null;
+            }
+
+            var commanderRoleId = model.UnitCode == model.CodGha ? 7 : 6;
+            var commander = _context.UserRoles
+                .AsNoTracking()
+                .Where(userRole =>
+                    userRole.RoleId == commanderRoleId &&
+                    userRole.User.UnitCode == model.UnitCode &&
+                    userRole.User.IsActive)
+                .Select(userRole => new
+                {
+                    Name = userRole.User.RankTitle + " " + userRole.User.FirstName + " " + userRole.User.LastName,
+                    PersonalCode = userRole.User.UserName
+                })
+                .FirstOrDefault();
+
+            model.CommanderName = commander?.Name?.Trim();
+            model.CommanderPersonalCode = commander?.PersonalCode;
+            return model;
         }
 
         /// <summary>

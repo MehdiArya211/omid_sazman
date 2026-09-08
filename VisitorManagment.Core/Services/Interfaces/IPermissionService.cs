@@ -21,6 +21,8 @@ namespace VisitorManagment.Core.Services.Interfaces
         Role GetRoleById(int roleId);
         void UpdateRole(Role role);
         void DeleteRole(Role role);
+        bool RoleTitleOrCodeExists(string title, int code, int excludeRoleId = 0);
+        bool IsRoleInUse(int roleId);
         void AddRolesToUser(int roleId, int userId);
         void EditRolesToUser(int roleId, int userId);
         #endregion
@@ -33,6 +35,12 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// </summary>
         /// <returns></returns>
         List<Permission> GetAllPermission();
+        Permission GetPermissionById(int permissionId);
+        int AddPermission(Permission permission);
+        void UpdatePermission(Permission permission);
+        bool IsPermissionInUse(int permissionId);
+        void DeletePermission(int permissionId);
+        bool UpdatePermissionOrder(List<PermissionOrderViewModel> items);
 
         /// <summary>
         /// دادن دسترسی نقش ها به منو ها

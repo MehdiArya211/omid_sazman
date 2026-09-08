@@ -89,8 +89,8 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
             ListUnAccsessPersonal = _permissionService.GetUnAccessReciverMenuList(roleId);
 
 
-            _rolePermissionService.AddPermissionToRole(roleId, permissionIds);
-            SetOperationNotification("ثبت موفق", "دسترسی منوهای انتخاب‌شده با موفقیت اضافه شد.", "success");
+            var addedCount = _rolePermissionService.AddPermissionToRole(roleId, permissionIds);
+            SetOperationNotification(addedCount > 0 ? "ثبت موفق" : "بدون تغییر", addedCount > 0 ? $"{addedCount} دسترسی با موفقیت به نقش اضافه شد." : "دسترسی‌های انتخاب‌شده قبلاً برای این نقش ثبت شده‌اند.", addedCount > 0 ? "success" : "info");
             return RedirectToPage(new { roleId });
         }
 
@@ -116,8 +116,8 @@ namespace VisitorManagment.Web.Pages.Admin.RolePermission
             ListUnAccsessPersonal = _permissionService.GetUnAccessReciverMenuList(roleId);
 
 
-            _rolePermissionService.RemovePermissionToRole(roleId, permissionIds);
-            SetOperationNotification("حذف موفق", "دسترسی منوهای انتخاب‌شده با موفقیت حذف شد.", "success");
+            var removedCount = _rolePermissionService.RemovePermissionToRole(roleId, permissionIds);
+            SetOperationNotification(removedCount > 0 ? "حذف موفق" : "بدون تغییر", removedCount > 0 ? $"{removedCount} دسترسی با موفقیت حذف شد." : "هیچ دسترسی ثبت‌شده‌ای برای حذف یافت نشد.", removedCount > 0 ? "success" : "info");
             return RedirectToPage(new { roleId });
         }
 

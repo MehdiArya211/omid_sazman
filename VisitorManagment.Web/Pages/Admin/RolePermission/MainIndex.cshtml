@@ -3,6 +3,7 @@
 @{ ViewData["Title"] = "دسترسی نقش به منوها"; }
 
 <link rel="stylesheet" href="~/css/access-management.css" />
+<link rel="stylesheet" href="~/css/admin-structure-management.css" asp-append-version="true" />
 
 <main class="access-page" dir="rtl">
     <header class="access-hero">
@@ -13,6 +14,14 @@
         </div>
         <div class="access-hero__icon" aria-hidden="true"><i class="ti-menu-alt"></i></div>
     </header>
+
+    @if (User.FindFirst("RoleTypeId")?.Value == "100")
+    {
+        <nav class="access-management-links" aria-label="مدیریت نقش و منو">
+            <a asp-page="/Admin/Roles/Index"><i class="ti-id-badge"></i> مدیریت نقش‌ها</a>
+            <a asp-page="/Admin/Menus/Index"><i class="ti-menu-alt"></i> مدیریت منوها</a>
+        </nav>
+    }
 
     <form method="get" class="access-role-picker">
         <div class="access-role-picker__field">
@@ -32,7 +41,7 @@
     @if (ViewBag.ShowForm == true)
     {
         <div class="access-board" data-access-board>
-            <form method="post" class="access-panel access-panel--available" data-access-panel>
+            <form method="post" asp-page-handler="AddAccess" class="access-panel access-panel--available" data-access-panel>
                 <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
                 <div class="access-panel__header">
                     <div><span class="access-panel__status"><i class="ti-close"></i> بدون دسترسی</span><h2>منوهای قابل افزودن</h2></div>
@@ -57,11 +66,11 @@
                 </div>
                 <footer class="access-panel__footer">
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
-                    <button type="submit" asp-page-handler="AddAccess" class="access-action access-action--add" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده به این نقش اضافه شود؟"><i class="ti-plus"></i> افزودن دسترسی</button>
+                    <button type="submit" class="access-action access-action--add" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده به این نقش اضافه شود؟" data-confirm-title="تأیید افزودن دسترسی" data-confirm-button="بله، دسترسی اضافه شود"><i class="ti-plus"></i> افزودن دسترسی</button>
                 </footer>
             </form>
 
-            <form method="post" class="access-panel access-panel--granted" data-access-panel>
+            <form method="post" asp-page-handler="RemoveAccess" class="access-panel access-panel--granted" data-access-panel>
                 <input type="hidden" value="@ViewBag.RoleId" name="roleId" />
                 <div class="access-panel__header">
                     <div><span class="access-panel__status"><i class="ti-check"></i> دارای دسترسی</span><h2>منوهای فعال این نقش</h2></div>
@@ -86,7 +95,7 @@
                 </div>
                 <footer class="access-panel__footer">
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
-                    <button type="submit" asp-page-handler="RemoveAccess" class="access-action access-action--remove" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده از این نقش حذف شود؟"><i class="ti-trash"></i> حذف دسترسی</button>
+                    <button type="submit" class="access-action access-action--remove" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده از این نقش حذف شود؟" data-confirm-title="تأیید حذف دسترسی" data-confirm-button="بله، دسترسی حذف شود"><i class="ti-trash"></i> حذف دسترسی</button>
                 </footer>
             </form>
         </div>

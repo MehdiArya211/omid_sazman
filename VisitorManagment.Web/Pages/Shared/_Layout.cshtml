@@ -190,6 +190,10 @@
 
     <script src="~/js/operation-feedback.js" asp-append-version="true"></script>
     <script src="~/js/ui-preferences.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/js/online-presence.js" asp-append-version="true"></script>
+    }
     @if (User.Identity?.IsAuthenticated == true && User.FindFirst("PersonalCode")?.Value == "95003599")
     {
         <script src="~/js/support-chat-notifications.js" asp-append-version="true"></script>

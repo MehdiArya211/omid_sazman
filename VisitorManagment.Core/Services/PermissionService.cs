@@ -59,6 +59,19 @@ namespace VisitorManagment.Core.Services
             UpdateRole(role);
         }
 
+        public bool RoleTitleOrCodeExists(string title, int code, int excludeRoleId = 0)
+        {
+            var normalizedTitle = (title ?? string.Empty).Trim();
+            return _context.Roles.Any(role => role.RoleId != excludeRoleId && !role.IsDelete &&
+                (role.Title == normalizedTitle || role.Code == code));
+        }
+
+        public bool IsRoleInUse(int roleId)
+        {
+            return _context.UserRoles.Any(item => item.RoleId == roleId) ||
+                   _context.RolePermission.Any(item => item.RoleId == roleId);
+        }
+
         /// <summary>
         /// اطلاعات موجود را بررسی و به‌روزرسانی می‌کند.
         /// </summary>
@@ -163,6 +176,62 @@ namespace VisitorManagment.Core.Services
             var result = _context.Permission.ToList();
 
             return result;
+        }
+
+        public Permission GetPermissionById(int permissionId)
+        {
+            return _context.Permission.SingleOrDefault(permission => permission.PermissionId == permissionId);
+        }
+
+        public int AddPermission(Permission permission)
+        {
+            _context.Permission.Add(permission);
+            _context.SaveChanges();
+            return permission.PermissionId;
+        }
+
+        public void UpdatePermission(Permission permission)
+        {
+            _context.Permission.Update(permission);
+            _context.SaveChanges();
+        }
+
+        public bool IsPermissionInUse(int permissionId)
+        {
+            return _context.Permission.Any(permission => permission.ParentID == permissionId) ||
+                   _context.RolePermission.Any(item => item.PermissionId == permissionId);
+        }
+
+        public void DeletePermission(int permissionId)
+        {
+            var permission = GetPermissionById(permissionId);
+            if (permission == null || IsPermissionInUse(permissionId)) return;
+            _context.Permission.Remove(permission);
+            _context.SaveChanges();
+        }
+
+        public bool UpdatePermissionOrder(List<PermissionOrderViewModel> items)
+        {
+            if (items == null || items.Count == 0) return false;
+            if (items.Any(item => item.PermissionId <= 0) || items.GroupBy(item => item.PermissionId).Any(group => group.Count() > 1)) return false;
+            var ids = items.Select(item => item.PermissionId).Distinct().ToList();
+            var allPermissions = _context.Permission.ToList();
+            if (ids.Count != allPermissions.Count || allPermissions.Any(permission => !ids.Contains(permission.PermissionId))) return false;
+            var requested = items.ToDictionary(item => item.PermissionId);
+            foreach (var item in items)
+            {
+                if (!item.ParentId.HasValue) continue;
+                if (item.ParentId.Value == item.PermissionId || !requested.ContainsKey(item.ParentId.Value) || requested[item.ParentId.Value].ParentId.HasValue) return false;
+            }
+            var permissions = allPermissions;
+            foreach (var permission in permissions)
+            {
+                var item = items.First(value => value.PermissionId == permission.PermissionId);
+                permission.ParentID = item.ParentId == permission.PermissionId ? null : item.ParentId;
+                permission.Order = item.Order;
+            }
+            _context.SaveChanges();
+            return true;
         }
 
 

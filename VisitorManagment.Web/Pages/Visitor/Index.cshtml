@@ -1,187 +1,194 @@
-﻿@page
+@page
 @model VisitorManagment.Web.Pages.Visitor.IndexModel
+@using System.Linq
+@using System.Text.Json
 @{
-    ViewData["Title"] = "سامانه ملاقات عمومی (امید)";
+    ViewData["Title"] = "داشبورد سامانه امید";
 }
+<link rel="stylesheet" href="~/css/omid-dashboard.css" asp-append-version="true" />
 
-<div id="Mymodal" style="display: none;">
-    <div class="swal-overlay" tabindex="-1">
-        <div class="swal-modal" role="dialog" aria-modal="true">
-            <div class="swal-icon swal-icon--warning">
-                <span class="swal-icon--warning__body">
-                    <span class="swal-icon--warning__dot"></span>
-                </span>
-            </div>
-            <div class="swal-title text-warning">توجه</div>
-            <div class="swal-text text-dark" id="loginInfo">
-                <span class="text-center" style="color: #109178; font-weight: 400; font-size: 15px;">
-                    @ViewBag.FullName &nbsp;
-                </span>
-                <span>
-                    کلیه فعالیت های شما در سامانه ردگیری و بازیابی میشود و در قبال اطلاعات حساس در دسترس مسولیت دارید.
-                </span>
-                <br><br>
-                <span>آی‌پی: <span id="userIp"></span></span><br>
-                <span>زمان لاگین: <span id="loginTime"></span></span><br>
-                <span>مرورگر: <span id="userBrowser"></span></span>
-            </div>
-            <div class="swal-footer">
-                <div class="swal-button-container">
-                    <button class="swal-button swal-button--confirm" onclick="closeswal()">تایید</button>
-                </div>
+<main class="omid-dashboard" aria-label="داشبورد سامانه امید">
+    <section class="omid-dashboard__hero">
+        <div class="omid-dashboard__hero-content">
+            <span class="omid-dashboard__eyebrow"><i class="fa fa-shield"></i> سامانه یکپارچه ملاقات عمومی</span>
+            <h1>@Model.UserDisplayName، به سامانه امید خوش آمدید</h1>
+            <p>ثبت، گردش، بررسی و پیگیری درخواست‌های ملاقات در یک مسیر شفاف، سریع و قابل رصد.</p>
+            <div class="omid-dashboard__identity">
+                <span><i class="fa fa-building-o"></i>@Model.UserUnitTitle</span>
+                <span><i class="fa fa-circle omid-dashboard__online-dot"></i><b id="onlineUsersCount">۱</b> کاربر آنلاین</span>
             </div>
         </div>
-    </div>
-</div>
-
-
-<div class="container-fluid">
-
-    <div class="row">
-        <div class="col-md-7">
-            <div class="card bg-secondary-gradient">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-7">
-                            <h4 class=" mb-3">به سامانه ملاقات عمومی (امید) خوش آمدید!</h4>
-
-                            <p style="text-align:right">
-                                سامانه ملاقات عمومی (امید) با اهداف زیر پیاده سازی شده است:
-
-                                1.تحقق شعار عدالت محوری
-                                <br />
-                                2.هوشمند سازی کار ها
-                                <br />
-                                3.تسهیل در روند ثبت درخواست ملاقات
-                                <br />
-                                4.افزایش سرعت در پاسخگویی به در خواست و مشکلات
-                                <br />
-                                5.امکان رصد و پایش درخواست و در صورت لزوم پیگیری آن
-                            </p>
-                        </div>
-
-                        <div class="col-md-5">
-                            <img src="/assets/media/svg/undraw_onboarding_o8mv.svg" alt="..." class="img-fluid">
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="omid-dashboard__hero-visual" aria-hidden="true">
+            <span class="omid-dashboard__orbit omid-dashboard__orbit--one"></span>
+            <span class="omid-dashboard__orbit omid-dashboard__orbit--two"></span>
+            <div class="omid-dashboard__logo"><img src="~/LOGO.png" alt="" /></div>
         </div>
-        <div class="col-md-5">
-            <div class="card" id="cardContent">
-                <div class="card-body">
-                    <h6 class="card-title"> آمار کلی ملاقات ها </h6>
-                    <h2 class="mb-3 font-weight-bold">@ViewData["AllFileCount"] عدد</h2>
-                    <div class="progress">
-                        <div class="progress-bar w-25 bg-secondary-gradient" role="progressbar"></div>
-                        <div class="progress-bar w-50 bg-info-gradient" role="progressbar"></div>
-                        <div class="progress-bar w-25 bg-warning-gradient" role="progressbar"></div>
-                    </div>
-                    <div class="card p-3 mt-4">
-                        <h5>تعداد کاربران آنلاین: <span id="onlineCount">0</span></h5>
-                        <ul id="onlineUsersList" class="list-group mt-3"></ul>
-                    </div>
-                    <div class="row">
+    </section>
 
-                        <div class="col">
-                            <p class="mb-0">
-                                <span class="fa fa-circle text-danger mr-1"></span>
-                                اقدام شد
-                            </p>
-                            <h5 class="mt-2 mb-0">@ViewData["EghdamShode"] عدد</h5>
-                        </div>
-
-                        <div class="col">
-                            <p class="mb-0">
-                                <span class="fa fa-circle text-info mr-1"></span>
-                                ثبت نظریه
-                            </p>
-                            <h5 class="mt-2 mb-0">@ViewData["SabteNazariye"] عدد</h5>
-                        </div>
-
-                        <div class="col">
-                            <p class="mb-0">
-                                <span class="fa fa-circle text-warning mr-1"></span>
-                                عودت
-                            </p>
-                            <h5 class="mt-2 mb-0">@ViewData["RadeDarkhastVaAodat"] عدد</h5>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+    <section class="omid-dashboard__section" aria-labelledby="statisticsTitle">
+        <div class="omid-dashboard__section-heading">
+            <div><span>نمای کلی</span><h2 id="statisticsTitle">آمار دقیق درخواست‌ها</h2></div>
+            <p>هر درخواست بر اساس شناسه یکتا و فقط یک مرتبه محاسبه شده است.</p>
         </div>
-    </div>
-
-    <!-- بخش جدید برای اعلان‌ها و اخبار -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="card-title">اعلان‌ها و اطلاعیه ها</h6>
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <strong>اطلاعیه ۱:</strong> مشکل خطای ثبت درخواست رفع شد .مورخه 1403/07/01.
-                        </li>
-                        <!-- می‌توانید اعلان‌های بیشتری اضافه کنید -->
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-@section GetInformationPersonal
-{
-
-    <script>
-
-
-        console.log("📡 Attempting to connect to SignalR hub...");
-
-        window.connection = new signalR.HubConnectionBuilder()
-            .withUrl("/onlineUsersHub")
-            .configureLogging(signalR.LogLevel.Information) // 👈 برای مشاهده لاگ‌ها
-            .build();
-
-        window.connection.on("UpdateOnlineUsers", function (count, users) {
-            console.log("✅ Received update from hub: ", count, users);
-            document.getElementById("onlineCount").innerText = count;
-
-            //const list = document.getElementById("onlineUsersList");
-            //list.innerHTML = "";
-            //users.forEach(function (user) {
-            //    const li = document.createElement("li");
-            //    li.textContent = user;
-            //    list.appendChild(li);
-            //});
-        });
-
-        window.connection.start()
-            .then(() => console.log("✅ Connected to hub successfully!"))
-            .catch(err => console.error("❌ Hub connection failed:", err));
-
-    </script>
-
-
-    <script>
-        function closeswal() {
-            $("#Mymodal").hide();
+        @if (Model.CanViewManagementDashboard)
+        {
+            <form method="get" class="omid-dashboard__filters" aria-label="فیلتر آمار مدیریتی">
+                <div class="omid-filter-field"><label for="dashboardPeriod"><i class="fa fa-calendar"></i> بازه زمانی</label><select id="dashboardPeriod" name="period"><option value="0" selected="@(Model.SelectedPeriod == 0)">همه بازه‌ها</option><option value="12" selected="@(Model.SelectedPeriod == 12)">یک‌ساله</option><option value="6" selected="@(Model.SelectedPeriod == 6)">شش‌ماهه</option><option value="3" selected="@(Model.SelectedPeriod == 3)">سه‌ماهه</option></select></div>
+                <div class="omid-filter-field omid-filter-field--unit"><label for="dashboardUnit"><i class="fa fa-building-o"></i> یگان</label><select id="dashboardUnit" name="selectedUnitCode" class="dashboard-unit-search"><option value="">همه یگان‌های قابل مشاهده</option>@foreach (var unit in Model.Statistics.AvailableUnits){<option value="@unit.UnitCode" selected="@(Model.SelectedUnitCode == unit.UnitCode)">@unit.UnitTitle</option>}</select></div>
+                <button type="submit"><i class="fa fa-filter"></i> اعمال فیلتر</button>
+            </form>
         }
+        <div class="omid-stat-grid">
+            <article class="omid-stat-card omid-stat-card--total"><div class="omid-stat-card__icon"><i class="fa fa-folder-open-o"></i></div><div><span>کل درخواست‌ها</span><strong>@Model.Statistics.TotalRequests.ToString("N0")</strong><small>در محدوده دسترسی شما</small></div></article>
+            <article class="omid-stat-card omid-stat-card--resolved"><div class="omid-stat-card__icon"><i class="fa fa-check"></i></div><div><span>اقدام‌شده</span><strong>@Model.Statistics.ResolvedRequests.ToString("N0")</strong><small>درخواست‌های تعیین تکلیف‌شده</small></div></article>
+            <article class="omid-stat-card omid-stat-card--opinion"><div class="omid-stat-card__icon"><i class="fa fa-commenting-o"></i></div><div><span>ثبت نظریه</span><strong>@Model.Statistics.OpinionRequests.ToString("N0")</strong><small>درخواست‌های دارای وضعیت نظریه</small></div></article>
+            <article class="omid-stat-card omid-stat-card--returned"><div class="omid-stat-card__icon"><i class="fa fa-reply"></i></div><div><span>عودت یا رد شده</span><strong>@Model.Statistics.ReturnedRequests.ToString("N0")</strong><small>نیازمند اصلاح یا پیگیری</small></div></article>
+        </div>
+    </section>
 
-        // فرض کنید این اطلاعات از سرور دریافت شده‌اند
-        const userIp = "@ViewBag.FullName"; // آی‌پی کاربر
-        const loginTime = new Date().toLocaleString(); // زمان فعلی به عنوان زمان لاگین
-        const userBrowser = navigator.userAgent; // اطلاعات مرورگر
+    @if (Model.CanViewManagementDashboard)
+    {
+    <section class="omid-dashboard__charts" aria-labelledby="managementChartsTitle">
+        <div class="omid-dashboard__section-heading omid-dashboard__section-heading--charts">
+            <div><span>تحلیل مدیریتی</span><h2 id="managementChartsTitle">روند درخواست‌ها در بازه انتخابی</h2></div>
+            <p>نمایش روند درخواست‌های یکتا در محدوده دسترسی فعلی</p>
+        </div>
+        <div class="omid-chart-grid">
+            <article class="omid-chart-card">
+                <header><div class="omid-chart-card__icon"><i class="fa fa-line-chart"></i></div><div><h3>روند کل ملاقات‌ها</h3><p>تغییر تعداد درخواست‌های ثبت‌شده در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نوع نمودار<select data-chart-target="total"><option value="line">خطی</option><option value="bar">ستونی</option><option value="radar">راداری</option></select></label><button type="button" data-chart-expand="total" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                <div class="omid-chart-canvas"><canvas id="totalRequestsTrend" aria-label="نمودار روند کل ملاقات‌ها" role="img"></canvas></div>
+            </article>
+            <article class="omid-chart-card">
+                <header><div class="omid-chart-card__icon"><i class="fa fa-area-chart"></i></div><div><h3>مقایسه وضعیت رسیدگی</h3><p>مقایسه اقدام، نظریه و عودت در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نوع نمودار<select data-chart-target="status"><option value="line">خطی</option><option value="bar">ستونی</option><option value="radar">راداری</option></select></label><button type="button" data-chart-expand="status" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                <div class="omid-chart-legend"><span class="is-resolved">اقدام‌شده</span><span class="is-opinion">ثبت نظریه</span><span class="is-returned">عودت</span></div>
+                <div class="omid-chart-canvas"><canvas id="statusRequestsTrend" aria-label="نمودار مقایسه وضعیت درخواست‌ها" role="img"></canvas></div>
+            </article>
+            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-pie-chart"></i></div><div><h3>ترکیب وضعیت درخواست‌ها</h3><p>سهم هر وضعیت از کل درخواست‌ها</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="composition"><option value="doughnut">حلقه‌ای</option><option value="pie">دایره‌ای</option><option value="polarArea">قطبی</option></select></label><button type="button" data-chart-expand="composition" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="requestComposition" aria-label="نمودار ترکیب وضعیت‌ها" role="img"></canvas></div></article>
+            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-building"></i></div><div><h3>یگان‌های دارای بیشترین درخواست</h3><p>ده یگان اول در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="units"><option value="horizontalBar">افقی</option><option value="bar">ستونی</option><option value="line">خطی</option></select></label><button type="button" data-chart-expand="units" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="unitRequestsChart" aria-label="نمودار درخواست یگان‌ها" role="img"></canvas></div></article>
+            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-signal"></i></div><div><h3>روند تجمعی ملاقات‌ها</h3><p>رشد مجموع درخواست‌ها در طول زمان</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="cumulative"><option value="line">خطی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="cumulative" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="cumulativeRequestsChart" aria-label="نمودار تجمعی درخواست‌ها" role="img"></canvas></div></article>
+            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-percent"></i></div><div><h3>نرخ رسیدگی دوره‌ای</h3><p>درصد اقدام یا ثبت نظریه نسبت به کل</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="efficiency"><option value="line">خطی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="efficiency" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="efficiencyChart" aria-label="نمودار نرخ رسیدگی" role="img"></canvas></div></article>
+        </div>
+    </section>
+    }
 
-        document.getElementById('userIp').textContent = userIp;
-        document.getElementById('loginTime').textContent = loginTime;
-        document.getElementById('userBrowser').textContent = userBrowser;
+    <section class="omid-dashboard__lower-grid">
+        <article class="omid-dashboard__panel omid-progress-panel">
+            <div class="omid-dashboard__panel-title"><div><span>عملکرد درخواست‌ها</span><h3>وضعیت رسیدگی</h3></div><strong>@Model.Statistics.CompletionPercentage٪</strong></div>
+            <div class="omid-progress" role="progressbar" aria-valuenow="@Model.Statistics.CompletionPercentage" aria-valuemin="0" aria-valuemax="100"><span style="width:@Model.Statistics.CompletionPercentage%"></span></div>
+            <div class="omid-progress-panel__meta"><span><b>@Model.Statistics.CompletedRequests.ToString("N0")</b> اقدام یا نظریه</span><span><b>@Model.Statistics.OtherRequests.ToString("N0")</b> سایر وضعیت‌ها</span></div>
+        </article>
+        <article class="omid-dashboard__panel omid-guide-panel">
+            <div class="omid-dashboard__panel-title"><div><span>مسیر خدمت</span><h3>فرایند شفاف درخواست</h3></div></div>
+            <ol class="omid-guide-steps">
+                <li><i class="fa fa-pencil-square-o"></i><div><b>ثبت درخواست</b><small>تکمیل اطلاعات و مستندات موردنیاز</small></div></li>
+                <li><i class="fa fa-random"></i><div><b>گردش سازمانی</b><small>ارجاع در سلسله‌مراتب مربوط</small></div></li>
+                <li><i class="fa fa-check-square-o"></i><div><b>پاسخ و پیگیری</b><small>مشاهده نتیجه و تاریخچه اقدامات</small></div></li>
+            </ol>
+        </article>
+    </section>
 
-        // نمایش مودال
-        $("#Mymodal").show();
+    <section class="omid-dashboard__notice">
+        <i class="fa fa-info-circle"></i><div><strong>حفظ محرمانگی اطلاعات</strong><p>تمام فعالیت‌ها در سامانه ثبت و قابل ردیابی است. در نگهداری اطلاعات سازمانی و حساب کاربری خود دقت کنید.</p></div>
+        <button type="button" id="sessionInfoButton">اطلاعات نشست</button>
+    </section>
+</main>
 
-        // بستن مودال بعد از 3 ثانیه
-        setTimeout(closeswal, 3000);
+<div class="modal fade" id="sessionInfoModal" tabindex="-1" role="dialog" aria-labelledby="sessionInfoTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document"><div class="modal-content omid-session-modal">
+        <div class="modal-header"><h5 id="sessionInfoTitle" class="modal-title">اطلاعات نشست فعال</h5><button type="button" class="close" data-dismiss="modal" aria-label="بستن"><span aria-hidden="true">&times;</span></button></div>
+        <div class="modal-body"><div><span>کاربر</span><strong>@Model.UserDisplayName</strong></div><div><span>نشانی شبکه</span><strong>@Model.UserIpAddress</strong></div><div><span>زمان مشاهده</span><strong>@Model.LoginDateTime</strong></div><div><span>وضعیت</span><strong class="text-success">فعال و امن</strong></div></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="dashboardChartModal" tabindex="-1" role="dialog" aria-labelledby="dashboardChartModalTitle" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered" role="document"><div class="modal-content omid-chart-modal"><div class="modal-header"><h5 id="dashboardChartModalTitle" class="modal-title">نمایش بزرگ نمودار</h5><button type="button" class="close" data-dismiss="modal" aria-label="بستن"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><canvas id="expandedDashboardChart"></canvas></div></div></div></div>
+
+@section GetInformationPersonal {
+    <script>
+        (function () {
+            "use strict";
+            var button = document.getElementById("sessionInfoButton");
+            if (button && window.jQuery) button.addEventListener("click", function () { window.jQuery("#sessionInfoModal").modal("show"); });
+
+            if (window.jQuery && window.jQuery.fn.select2 && document.getElementById("dashboardUnit")) {
+                window.jQuery("#dashboardUnit").select2({ width: "100%", placeholder: "جست‌وجو یا انتخاب یگان", allowClear: true, dir: "rtl" });
+            }
+
+            if (!window.Chart || !document.getElementById("totalRequestsTrend")) return;
+            var trend = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.MonthlyTrend));
+            var units = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.UnitBreakdown));
+            var labels = trend.map(function (item) { return item.Label; });
+            var gridColor = "rgba(126, 91, 151, .10)";
+            var commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 700 },
+                legend: { display: false },
+                tooltips: {
+                    mode: "index",
+                    intersect: false,
+                    backgroundColor: "rgba(63,49,80,.94)",
+                    titleFontFamily: "inherit",
+                    bodyFontFamily: "inherit",
+                    displayColors: true
+                },
+                scales: {
+                    xAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#83788e" } }],
+                    yAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#83788e" } }]
+                }
+            };
+
+            var totalChart = new Chart(document.getElementById("totalRequestsTrend"), {
+                type: "line",
+                data: { labels: labels, datasets: [{ label: "کل ملاقات‌ها", data: trend.map(function (item) { return item.TotalRequests; }), borderColor: "#9a62c2", backgroundColor: "rgba(186,116,223,.16)", pointBackgroundColor: "#fff", pointBorderColor: "#9a62c2", pointBorderWidth: 3, pointRadius: 4, pointHoverRadius: 6, borderWidth: 3, lineTension: .35, fill: true }] },
+                options: commonOptions
+            });
+
+            var statusChart = new Chart(document.getElementById("statusRequestsTrend"), {
+                type: "line",
+                data: { labels: labels, datasets: [
+                    { label: "اقدام‌شده", data: trend.map(function (item) { return item.ResolvedRequests; }), borderColor: "#3674bd", backgroundColor: "rgba(54,116,189,.05)", pointBackgroundColor: "#3674bd", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
+                    { label: "ثبت نظریه", data: trend.map(function (item) { return item.OpinionRequests; }), borderColor: "#2585a3", backgroundColor: "rgba(37,133,163,.05)", pointBackgroundColor: "#2585a3", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
+                    { label: "عودت", data: trend.map(function (item) { return item.ReturnedRequests; }), borderColor: "#b17a27", backgroundColor: "rgba(177,122,39,.05)", pointBackgroundColor: "#b17a27", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false }
+                ] },
+                options: commonOptions
+            });
+            var compositionChart = new Chart(document.getElementById("requestComposition"), { type: "doughnut", data: { labels: ["اقدام‌شده", "ثبت نظریه", "عودت", "سایر"], datasets: [{ data: [@Model.Statistics.ResolvedRequests, @Model.Statistics.OpinionRequests, @Model.Statistics.ReturnedRequests, @Model.Statistics.OtherRequests], backgroundColor: ["#5d8fd1", "#52a4b9", "#d5a04c", "#cbb9d8"], borderColor: "#fff", borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, legend: { position: "bottom", labels: { fontFamily: "inherit", fontColor: "#6f6278" } }, tooltips: { bodyFontFamily: "inherit", titleFontFamily: "inherit" }, cutoutPercentage: 65 } });
+            var unitOptions = JSON.parse(JSON.stringify(commonOptions));
+            unitOptions.legend = { display: false };
+            unitOptions.scales = { xAxes: [{ gridLines: { color: gridColor }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit" } }], yAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit" } }] };
+            var unitChart = new Chart(document.getElementById("unitRequestsChart"), { type: "horizontalBar", data: { labels: units.map(function (item) { return item.UnitTitle; }), datasets: [{ label: "تعداد درخواست", data: units.map(function (item) { return item.RequestCount; }), backgroundColor: "rgba(154,98,194,.72)", borderColor: "#8f56b5", borderWidth: 1 }] }, options: unitOptions });
+            var cumulativeValue = 0;
+            var cumulativeChart = new Chart(document.getElementById("cumulativeRequestsChart"), { type: "line", data: { labels: labels, datasets: [{ label: "مجموع تجمعی", data: trend.map(function (item) { cumulativeValue += item.TotalRequests; return cumulativeValue; }), borderColor: "#754397", backgroundColor: "rgba(189,120,223,.18)", borderWidth: 3, pointRadius: 2, lineTension: .25, fill: true }] }, options: commonOptions });
+            var efficiencyChart = new Chart(document.getElementById("efficiencyChart"), { type: "line", data: { labels: labels, datasets: [{ label: "درصد رسیدگی", data: trend.map(function (item) { return item.TotalRequests ? Math.round((item.ResolvedRequests + item.OpinionRequests) * 100 / item.TotalRequests) : 0; }), borderColor: "#2585a3", backgroundColor: "rgba(37,133,163,.14)", borderWidth: 3, pointRadius: 3, lineTension: .3, fill: true }] }, options: commonOptions });
+            var charts = { total: totalChart, status: statusChart, composition: compositionChart, units: unitChart, cumulative: cumulativeChart, efficiency: efficiencyChart };
+            function changeChartType(key, type) {
+                var currentChart = charts[key];
+                var chartData = currentChart.config.data;
+                var canvas = currentChart.canvas;
+                var chartOptions = currentChart.config.options;
+                currentChart.destroy();
+                charts[key] = new Chart(canvas, { type: type, data: chartData, options: chartOptions });
+            }
+            Array.prototype.forEach.call(document.querySelectorAll("[data-chart-target]"), function (select) {
+                var key = select.getAttribute("data-chart-target");
+                var savedType = window.localStorage.getItem("omid-dashboard-chart-" + key);
+                var allowedTypes = Array.prototype.map.call(select.options, function (option) { return option.value; });
+                if (allowedTypes.indexOf(savedType) >= 0) { select.value = savedType; changeChartType(key, savedType); }
+                select.addEventListener("change", function () { changeChartType(key, select.value); window.localStorage.setItem("omid-dashboard-chart-" + key, select.value); });
+            });
+            var expandedChart = null;
+            Array.prototype.forEach.call(document.querySelectorAll("[data-chart-expand]"), function (expandButton) {
+                expandButton.addEventListener("click", function () {
+                    var key = expandButton.getAttribute("data-chart-expand");
+                    var source = charts[key];
+                    if (!source || !window.jQuery) return;
+                    if (expandedChart) expandedChart.destroy();
+                    var modalCanvas = document.getElementById("expandedDashboardChart");
+                    expandedChart = new Chart(modalCanvas, { type: source.config.type, data: JSON.parse(JSON.stringify(source.config.data)), options: JSON.parse(JSON.stringify(source.config.options)) });
+                    window.jQuery("#dashboardChartModal").modal("show");
+                });
+            });
+            if (window.jQuery) window.jQuery("#dashboardChartModal").on("hidden.bs.modal", function () { if (expandedChart) { expandedChart.destroy(); expandedChart = null; } });
+        })();
     </script>
 }

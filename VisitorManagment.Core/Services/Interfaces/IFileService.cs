@@ -213,6 +213,18 @@ namespace VisitorManagment.Core.Services.Interfaces
         #region شمارش درخواست‌ها
 
         /// <summary>
+        /// آمار یکتای درخواست‌ها را با یک محدوده دسترسی مشترک برای داشبورد دریافت می‌کند.
+        /// </summary>
+        DashboardRequestStatistics GetDashboardRequestStatistics(
+            string unitDutyCode,
+            string unitCode,
+            string codeGha,
+            string roleTypeId,
+            string personalCode,
+            int periodMonths = 0,
+            int? selectedUnitCode = null);
+
+        /// <summary>
         /// تعداد کل درخواست‌های ثبت شده بر اساس سطح دسترسی کاربر
         /// </summary>
         int GetFileCount(

@@ -25,14 +25,21 @@ namespace VisitorManagment.Core.Services
         /// <summary>
         /// اطلاعات جدید را اعتبارسنجی و ثبت می‌کند.
         /// </summary>
-        public void AddPermissionToRole(int roleId, List<int> permissionId)
+        public int AddPermissionToRole(int roleId, List<int> permissionId)
         {
             if (roleId <= 0 || permissionId == null || permissionId.Count == 0)
             {
-                return;
+                return 0;
             }
 
             var requestedPermissionIds = permissionId.Where(id => id > 0).Distinct().ToList();
+            if (!_context.Roles.Any(role => role.RoleId == roleId && !role.IsDelete)) return 0;
+            requestedPermissionIds = _context.Permission.Where(permission => requestedPermissionIds.Contains(permission.PermissionId)).Select(permission => permission.PermissionId).ToList();
+            var parentIds = _context.Permission
+                .Where(permission => requestedPermissionIds.Contains(permission.PermissionId) && permission.ParentID.HasValue)
+                .Select(permission => permission.ParentID.Value)
+                .ToList();
+            requestedPermissionIds = requestedPermissionIds.Concat(parentIds).Distinct().ToList();
             var existingPermissionIds = _context.RolePermission
                 .Where(item => item.RoleId == roleId && requestedPermissionIds.Contains(item.PermissionId))
                 .Select(item => item.PermissionId)
@@ -45,35 +52,42 @@ namespace VisitorManagment.Core.Services
 
             if (newRolePermissions.Count == 0)
             {
-                return;
+                return 0;
             }
 
             _context.RolePermission.AddRange(newRolePermissions);
             _context.SaveChanges();
+            return newRolePermissions.Count;
         }
 
         /// <summary>
         /// اطلاعات مشخص‌شده را حذف می‌کند.
         /// </summary>
-        public void RemovePermissionToRole(int roleId, List<int> permissionId)
+        public int RemovePermissionToRole(int roleId, List<int> permissionId)
         {
             if (roleId <= 0 || permissionId == null || permissionId.Count == 0)
             {
-                return;
+                return 0;
             }
 
             var requestedPermissionIds = permissionId.Where(id => id > 0).Distinct().ToList();
+            var childIds = _context.Permission
+                .Where(permission => permission.ParentID.HasValue && requestedPermissionIds.Contains(permission.ParentID.Value))
+                .Select(permission => permission.PermissionId)
+                .ToList();
+            requestedPermissionIds = requestedPermissionIds.Concat(childIds).Distinct().ToList();
             var rolePermissions = _context.RolePermission
                 .Where(item => item.RoleId == roleId && requestedPermissionIds.Contains(item.PermissionId))
                 .ToList();
 
             if (rolePermissions.Count == 0)
             {
-                return;
+                return 0;
             }
 
             _context.RolePermission.RemoveRange(rolePermissions);
             _context.SaveChanges();
+            return rolePermissions.Count;
         }
         #endregion
     }

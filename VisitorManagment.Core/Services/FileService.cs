@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Globalization;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.DTOs.Base;
@@ -1463,6 +1464,159 @@ namespace VisitorManagment.Core.Services
         /// <param name="roleTypeId"></param>
         /// <param name="personalCode"></param>
         /// <returns></returns>
+        public DashboardRequestStatistics GetDashboardRequestStatistics(
+            string unitDutyCode,
+            string unitCode,
+            string codeGha,
+            string roleTypeId,
+            string personalCode,
+            int periodMonths = 0,
+            int? selectedUnitCode = null)
+        {
+            var files = _context.Files.AsNoTracking().AsQueryable();
+
+            switch (roleTypeId)
+            {
+                case "1":
+                    files = files.Where(file => file.Personal.PersonalCode == personalCode);
+                    break;
+                case "2":
+                    if (!int.TryParse(unitDutyCode, out var parsedUnitDutyCode))
+                        return new DashboardRequestStatistics();
+                    files = files.Where(file => file.Personal.UnitDutyCode == parsedUnitDutyCode);
+                    break;
+                case "3":
+                case "12":
+                case "200":
+                case "201":
+                case "202":
+                case "203":
+                case "600":
+                case "601":
+                    if (!int.TryParse(unitCode, out var parsedUnitCode))
+                        return new DashboardRequestStatistics();
+                    files = files.Where(file => file.Personal.UnitCode == parsedUnitCode);
+                    break;
+                case "4":
+                    if (!int.TryParse(codeGha, out var parsedGhaCode))
+                        return new DashboardRequestStatistics();
+                    files = files.Where(file => file.Personal.CodGha == parsedGhaCode);
+                    break;
+            }
+
+            periodMonths = new[] { 0, 3, 6, 12 }.Contains(periodMonths) ? periodMonths : 0;
+
+            // گزینه‌های یگان فقط از داده‌هایی ساخته می‌شوند که کاربر اجازه مشاهده آن‌ها را دارد.
+            var availableUnits = files
+                .Where(file => file.Personal.UnitCode.HasValue)
+                .Select(file => new DashboardUnitOption
+                {
+                    UnitCode = file.Personal.UnitCode.Value,
+                    UnitTitle = file.Personal.UnitTitle
+                })
+                .Distinct()
+                .OrderBy(unit => unit.UnitTitle)
+                .ToList();
+
+            if (selectedUnitCode.HasValue && availableUnits.Any(unit => unit.UnitCode == selectedUnitCode.Value))
+                files = files.Where(file => file.Personal.UnitCode == selectedUnitCode.Value);
+
+            var today = DateTime.Today;
+            var rangeStart = periodMonths == 0
+                ? (DateTime?)null
+                : new DateTime(today.Year, today.Month, 1).AddMonths(-(periodMonths - 1));
+            if (rangeStart.HasValue)
+                files = files.Where(file => file.RegDate >= rangeStart.Value);
+
+            // شناسه فایل، شناسه یکتای درخواست است. هر درخواست فقط یک بار در آمار می‌آید.
+            var uniqueRequests = files
+                .Select(file => new { file.Id, file.FileStatusId })
+                .Distinct();
+
+            var statistics = uniqueRequests
+                .GroupBy(_ => 1)
+                .Select(group => new DashboardRequestStatistics
+                {
+                    TotalRequests = group.Count(),
+                    ResolvedRequests = group.Count(file => file.FileStatusId == 1),
+                    OpinionRequests = group.Count(file => file.FileStatusId == 2),
+                    ReturnedRequests = group.Count(file => file.FileStatusId == 3),
+                    OtherRequests = group.Count(file =>
+                        file.FileStatusId != 1 &&
+                        file.FileStatusId != 2 &&
+                        file.FileStatusId != 3)
+                })
+                .SingleOrDefault();
+
+            statistics = statistics ?? new DashboardRequestStatistics();
+            statistics.AvailableUnits = availableUnits;
+
+            statistics.UnitBreakdown = files
+                .GroupBy(file => file.Personal.UnitTitle)
+                .Select(group => new DashboardUnitStatistics
+                {
+                    UnitTitle = group.Key ?? "بدون عنوان یگان",
+                    RequestCount = group.Count()
+                })
+                .OrderByDescending(unit => unit.RequestCount)
+                .Take(10)
+                .ToList();
+
+            var currentMonth = new DateTime(today.Year, today.Month, 1);
+            var firstRequestDate = periodMonths == 0
+                ? files.Select(file => (DateTime?)file.RegDate).Min()
+                : null;
+            var firstMonth = periodMonths == 0 && firstRequestDate.HasValue
+                ? new DateTime(firstRequestDate.Value.Year, firstRequestDate.Value.Month, 1)
+                : currentMonth.AddMonths(-(periodMonths - 1));
+            var monthCount = periodMonths == 0
+                ? ((currentMonth.Year - firstMonth.Year) * 12) + currentMonth.Month - firstMonth.Month + 1
+                : periodMonths;
+            var monthlyRows = files
+                .Where(file => file.RegDate >= firstMonth)
+                .GroupBy(file => new { file.RegDate.Year, file.RegDate.Month })
+                .Select(group => new
+                {
+                    group.Key.Year,
+                    group.Key.Month,
+                    TotalRequests = group.Count(),
+                    ResolvedRequests = group.Count(file => file.FileStatusId == 1),
+                    OpinionRequests = group.Count(file => file.FileStatusId == 2),
+                    ReturnedRequests = group.Count(file => file.FileStatusId == 3)
+                })
+                .ToList();
+
+            var persianCalendar = new PersianCalendar();
+            for (var monthOffset = 0; monthOffset < monthCount; monthOffset++)
+            {
+                var monthDate = firstMonth.AddMonths(monthOffset);
+                var row = monthlyRows.FirstOrDefault(item =>
+                    item.Year == monthDate.Year && item.Month == monthDate.Month);
+
+                statistics.MonthlyTrend.Add(new DashboardMonthlyRequestStatistics
+                {
+                    Label = GetPersianMonthName(persianCalendar.GetMonth(monthDate)) + " " +
+                            persianCalendar.GetYear(monthDate),
+                    TotalRequests = row == null ? 0 : row.TotalRequests,
+                    ResolvedRequests = row == null ? 0 : row.ResolvedRequests,
+                    OpinionRequests = row == null ? 0 : row.OpinionRequests,
+                    ReturnedRequests = row == null ? 0 : row.ReturnedRequests
+                });
+            }
+
+            return statistics;
+        }
+
+        private static string GetPersianMonthName(int month)
+        {
+            var monthNames = new[]
+            {
+                "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+                "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+            };
+            return month >= 1 && month <= 12 ? monthNames[month - 1] : string.Empty;
+        }
+
         public int GetFileCount(string unitDutyCode, string unitCode, string codeGha, string roleTypeId, string personalCode)
         {
 

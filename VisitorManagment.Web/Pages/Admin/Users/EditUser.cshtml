@@ -6,6 +6,7 @@
     List<Role> Roles = ViewData["Roles"] as List<Role>;
 }
 <link rel="stylesheet" href="/vendors/select2/css/select2.min.css" type="text/css">
+<link rel="stylesheet" href="~/css/users-index.css" asp-append-version="true" />
 
 <div class="page-header">
     <div class="container-fluid d-sm-flex justify-content-between">
@@ -30,6 +31,18 @@
 </div>
 <div class="card card-body ">
     <h4 class="card-title">ویرایش کاربر</h4>
+    <div class="user-context-summary">
+        <div><i class="ti-home"></i><span>یگان کاربر</span><strong>@(Model.editUserViewModel.UnitTitle ?? Model.editUserViewModel.UnitDutyTitle ?? "یگان ثبت نشده")</strong></div>
+        <div>
+            <i class="ti-user"></i>
+            <span>فرمانده یگان</span>
+            <strong>@(string.IsNullOrWhiteSpace(Model.editUserViewModel.CommanderName) ? "فرمانده‌ای برای این یگان ثبت نشده" : Model.editUserViewModel.CommanderName)</strong>
+            @if (!string.IsNullOrWhiteSpace(Model.editUserViewModel.CommanderPersonalCode))
+            {
+                <small>کد پرسنلی: @Model.editUserViewModel.CommanderPersonalCode</small>
+            }
+        </div>
+    </div>
     <hr />
     <br />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
@@ -83,6 +96,12 @@
                 <label>کلمه عبور </label>
                 <input type="password" name="password" class="form-control">
                 <p class="help-block">در صورت وارد کردن کلمه عبور ، کلمه عبور کاربر تغییر خواهد کرد</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="d-flex align-items-center p-3 border rounded bg-light" for="dashboardAccess">
+                    <input id="dashboardAccess" asp-for="editUserViewModel.HasDashboardAccess" class="ml-2" />
+                    <span><strong>دسترسی اختصاصی داشبورد مدیریتی</strong><small class="d-block text-muted mt-1">فیلترها و نمودارهای مدیریتی برای این کاربر نمایش داده شود.</small></span>
+                </label>
             </div>
 
             <div class="col-md-12 mb-6 ">
