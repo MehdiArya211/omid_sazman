@@ -27,6 +27,11 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public int AddPermissionToRole(int roleId, List<int> permissionId)
         {
+            return AddPermissionToRole(roleId, permissionId, null);
+        }
+
+        public int AddPermissionToRole(int roleId, List<int> permissionId, int? unitCode)
+        {
             if (roleId <= 0 || permissionId == null || permissionId.Count == 0)
             {
                 return 0;
@@ -40,6 +45,23 @@ namespace VisitorManagment.Core.Services
                 .Select(permission => permission.ParentID.Value)
                 .ToList();
             requestedPermissionIds = requestedPermissionIds.Concat(parentIds).Distinct().ToList();
+            if (unitCode.HasValue)
+            {
+                var profile = GetOrCreateUnitProfile(roleId, unitCode.Value);
+                if (profile == null) return 0;
+                var existingUnitPermissionIds = _context.UnitRolePermissions
+                    .Where(item => item.UnitRoleAccessProfileId == profile.Id && requestedPermissionIds.Contains(item.PermissionId))
+                    .Select(item => item.PermissionId)
+                    .ToList();
+                var unitPermissions = requestedPermissionIds
+                    .Where(id => !existingUnitPermissionIds.Contains(id))
+                    .Select(id => new UnitRolePermission { UnitRoleAccessProfileId = profile.Id, PermissionId = id })
+                    .ToList();
+                if (unitPermissions.Count == 0) return 0;
+                _context.UnitRolePermissions.AddRange(unitPermissions);
+                _context.SaveChanges();
+                return unitPermissions.Count;
+            }
             var existingPermissionIds = _context.RolePermission
                 .Where(item => item.RoleId == roleId && requestedPermissionIds.Contains(item.PermissionId))
                 .Select(item => item.PermissionId)
@@ -65,6 +87,11 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public int RemovePermissionToRole(int roleId, List<int> permissionId)
         {
+            return RemovePermissionToRole(roleId, permissionId, null);
+        }
+
+        public int RemovePermissionToRole(int roleId, List<int> permissionId, int? unitCode)
+        {
             if (roleId <= 0 || permissionId == null || permissionId.Count == 0)
             {
                 return 0;
@@ -76,6 +103,18 @@ namespace VisitorManagment.Core.Services
                 .Select(permission => permission.PermissionId)
                 .ToList();
             requestedPermissionIds = requestedPermissionIds.Concat(childIds).Distinct().ToList();
+            if (unitCode.HasValue)
+            {
+                var profile = GetOrCreateUnitProfile(roleId, unitCode.Value);
+                if (profile == null) return 0;
+                var unitPermissions = _context.UnitRolePermissions
+                    .Where(item => item.UnitRoleAccessProfileId == profile.Id && requestedPermissionIds.Contains(item.PermissionId))
+                    .ToList();
+                if (unitPermissions.Count == 0) return 0;
+                _context.UnitRolePermissions.RemoveRange(unitPermissions);
+                _context.SaveChanges();
+                return unitPermissions.Count;
+            }
             var rolePermissions = _context.RolePermission
                 .Where(item => item.RoleId == roleId && requestedPermissionIds.Contains(item.PermissionId))
                 .ToList();
@@ -88,6 +127,49 @@ namespace VisitorManagment.Core.Services
             _context.RolePermission.RemoveRange(rolePermissions);
             _context.SaveChanges();
             return rolePermissions.Count;
+        }
+
+        public bool ResetUnitPermissionToRole(int roleId, int unitCode)
+        {
+            var profile = _context.UnitRoleAccessProfiles.SingleOrDefault(item => item.RoleId == roleId && item.UnitCode == unitCode);
+            if (profile == null) return false;
+            var permissions = _context.UnitRolePermissions.Where(item => item.UnitRoleAccessProfileId == profile.Id).ToList();
+            _context.UnitRolePermissions.RemoveRange(permissions);
+            _context.UnitRoleAccessProfiles.Remove(profile);
+            _context.SaveChanges();
+            return true;
+        }
+
+        private UnitRoleAccessProfile GetOrCreateUnitProfile(int roleId, int unitCode)
+        {
+            var profile = _context.UnitRoleAccessProfiles.SingleOrDefault(item => item.RoleId == roleId && item.UnitCode == unitCode);
+            if (profile != null) return profile;
+
+            var unitTitle = _context.Users
+                .Where(user => user.UnitCode == unitCode)
+                .Select(user => user.UnitTitle)
+                .FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(unitTitle)) return null;
+
+            profile = new UnitRoleAccessProfile { RoleId = roleId, UnitCode = unitCode, UnitTitle = unitTitle };
+            _context.UnitRoleAccessProfiles.Add(profile);
+            _context.SaveChanges();
+
+            var basePermissionIds = _context.RolePermission
+                .Where(item => item.RoleId == roleId)
+                .Select(item => item.PermissionId)
+                .Distinct()
+                .ToList();
+            if (basePermissionIds.Count > 0)
+            {
+                _context.UnitRolePermissions.AddRange(basePermissionIds.Select(permissionId => new UnitRolePermission
+                {
+                    UnitRoleAccessProfileId = profile.Id,
+                    PermissionId = permissionId
+                }));
+                _context.SaveChanges();
+            }
+            return profile;
         }
         #endregion
     }

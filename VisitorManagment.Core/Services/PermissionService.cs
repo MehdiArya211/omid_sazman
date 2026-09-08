@@ -69,7 +69,8 @@ namespace VisitorManagment.Core.Services
         public bool IsRoleInUse(int roleId)
         {
             return _context.UserRoles.Any(item => item.RoleId == roleId) ||
-                   _context.RolePermission.Any(item => item.RoleId == roleId);
+                   _context.RolePermission.Any(item => item.RoleId == roleId) ||
+                   _context.UnitRoleAccessProfiles.Any(item => item.RoleId == roleId);
         }
 
         /// <summary>
@@ -146,14 +147,54 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<Permission> GetPermissionsForUser(int userId)
         {
-            var query = from p in _context.Permission
-                        join rp in _context.RolePermission on p.PermissionId equals rp.PermissionId
-                        join r in _context.Roles on rp.RoleId equals r.RoleId
-                        join ur in _context.UserRoles on r.RoleId equals ur.RoleId
-                        where ur.UserId == userId
-                        select p;
+            var user = _context.Users.AsNoTracking().SingleOrDefault(item => item.Id == userId);
+            if (user == null) return new List<Permission>();
 
-            return query.Distinct().OrderBy(p => p.Order).ToList();
+            var roleIds = _context.UserRoles.AsNoTracking()
+                .Where(item => item.UserId == userId)
+                .Select(item => item.RoleId)
+                .Distinct()
+                .ToList();
+
+            var permissionIds = new HashSet<int>();
+            foreach (var roleId in roleIds)
+            {
+                var profile = _context.UnitRoleAccessProfiles.AsNoTracking()
+                    .SingleOrDefault(item => item.UnitCode == user.UnitCode && item.RoleId == roleId);
+
+                var rolePermissionIds = profile == null
+                    ? _context.RolePermission.AsNoTracking().Where(item => item.RoleId == roleId).Select(item => item.PermissionId).ToList()
+                    : _context.UnitRolePermissions.AsNoTracking().Where(item => item.UnitRoleAccessProfileId == profile.Id).Select(item => item.PermissionId).ToList();
+
+                foreach (var permissionId in rolePermissionIds) permissionIds.Add(permissionId);
+            }
+
+            return _context.Permission.AsNoTracking()
+                .Where(permission => permissionIds.Contains(permission.PermissionId) && permission.IsActive)
+                .OrderBy(permission => permission.Order)
+                .ToList();
+        }
+
+        public List<UnitAccessOptionViewModel> GetUnitsForAccessManagement()
+        {
+            return _context.Users.AsNoTracking()
+                .Where(user => user.IsActive && user.UnitCode > 0 && user.UnitTitle != null && user.UnitTitle != "")
+                .GroupBy(user => new { user.UnitCode, user.UnitTitle })
+                .Select(group => new UnitAccessOptionViewModel
+                {
+                    UnitCode = group.Key.UnitCode,
+                    UnitTitle = group.Key.UnitTitle,
+                    UserCount = group.Count()
+                })
+                .OrderBy(unit => unit.UnitTitle)
+                .ThenBy(unit => unit.UnitCode)
+                .ToList();
+        }
+
+        public bool HasUnitAccessProfile(int roleId, int unitCode)
+        {
+            return _context.UnitRoleAccessProfiles.AsNoTracking()
+                .Any(profile => profile.RoleId == roleId && profile.UnitCode == unitCode);
         }
         /// <summary>
         /// تمام نقش های موجود در سیستم
@@ -199,7 +240,8 @@ namespace VisitorManagment.Core.Services
         public bool IsPermissionInUse(int permissionId)
         {
             return _context.Permission.Any(permission => permission.ParentID == permissionId) ||
-                   _context.RolePermission.Any(item => item.PermissionId == permissionId);
+                   _context.RolePermission.Any(item => item.PermissionId == permissionId) ||
+                   _context.UnitRolePermissions.Any(item => item.PermissionId == permissionId);
         }
 
         public void DeletePermission(int permissionId)
@@ -271,6 +313,35 @@ namespace VisitorManagment.Core.Services
         /// <returns></returns>
         public List<PermissionViewModel> GetAccessReciverMenuList(int roleId)
         {
+            return GetAccessReciverMenuList(roleId, null);
+        }
+
+        public List<PermissionViewModel> GetAccessReciverMenuList(int roleId, int? unitCode)
+        {
+            if (unitCode.HasValue)
+            {
+                var profile = _context.UnitRoleAccessProfiles.AsNoTracking()
+                    .SingleOrDefault(item => item.RoleId == roleId && item.UnitCode == unitCode.Value);
+                if (profile != null)
+                {
+                    var roleTitle = _context.Roles.AsNoTracking()
+                        .Where(role => role.RoleId == roleId)
+                        .Select(role => role.Title)
+                        .SingleOrDefault() ?? string.Empty;
+                    return _context.UnitRolePermissions.AsNoTracking()
+                        .Where(item => item.UnitRoleAccessProfileId == profile.Id)
+                        .Select(item => new PermissionViewModel
+                        {
+                            RoleId = roleId,
+                            PermissionId = item.PermissionId,
+                            RoleTitle = roleTitle,
+                            PermossionTitle = item.Permission.PermissionTitle
+                        })
+                        .OrderBy(item => item.PermossionTitle)
+                        .ToList();
+                }
+            }
+
             var rcvrList = _context.RolePermission
                 .Include(x => x.Role)
                 .Include(x => x.Permission)
@@ -297,7 +368,12 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<PermissionViewModel> GetUnAccessReciverMenuList(int roleId)
         {
-            var reciverList = _context.RolePermission.Where(x => x.RoleId == roleId).Select(x => x.PermissionId).ToList();
+            return GetUnAccessReciverMenuList(roleId, null);
+        }
+
+        public List<PermissionViewModel> GetUnAccessReciverMenuList(int roleId, int? unitCode)
+        {
+            var reciverList = GetAccessReciverMenuList(roleId, unitCode).Select(item => item.PermissionId).ToList();
 
             var rcvrList = _context.Permission
                 .Include(x => x.RolePermissions)
