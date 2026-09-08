@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using VisitorManagment.Core.Services.Interfaces.Ranking;
 using System.Net;
 using System;
+using System.Threading.Tasks;
 using VisitorManagment.DataLayer.Entities.User;
 
 namespace VisitorManagment.Web.Pages
@@ -21,6 +22,8 @@ namespace VisitorManagment.Web.Pages
 
     public class IndexModel : PageModel
     {
+        #region Fields and constructor
+
         private readonly ILogger<IndexModel> _logger;
         private readonly IUserService _userService;
         private readonly IPersonService _personService;
@@ -44,11 +47,17 @@ namespace VisitorManagment.Web.Pages
             _rankingService = rankingService;
         }
 
+        #endregion
 
+        #region Properties
 
         [BindProperty]
         public LoginViewModel LoginViewModel { get; set; }
         public ItoLogInfoViewModel itoLogInfoViewModel { get; set; }
+
+        #endregion
+
+        #region Page handlers
 
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
@@ -57,12 +66,11 @@ namespace VisitorManagment.Web.Pages
         {
         }
 
-    
-
         /// <summary>
-        /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
+        /// اعتبار فرم ورود، وضعیت کاربر و نقش سازمانی او را بررسی می‌کند؛ سپس
+        /// Claimهای موردنیاز سامانه را در کوکی احراز هویت ثبت می‌کند.
         /// </summary>
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPost()
         {
             if (!ModelState.IsValid)
             {
@@ -96,18 +104,19 @@ namespace VisitorManagment.Web.Pages
 
             HameshInfoViewModel role;
             int roleTypeId;
-            int? roleTypeIdFinal;
             string roleTypeTitle;
-            string roleTypeTitleFinal;
             int departmentTypeId;
 
             try
             {
                 role = _hameshService.GetRoleTypePerson(user.Id);
+                if (role == null || role.RoleTypeId <= 0)
+                {
+                    ModelState.AddModelError("", "برای این کاربر نقش معتبری تعریف نشده است");
+                    return Page();
+                }
                 roleTypeId = role.RoleTypeId;
-                roleTypeIdFinal = role.RoleTypeIdFinal;
                 roleTypeTitle = role.RoleTypeTitle;
-                roleTypeTitleFinal = role.RoleTypeTitle;
                 departmentTypeId = _rankingService.GetDepartmentTypeWithUnitCode(user.UnitCode);
             }
             catch (Exception ex)
@@ -119,27 +128,27 @@ namespace VisitorManagment.Web.Pages
             }
 
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, $"{user.RankTitle} {user.FirstName} {user.LastName}"),
-        new Claim(ClaimTypes.Email, user.UserName),
-        new Claim("Id", user.Id.ToString()),
-        new Claim("PersonalCode", user.UserName),
-        new Claim("FullName", $"{user.FirstName} {user.LastName}"),
-        new Claim("UnitDutyCode", user.UnitDutyCode.ToString()),
-        new Claim("UnitCode", user.UnitCode.ToString()),
-        new Claim("UnitCodeTitle", user.UnitTitle),
-        new Claim("CodGha", user.CodGha.ToString()),
-        new Claim("CodGhaTitle", user.CodGhaTitle),
-        new Claim("UserName", user.UserName),
-        new Claim("UserAvatar", user.UserAvatar),
-        new Claim("RoleId", user.UserRoles.FirstOrDefault(u => u.UserId == user.Id)?.RoleId.ToString() ?? string.Empty),
-        new Claim("RoleTypeId", roleTypeId.ToString()),
-        new Claim("RoleTypeTitle", roleTypeTitle),
-        new Claim("RoleTypeIdFinal", role.RoleTypeIdFinal.ToString()),
-        new Claim("RoleTypeTitleFinal", role.RoleTypeTitleFinal.ToString()),
-        new Claim("DepartmentTypeId", departmentTypeId.ToString())
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, $"{user.RankTitle} {user.FirstName} {user.LastName}".Trim()),
+                new Claim(ClaimTypes.Email, user.UserName ?? string.Empty),
+                new Claim("Id", user.Id.ToString()),
+                new Claim("PersonalCode", user.UserName ?? string.Empty),
+                new Claim("FullName", $"{user.FirstName} {user.LastName}"),
+                new Claim("UnitDutyCode", user.UnitDutyCode.ToString()),
+                new Claim("UnitCode", user.UnitCode.ToString()),
+                new Claim("UnitCodeTitle", user.UnitTitle ?? string.Empty),
+                new Claim("CodGha", user.CodGha.ToString()),
+                new Claim("CodGhaTitle", user.CodGhaTitle ?? string.Empty),
+                new Claim("UserName", user.UserName ?? string.Empty),
+                new Claim("UserAvatar", user.UserAvatar ?? string.Empty),
+                new Claim("RoleId", user.UserRoles.FirstOrDefault(item => item.UserId == user.Id)?.RoleId.ToString() ?? string.Empty),
+                new Claim("RoleTypeId", roleTypeId.ToString()),
+                new Claim("RoleTypeTitle", roleTypeTitle ?? string.Empty),
+                new Claim("RoleTypeIdFinal", role.RoleTypeIdFinal?.ToString() ?? string.Empty),
+                new Claim("RoleTypeTitleFinal", role.RoleTypeTitleFinal ?? string.Empty),
+                new Claim("DepartmentTypeId", departmentTypeId.ToString())
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
@@ -150,7 +159,7 @@ namespace VisitorManagment.Web.Pages
 
             try
             {
-                HttpContext.SignInAsync(principal, properties);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
             }
             catch (Exception ex)
             {
@@ -183,87 +192,7 @@ namespace VisitorManagment.Web.Pages
             return RedirectToPage("/Visitor/Index");
         }
 
-
-        //mehdi 1403-05-13
-        /// <summary>
-        /// درخواست ارسال‌شده فرم را بررسی و پردازش می‌کند.
-        /// </summary>
-        public IActionResult OnPost1()
-        {
-            if (!ModelState.IsValid)
-            {
-
-                return Page();
-            }
-            var user = _userService.LoginUser(LoginViewModel);
-
-            if (user != null)
-            {
-                if (user.IsActive)
-                {
-                    var role = _hameshService.GetRoleTypePerson(user.Id);
-                    var roleTypeId = _hameshService.GetRoleTypePerson(user.Id).RoleTypeId;
-                    var roleTypeTitle = _hameshService.GetRoleTypePerson(user.Id).RoleTypeTitle;
-                    var departmentTypeId = _rankingService.GetDepartmentTypeWithUnitCode(user.UnitCode);
-
-                    //=== ToDo 
-                    var claims = new List<Claim>()
-                    {
-                        new Claim(ClaimTypes.NameIdentifier , user.Id.ToString()),
-                        new Claim(ClaimTypes.Name ,user.RankTitle + " " +  user.FirstName + " " + user.LastName),
-                        new Claim(ClaimTypes.Email , user.UserName),
-
-
-                        new Claim("Id" , user.Id.ToString()),
-                        new Claim("PersonalCode" , user.UserName.ToString()),
-                        new Claim("FullName" , user.FirstName + " " + user.LastName),
-                        new Claim("UnitDutyCode" , user.UnitDutyCode.ToString()),
-                        new Claim("UnitCode" , user.UnitCode.ToString()),
-                        new Claim("UnitCodeTitle" , user.UnitTitle.ToString()),
-                        new Claim("CodGha" , user.CodGha.ToString()),
-                        new Claim("CodGhaTitle" , user.CodGhaTitle.ToString()),
-                        new Claim("UserName" , user.UserName.ToString()),
-                        new Claim("UserAvatar" , user.UserAvatar),
-                        new Claim("RoleId" , user.UserRoles.FirstOrDefault(u=>u.UserId == user.Id).RoleId.ToString()),
-                        new Claim("RoleTypeId" ,roleTypeId.ToString()),
-                        new Claim("RoleTypeTitle" ,roleTypeTitle.ToString()),
-                        new Claim("RoleTypeIdFinal" ,role.RoleTypeIdFinal.ToString()),
-                        new Claim("DepartmentTypeId" ,departmentTypeId.ToString())
-                    };
-
-                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-                    var principal = new ClaimsPrincipal(identity);
-                    var properties = new AuthenticationProperties
-                    {
-                        IsPersistent = LoginViewModel.RemmemberMe
-                    };
-
-                    //==== login user
-
-                    HttpContext.SignInAsync(principal, properties);
-
-                    #region لاگ ، سامانه فجر
-                    var userName = user.UserName;
-                    string UserId = user.Id.ToString();
-                    //_webApiService.AddLog(UserId, userName, "Index");
-                    #endregion
-                    #region مشخصات Ip و Pc
-
-                    var userId = user.UserName;
-                    string pcName = Dns.GetHostName();
-                    string IpUser = Dns.GetHostEntry(pcName).AddressList[1].ToString();
-                    // Add User Login Faild History
-                    _userService.AddUserLoginHistory(userId.ToString(), DateTime.Now, IpUser, false);
-                    #endregion
-                    return RedirectToPage("/Visitor/Index");
-                }
-                ModelState.AddModelError("", "حساب کاربری شما فعال نمی باشد");
-            }
-
-            ModelState.AddModelError("", "نام کاربری یا کلمه عبور اشتباه است");
-            return Page();
-        }
+        #endregion
 
     }
 }
