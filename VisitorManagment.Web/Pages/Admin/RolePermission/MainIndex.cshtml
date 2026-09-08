@@ -5,6 +5,7 @@
 
 <link rel="stylesheet" href="~/css/access-management.css" />
 <link rel="stylesheet" href="~/css/admin-structure-management.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/admin-controls-theme.css" asp-append-version="true" />
 
 <main class="access-page" dir="rtl">
     <header class="access-hero">
@@ -19,8 +20,8 @@
     @if (User.IsSystemAdministrator())
     {
         <nav class="access-management-links" aria-label="مدیریت نقش و منو">
-            <a asp-page="/Admin/Roles/Index"><i class="ti-id-badge"></i> مدیریت نقش‌ها</a>
-            <a asp-page="/Admin/Menus/Index"><i class="ti-menu-alt"></i> مدیریت منوها</a>
+            <a asp-page="/Admin/Roles/Index" class="structure-btn structure-btn--secondary"><i class="ti-id-badge"></i><span>مدیریت نقش‌ها</span></a>
+            <a asp-page="/Admin/Menus/Index" class="structure-btn structure-btn--secondary"><i class="ti-menu-alt"></i><span>مدیریت منوها</span></a>
         </nav>
     }
 
@@ -34,8 +35,8 @@
             <small>پس از انتخاب نقش، فهرست دسترسی‌ها نمایش داده می‌شود.</small>
         </div>
         <div class="access-role-picker__actions">
-            <button type="submit" class="access-reset"><i class="ti-search"></i> نمایش دسترسی‌ها</button>
-            <a asp-page="./MainIndex" class="access-reset"><i class="ti-reload"></i> بازنشانی</a>
+            <button type="submit" class="structure-btn structure-btn--primary"><i class="ti-search"></i><span>نمایش دسترسی‌ها</span></button>
+            <a asp-page="./MainIndex" class="structure-btn structure-btn--secondary"><i class="ti-reload"></i><span>بازنشانی</span></a>
         </div>
     </form>
 
@@ -67,7 +68,7 @@
                 </div>
                 <footer class="access-panel__footer">
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
-                    <button type="submit" class="access-action access-action--add" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده به این نقش اضافه شود؟" data-confirm-title="تأیید افزودن دسترسی" data-confirm-button="بله، دسترسی اضافه شود"><i class="ti-plus"></i> افزودن دسترسی</button>
+                    <button type="submit" class="structure-btn structure-btn--primary access-action" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده به این نقش اضافه شود؟" data-confirm-title="تأیید افزودن دسترسی" data-confirm-button="بله، دسترسی اضافه شود"><i class="ti-plus"></i><span>افزودن دسترسی</span></button>
                 </footer>
             </form>
 
@@ -96,7 +97,7 @@
                 </div>
                 <footer class="access-panel__footer">
                     <span><b data-selected-count>۰</b> مورد انتخاب شده</span>
-                    <button type="submit" class="access-action access-action--remove" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده از این نقش حذف شود؟" data-confirm-title="تأیید حذف دسترسی" data-confirm-button="بله، دسترسی حذف شود"><i class="ti-trash"></i> حذف دسترسی</button>
+                    <button type="submit" class="structure-btn structure-btn--danger access-action" data-requires-selection data-confirm="دسترسی منوهای انتخاب‌شده از این نقش حذف شود؟" data-confirm-title="تأیید حذف دسترسی" data-confirm-button="بله، دسترسی حذف شود"><i class="ti-trash"></i><span>حذف دسترسی</span></button>
                 </footer>
             </form>
         </div>
