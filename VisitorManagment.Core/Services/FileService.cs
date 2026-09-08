@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Globalization;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.DTOs.Base;
@@ -792,7 +793,7 @@ namespace VisitorManagment.Core.Services
                 IQueryable<Cartable> filesQuery = _context.Cartables.Include(f => f.File)
                     .Where(f => f.RcvrUserId == rcvrUserId && !f.File.IsDelete); // دریافت فایل‌ها برای کاربر خاص
                 #region کاربر لاگین کرده ادمین باشد
-                if (roleTypeId == 100)
+                if (roleTypeId == SystemRoleTypes.SystemAdministrator)
                 {
                     var files = filesQuery.Select(t => new FactPersonalViewModel
                     {
@@ -1151,7 +1152,7 @@ namespace VisitorManagment.Core.Services
             // rcvrUserId ===>>>UserId claim
             //فایل هایی که ف انصار و معاون شماره 3 هامش زده رو میاره برامون
             var result = _context.Hameshes.Include(x => x.File)
-                .Where((x => x.UserId == userId && (x.RoleTypeId == 5 || x.RoleTypeId == 7 || x.RoleTypeId == 10))).Select(x => x.File).Distinct();
+                .Where((x => x.UserId == userId && (x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert || x.RoleTypeId == SystemRoleTypes.NezajaOperator || x.RoleTypeId == SystemRoleTypes.DeputyOffice))).Select(x => x.File).Distinct();
 
             var resultForFilterMoavenat = _context.Hameshes.Include(x => x.File).Distinct();
 
@@ -1447,7 +1448,7 @@ namespace VisitorManagment.Core.Services
                 CodGhaTitle = t.CodGhaTitle,
                 RegDate = t.RegDate,
                 RegDateFa = t.RegDate.ToShamsi(),
-                FinalHameshDesc = _context.Hameshes.Where(x => x.FileId == result.Select(x => x.Id).SingleOrDefault() && x.RoleTypeId == 9).Select(x => x.UserDesc).SingleOrDefault(),
+                FinalHameshDesc = _context.Hameshes.Where(x => x.FileId == result.Select(x => x.Id).SingleOrDefault() && x.RoleTypeId == SystemRoleTypes.PresidingBoard).Select(x => x.UserDesc).SingleOrDefault(),
 
             }).OrderByDescending(u => u.RegDate).ToList();
 
@@ -2092,7 +2093,7 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<Role> GetRolesJustMooavenatHa()
         {
-            return _context.Roles.Where(x => x.RoleType == 5 || x.RoleType == 6 || x.RoleType == 7).OrderBy(x => x.RoleType).ToList();
+            return _context.Roles.Where(x => x.RoleType == SystemRoleTypes.AnsarHeadquartersExpert || x.RoleType == SystemRoleTypes.UnitCommand || x.RoleType == SystemRoleTypes.NezajaOperator).OrderBy(x => x.RoleType).ToList();
         }
 
         /// <summary>
@@ -2393,7 +2394,7 @@ namespace VisitorManagment.Core.Services
             var model = new ListCountCartableMoavenat();
             ///****************************************************************************
             var KarshenasGharargahAnsarNezajaUserId = _context.Roles.Include(x => x.UserRoles)
-                .ThenInclude(x => x.User).Where(x => x.RoleType == 5)
+                .ThenInclude(x => x.User).Where(x => x.RoleType == SystemRoleTypes.AnsarHeadquartersExpert)
                 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var countKartableKarshenasGharargahAnsar = _context.Cartables.Include(x => x.File)
@@ -2408,7 +2409,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var KarbarNezajaUserId = _context.Roles.Include(x => x.UserRoles)
-                .ThenInclude(x => x.User).Where(x => x.RoleType == 7)
+                .ThenInclude(x => x.User).Where(x => x.RoleType == SystemRoleTypes.NezajaOperator)
                 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountKarbarNezaja = _context.Cartables.Include(x => x.File)
@@ -2419,7 +2420,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var MNEnsaniUserId = _context.Roles.Include(x => x.UserRoles)
-                    .ThenInclude(x => x.User).Where(x => x.RoleId == 8)
+                    .ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.HumanResourcesDeputy)
                     .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountMNEnsani = _context.Cartables.Include(x => x.File)
@@ -2430,7 +2431,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var MMohandesiUserId = _context.Roles.Include(x => x.UserRoles)
-        .ThenInclude(x => x.User).Where(x => x.RoleId == 9)
+        .ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.EngineeringDeputy)
         .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountMMohandesi = _context.Cartables.Include(x => x.File)
@@ -2442,7 +2443,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var MTarhVaBarnamehUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 16)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.PlanningDeputy)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountMTarhVaBarnameh = _context.Cartables.Include(x => x.File)
@@ -2451,7 +2452,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var MAmozeshUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 18)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.TrainingDeputy)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountMAmozesh = _context.Cartables.Include(x => x.File)
@@ -2460,7 +2461,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var MAmadVaPoshUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 20)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.LogisticsDeputy)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountMAmadVaPosh = _context.Cartables.Include(x => x.File)
@@ -2469,7 +2470,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var MHoghoghiVaGhazayiUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 21)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.LegalDeputy)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountMHoghoghiVaGhazayi = _context.Cartables.Include(x => x.File)
@@ -2479,7 +2480,7 @@ namespace VisitorManagment.Core.Services
 
 
             var BazresiNezajaUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 19)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.InspectionOffice)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountBazresiNezaja = _context.Cartables.Include(x => x.File)
@@ -2488,7 +2489,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var FHavapeymayiUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 32)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.AviationCommand)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountFHavapeymayi = _context.Cartables.Include(x => x.File)
@@ -2497,7 +2498,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var DarayiUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 35)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.FinanceOffice)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountDarayi = _context.Cartables.Include(x => x.File)
@@ -2507,7 +2508,7 @@ namespace VisitorManagment.Core.Services
 
 
             var IsargaranUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 28)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.VeteransOffice)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountIsargaran = _context.Cartables.Include(x => x.File)
@@ -2516,7 +2517,7 @@ namespace VisitorManagment.Core.Services
             //******************************************************************************
 
             var BehdashtUserId = _context.Roles.Include(x => x.UserRoles)
-.ThenInclude(x => x.User).Where(x => x.RoleId == 27)
+.ThenInclude(x => x.User).Where(x => x.RoleId == SystemRoleIds.HealthOffice)
 .Select(x => x.UserRoles.Select(x => x.UserId)).FirstOrDefault();
 
             var CountBehdasht = _context.Cartables.Include(x => x.File)
@@ -2718,7 +2719,7 @@ namespace VisitorManagment.Core.Services
             file.SumMablaghVamDarkhasti = mablaghVamDarkhasti;
             file.MablaghVamMohaghaghSode = mablaghVamMohaghaghShode;
 
-            if (roleTypeId == 6)
+            if (roleTypeId == SystemRoleTypes.UnitCommand)
             {
                 file.IsMoavenatAnswered = true;
             }
