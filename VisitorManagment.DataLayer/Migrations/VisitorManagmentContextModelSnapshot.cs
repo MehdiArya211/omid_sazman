@@ -139,37 +139,6 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("RolePermission");
                 });
 
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.UnitRoleAccessProfile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("RoleId").HasColumnType("int");
-                    b.Property<int>("UnitCode").HasColumnType("int");
-                    b.Property<string>("UnitTitle").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
-                    b.HasKey("Id");
-                    b.HasIndex("RoleId");
-                    b.HasIndex("UnitCode", "RoleId").IsUnique();
-                    b.ToTable("UnitRoleAccessProfiles");
-                });
-
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.UnitRolePermission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("PermissionId").HasColumnType("int");
-                    b.Property<int>("UnitRoleAccessProfileId").HasColumnType("int");
-                    b.HasKey("Id");
-                    b.HasIndex("PermissionId");
-                    b.HasIndex("UnitRoleAccessProfileId", "PermissionId").IsUnique();
-                    b.ToTable("UnitRolePermissions");
-                });
-
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Ranking.EshrafPeriodDef", b =>
                 {
                     b.Property<int>("Id")
@@ -1984,35 +1953,6 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.UnitRoleAccessProfile", b =>
-                {
-                    b.HasOne("VisitorManagment.DataLayer.Entities.User.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.UnitRolePermission", b =>
-                {
-                    b.HasOne("VisitorManagment.DataLayer.Entities.Permissions.Permission", "Permission")
-                        .WithMany()
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VisitorManagment.DataLayer.Entities.Permissions.UnitRoleAccessProfile", "Profile")
-                        .WithMany("Permissions")
-                        .HasForeignKey("UnitRoleAccessProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Permission");
-                    b.Navigation("Profile");
-                });
-
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Ranking.Point", b =>
                 {
                     b.HasOne("VisitorManagment.DataLayer.Entities.Ranking.TblDepartment", "Department")
@@ -2304,11 +2244,6 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Navigation("Permissions");
 
                     b.Navigation("RolePermissions");
-                });
-
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.UnitRoleAccessProfile", b =>
-                {
-                    b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Ranking.EshrafPeriodDef", b =>
