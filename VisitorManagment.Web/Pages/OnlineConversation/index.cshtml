@@ -1,5 +1,7 @@
 ﻿@page
 @model NVC.Web.Pages.ConfModel
+@using VisitorManagment.Core.Constants
+@using VisitorManagment.Web.Helpers
 @{
     ViewData["Title"] = "مکالمه تصویری";
 }
@@ -483,7 +485,7 @@
 
     </div>
                 @* وام درخواستی و وام محقق شده *@
-                @if (User.FindFirst("RoleTypeId").Value == "5" || User.FindFirst("RoleTypeId").Value == "6" || User.FindFirst("RoleTypeId").Value == "2")
+                @if (User.HasAnyRoleType(SystemRoleTypes.AnsarHeadquartersExpert, SystemRoleTypes.UnitCommand, SystemRoleTypes.DirectUnitCommander))
                 {
         <div data-label="وام درخواستی / وام محقق شده" class="demo-code-preview col-md-12 mb-1 ">
             <div class="form-row">
@@ -1587,4 +1589,3 @@
     </script>
 
     }
-
