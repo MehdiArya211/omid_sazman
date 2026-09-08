@@ -21,6 +21,7 @@ using VisitorManagment.Core.Services.SystemLog;
 using VisitorManagment.DataLayer.Context;
 using VisitorManagment.Web.Filters;
 using VisitorManagment.Web.Hubs;
+using VisitorManagment.Web.Middleware;
 
 namespace VisitorManagment.Web
 {
@@ -169,6 +170,9 @@ namespace VisitorManagment.Web
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
             app.UseAuthentication();
+
+            // کاربران دارای رمز بازنشانی‌شده تا ثبت رمز جدید به سایر صفحات دسترسی ندارند.
+            app.UseMiddleware<RequiredPasswordChangeMiddleware>();
 
             app.UseAuthorization();
 
