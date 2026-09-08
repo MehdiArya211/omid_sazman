@@ -24,6 +24,7 @@ namespace VisitorManagment.Core.Services
 {
     public class UserService : IUserService
     {
+        private const string PasswordChangeRequiredMarker = "PASSWORD_CHANGE_REQUIRED";
         private string apiUrl;
         private readonly IConfiguration _configuration;
         private HttpClient _client;
@@ -561,6 +562,48 @@ namespace VisitorManagment.Core.Services
             UpdateUser(user);
             return true;
 
+        }
+
+        /// <inheritdoc />
+        public bool ResetPasswordToPersonnelCode(int userId)
+        {
+            var user = _context.Users.SingleOrDefault(item => item.Id == userId && !item.IsDelete);
+            if (user == null || string.IsNullOrWhiteSpace(user.UserName)) return false;
+
+            user.Password = PasswordHelper.EncodePasswordMd5(user.UserName);
+            user.ActiveCode = PasswordChangeRequiredMarker;
+            user.EditDate = DateTime.Now;
+            _context.SaveChanges();
+            return true;
+        }
+
+        /// <inheritdoc />
+        public bool IsPasswordChangeRequired(int userId)
+        {
+            return _context.Users.AsNoTracking()
+                .Any(item => item.Id == userId && item.ActiveCode == PasswordChangeRequiredMarker);
+        }
+
+        /// <inheritdoc />
+        public bool ChangeRequiredPassword(int userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)) return false;
+
+            var currentPasswordHash = PasswordHelper.EncodePasswordMd5(currentPassword);
+            var user = _context.Users.SingleOrDefault(item =>
+                item.Id == userId &&
+                item.IsActive &&
+                !item.IsDelete &&
+                item.ActiveCode == PasswordChangeRequiredMarker &&
+                item.Password == currentPasswordHash);
+
+            if (user == null) return false;
+
+            user.Password = PasswordHelper.EncodePasswordMd5(newPassword);
+            user.ActiveCode = NameGenerator.GenerateUniqCode();
+            user.EditDate = DateTime.Now;
+            _context.SaveChanges();
+            return true;
         }
 
 
