@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.DataLayer.Entities.Permissions;
+using VisitorManagment.Web.Helpers;
 
 namespace VisitorManagment.Web.Pages.Admin.Menus
 {
@@ -61,7 +62,7 @@ namespace VisitorManagment.Web.Pages.Admin.Menus
 
         private void Load() { Menus = _permissionService.GetAllPermission().OrderBy(menu => menu.Order).ThenBy(menu => menu.PermissionTitle).ToList(); }
         private bool IsValidParent(int id) { var parent = _permissionService.GetPermissionById(id); return parent != null && !parent.ParentID.HasValue; }
-        private bool IsSystemAdmin() => User.FindFirst("RoleTypeId")?.Value == "100";
+        private bool IsSystemAdmin() => User.IsSystemAdministrator();
         private static string Clean(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         private IActionResult Notify(string title, string message, string icon) { TempData["OperationTitle"] = title; TempData["OperationMessage"] = message; TempData["OperationIcon"] = icon; return RedirectToPage(); }
     }
