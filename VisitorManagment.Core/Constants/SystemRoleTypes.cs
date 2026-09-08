@@ -10,26 +10,26 @@ namespace VisitorManagment.Core.Constants
     {
         #region User administration levels
 
-        public const int OrdinaryUser = 1;
-        public const int DirectUnitCommander = 2;
-        public const int MajorUnitCommander = 3;
-        public const int SystemAdministrator = 100;
-        public const int HeadquartersAdministrator = 101;
-        public const int UnitAdministrator = 102;
+        public const int OrdinaryUser = 1;                  // کاربر عادی سامانه
+        public const int DirectUnitCommander = 2;           // فرمانده یگان مستقیم
+        public const int MajorUnitCommander = 3;            // فرمانده یگان عمده
+        public const int SystemAdministrator = 100;         // مدیر کل سامانه
+        public const int HeadquartersAdministrator = 101;  // مدیر قرارگاه
+        public const int UnitAdministrator = 102;           // مدیر یگان
 
         #endregion
 
         #region Workflow positions
 
-        public const int AnsarHeadquartersExpert = 5;
-        public const int UnitCommand = 6;
-        public const int NezajaOperator = 7;
-        public const int PresidingBoard = 9;
-        public const int DeputyOffice = 10;
+        public const int AnsarHeadquartersExpert = 5;       // کارشناس قرارگاه انصار نزاجا
+        public const int UnitCommand = 6;                   // فرماندهی یگان
+        public const int NezajaOperator = 7;                // کاربر نزاجا
+        public const int PresidingBoard = 9;                // عضو هیئت‌رئیسه
+        public const int DeputyOffice = 10;                 // معاونت یا دفتر تخصصی
 
         // این دو مقدار قدیمی در سوابق هامش ذخیره شده‌اند و برای سازگاری نگهداری می‌شوند.
-        public const int GharargahCommanderLegacy = 1000;
-        public const int UnitCommanderLegacy = 3000;
+        public const int GharargahCommanderLegacy = 1000;   // فرمانده قرارگاه در سوابق قدیمی هامش
+        public const int UnitCommanderLegacy = 3000;        // فرمانده یگان در سوابق قدیمی هامش
 
         #endregion
 
