@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.DTOs.ReportsAdmin;
 using VisitorManagment.Core.Services.Interfaces;
@@ -114,7 +115,7 @@ namespace VisitorManagment.Web.Pages.Visitor
                 .Any(permission => permission.MenuUrl == "#management-dashboard");
             var isAnsarCommander = roleTitle.Contains("انصار") &&
                 (roleTitle.Contains("ف ق") || roleTitle.Contains("فرمانده قرارگاه"));
-            CanViewManagementDashboard = roleTypeId == "100" || isAnsarCommander || hasUserAccess || hasRoleAccess;
+            CanViewManagementDashboard = roleTypeId == SystemRoleTypes.SystemAdministrator.ToString() || isAnsarCommander || hasUserAccess || hasRoleAccess;
 
             Statistics = _fileService.GetDashboardRequestStatistics(
                 unitDutyCode,
