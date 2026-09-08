@@ -30,6 +30,10 @@
                 {
                     <div class="alert alert-success" role="status">@passwordChangedMessage</div>
                 }
+                @if (!string.IsNullOrWhiteSpace(Model.DevelopmentLoginConfigurationWarning))
+                {
+                    <div class="alert alert-warning" role="status">@Model.DevelopmentLoginConfigurationWarning</div>
+                }
 
                 <form id="login-form" method="post" autocomplete="on">
                     <div asp-validation-summary="ModelOnly" role="alert"></div>
