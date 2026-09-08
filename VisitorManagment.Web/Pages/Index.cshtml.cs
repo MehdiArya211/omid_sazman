@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -16,6 +19,9 @@ using System.Net;
 using System;
 using System.Threading.Tasks;
 using VisitorManagment.DataLayer.Entities.User;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace VisitorManagment.Web.Pages
 {
@@ -32,10 +38,13 @@ namespace VisitorManagment.Web.Pages
         private readonly VisitorManagmentContext _context;
         private readonly IHameshService _hameshService;
         private readonly IRankingService _rankingService;
+        private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
 
         public IndexModel(ILogger<IndexModel> logger, IUserService userService, IWebApiService webApiService,
             ApiTokenCacheClient apiTokenClient, VisitorManagmentContext context, IPersonService personService,
-            IHameshService hameshService, IRankingService rankingService)
+            IHameshService hameshService, IRankingService rankingService,
+            IWebHostEnvironment environment, IConfiguration configuration)
         {
             _logger = logger;
             _userService = userService;
@@ -45,6 +54,8 @@ namespace VisitorManagment.Web.Pages
             _personService = personService;
             _hameshService = hameshService;
             _rankingService = rankingService;
+            _environment = environment;
+            _configuration = configuration;
         }
 
         #endregion
@@ -81,6 +92,8 @@ namespace VisitorManagment.Web.Pages
             try
             {
                 user = _userService.LoginUser(LoginViewModel);
+                if (user == null)
+                    user = TryDevelopmentLogin(LoginViewModel);
             }
             catch (Exception ex)
             {
@@ -147,7 +160,8 @@ namespace VisitorManagment.Web.Pages
                 new Claim("RoleTypeTitle", roleTypeTitle ?? string.Empty),
                 new Claim("RoleTypeIdFinal", role.RoleTypeIdFinal?.ToString() ?? string.Empty),
                 new Claim("RoleTypeTitleFinal", role.RoleTypeTitleFinal ?? string.Empty),
-                new Claim("DepartmentTypeId", departmentTypeId.ToString())
+                new Claim("DepartmentTypeId", departmentTypeId.ToString()),
+                new Claim("MustChangePassword", _userService.IsPasswordChangeRequired(user.Id).ToString())
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -189,7 +203,59 @@ namespace VisitorManagment.Web.Pages
             }
             #endregion
 
-            return RedirectToPage("/Visitor/Index");
+            return _userService.IsPasswordChangeRequired(user.Id)
+                ? RedirectToPage("/ChangePasswordRequired")
+                : RedirectToPage("/Visitor/Index");
+        }
+
+        #endregion
+
+        #region Development login
+
+        /// <summary>
+        /// ورود آزمایشی را فقط در محیط Development، در صورت فعال‌بودن تنظیم و برای نام‌های
+        /// کاربری صریحاً مجازشده انجام می‌دهد. رمز از تنظیمات امن محیط خوانده می‌شود و در کد قرار ندارد.
+        /// </summary>
+        private Users TryDevelopmentLogin(LoginViewModel login)
+        {
+            if (!_environment.IsDevelopment() ||
+                !_configuration.GetValue<bool>("DevelopmentLogin:Enabled") ||
+                login == null ||
+                string.IsNullOrWhiteSpace(login.UserName) ||
+                string.IsNullOrEmpty(login.Password))
+                return null;
+
+            var configuredPassword = _configuration["DevelopmentLogin:Password"];
+            var allowedUsernames = _configuration.GetSection("DevelopmentLogin:AllowedUsernames")
+                .GetChildren()
+                .Select(item => item.Value)
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .ToList();
+
+            if (string.IsNullOrEmpty(configuredPassword) ||
+                !allowedUsernames.Contains(login.UserName, StringComparer.OrdinalIgnoreCase) ||
+                !SecureEquals(login.Password, configuredPassword))
+                return null;
+
+            var user = _context.Users
+                .Include(item => item.UserRoles)
+                .SingleOrDefault(item => item.UserName == login.UserName && item.IsActive && !item.IsDelete);
+
+            if (user != null)
+                _logger.LogWarning("Development login used for test account {UserName}.", user.UserName);
+
+            return user;
+        }
+
+        /// <summary>
+        /// دو مقدار حساس را با زمان ثابت مقایسه می‌کند تا اختلاف زمان مقایسه قابل بهره‌برداری نباشد.
+        /// </summary>
+        private static bool SecureEquals(string suppliedValue, string configuredValue)
+        {
+            var suppliedBytes = Encoding.UTF8.GetBytes(suppliedValue);
+            var configuredBytes = Encoding.UTF8.GetBytes(configuredValue);
+            return suppliedBytes.Length == configuredBytes.Length &&
+                   CryptographicOperations.FixedTimeEquals(suppliedBytes, configuredBytes);
         }
 
         #endregion
