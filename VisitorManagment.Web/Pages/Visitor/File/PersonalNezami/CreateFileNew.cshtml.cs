@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VisitorManagment.Core.DTOs;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.Web.Helpers;
 
@@ -62,7 +63,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
             int roleId = int.Parse(User.FindFirst("RoleId").Value);
             string username = User.FindFirst("UserName").Value;
 
-            if (roleId == 14 && result.Data.PersonalCode != username)
+            if (roleId == SystemRoleIds.DefaultVisitor && result.Data.PersonalCode != username)
             {
                 return new JsonResult(new { message = "شما کاربر عادی میباشید و دسترسی ندارید!" });
             }
