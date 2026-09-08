@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.DataLayer.Entities.User;
 using Newtonsoft.Json;
@@ -364,7 +365,9 @@ namespace VisitorManagment.Core.Services
                 return null;
             }
 
-            var commanderRoleId = model.UnitCode == model.CodGha ? 7 : 6;
+            var commanderRoleId = model.UnitCode == model.CodGha
+                ? SystemRoleIds.MajorUnitCommander
+                : SystemRoleIds.UnitCommander;
             var commander = _context.UserRoles
                 .AsNoTracking()
                 .Where(userRole =>
@@ -618,7 +621,7 @@ namespace VisitorManagment.Core.Services
                 userId = AddUser(User);
                 _context.UserRoles.Add(new UserRole()
                 {
-                    RoleId = 14,
+                    RoleId = SystemRoleIds.DefaultVisitor,
                     UserId = userId
                 });
 
@@ -639,7 +642,7 @@ namespace VisitorManagment.Core.Services
             //اگر نفر قرارگاه بود
             if (unitCode==codeGha)
             {
-                 result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == 7 && x.User.UnitCode == unitCode)
+                 result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == SystemRoleIds.MajorUnitCommander && x.User.UnitCode == unitCode)
                     .Select(x=>x.User.UserName).SingleOrDefault();
                 if (result.PrsnNo==null)
                 {
@@ -653,7 +656,7 @@ namespace VisitorManagment.Core.Services
                 return result;
             }
 
-             result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == 6 && x.User.UnitCode == unitCode)
+             result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == SystemRoleIds.UnitCommander && x.User.UnitCode == unitCode)
                 .Select(x => x.User.UserName).SingleOrDefault();
 
             if (result.PrsnNo == null)
