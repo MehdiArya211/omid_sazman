@@ -45,6 +45,21 @@ namespace VisitorManagment.Core.Services.Interfaces
 
         #region Change Password
         bool ForgetPassword(ForgetPasswordViewModel forgetPassword);
+
+        /// <summary>
+        /// رمز کاربر را به کد پرسنلی او بازنشانی و تغییر رمز در ورود بعدی را اجباری می‌کند.
+        /// </summary>
+        bool ResetPasswordToPersonnelCode(int userId);
+
+        /// <summary>
+        /// مشخص می‌کند کاربر پس از بازنشانی مدیر، هنوز باید رمز خود را تغییر دهد یا خیر.
+        /// </summary>
+        bool IsPasswordChangeRequired(int userId);
+
+        /// <summary>
+        /// رمز موقت را کنترل و رمز جدید را ثبت می‌کند؛ در صورت موفقیت اجبار تغییر رمز برداشته می‌شود.
+        /// </summary>
+        bool ChangeRequiredPassword(int userId, string currentPassword, string newPassword);
         #endregion
 
         #region SignUp
