@@ -1,5 +1,6 @@
 ﻿@page
 @using VisitorManagment.Core.Convertors
+@using VisitorManagment.Web.Helpers
 @model VisitorManagment.Web.Pages.Admin.Users.IndexModel
 @{
     ViewData["Title"] = "مدیریت کاربران";
@@ -88,6 +89,18 @@
 
                                         <a href="/Admin/Users/EditUser/@user.Id" class="AllIcon " data-toggle="tooltip" data-placement="right" title="ویرایش"><i class="fa fa-edit text-warning"></i></a>
                                         <a href="/Admin/Users/DeleteUser/@user.Id" class="AllIcon " data-toggle="tooltip" data-placement="right" title="حذف"><i class="fa fa-trash text-danger"></i></a>
+                                        @if (User.IsSystemAdministrator())
+                                        {
+                                            <form method="post" asp-page-handler="ResetPassword" class="d-inline">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="AllIcon border-0 bg-transparent" title="بازنشانی رمز عبور"
+                                                        data-confirm="رمز این کاربر به کد پرسنلی او بازنشانی شود؟"
+                                                        data-confirm-title="تأیید بازنشانی رمز"
+                                                        data-confirm-button="بله، بازنشانی شود">
+                                                    <i class="fa fa-key text-info"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     </div>
                                 </td>
                             </tr>
