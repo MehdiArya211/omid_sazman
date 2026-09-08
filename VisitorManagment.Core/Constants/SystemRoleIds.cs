@@ -7,26 +7,26 @@ namespace VisitorManagment.Core.Constants
     /// </summary>
     public static class SystemRoleIds
     {
-        public const int ExecutiveOffice = 2;
-        public const int UnitCommander = 6;
-        public const int MajorUnitCommander = 7;
-        public const int HumanResourcesDeputy = 8;
-        public const int EngineeringDeputy = 9;
-        public const int MeetingManager = 10;
-        public const int PlanningDeputy = 16;
-        public const int TrainingDeputy = 18;
-        public const int InspectionOffice = 19;
-        public const int LogisticsDeputy = 20;
-        public const int LegalDeputy = 21;
-        public const int MeetingBoardChairman = 22;
-        public const int MeetingBoardFirstMember = 24;
-        public const int MeetingBoardSecondMember = 26;
-        public const int HealthOffice = 27;
-        public const int VeteransOffice = 28;
-        public const int AviationCommand = 32;
-        public const int FinanceOffice = 35;
-        public const int DefaultVisitor = 14;
-        public const int MeetingCoordinator = 15;
+        public const int ExecutiveOffice = 2;               // دفتر اجرایی
+        public const int UnitCommander = 6;                 // فرمانده یگان
+        public const int MajorUnitCommander = 7;            // فرمانده یگان عمده
+        public const int HumanResourcesDeputy = 8;          // معاونت نیروی انسانی
+        public const int EngineeringDeputy = 9;             // معاونت مهندسی
+        public const int MeetingManager = 10;               // مدیر جلسات ملاقات
+        public const int DefaultVisitor = 14;               // نقش پیش‌فرض مراجعه‌کننده
+        public const int MeetingCoordinator = 15;           // هماهنگ‌کننده جلسات ملاقات
+        public const int PlanningDeputy = 16;                // معاونت طرح و برنامه
+        public const int TrainingDeputy = 18;                // معاونت آموزش
+        public const int InspectionOffice = 19;              // بازرسی نزاجا
+        public const int LogisticsDeputy = 20;               // معاونت آماد و پشتیبانی
+        public const int LegalDeputy = 21;                   // معاونت حقوقی و قضایی
+        public const int MeetingBoardChairman = 22;          // رئیس هیئت‌رئیسه جلسه
+        public const int MeetingBoardFirstMember = 24;       // عضو اول هیئت‌رئیسه جلسه
+        public const int MeetingBoardSecondMember = 26;      // عضو دوم هیئت‌رئیسه جلسه
+        public const int HealthOffice = 27;                  // اداره بهداشت
+        public const int VeteransOffice = 28;                // اداره ایثارگران
+        public const int AviationCommand = 32;               // فرماندهی هوانیروز
+        public const int FinanceOffice = 35;                 // اداره دارایی
 
         /// <summary>
         /// مشخص می‌کند نقش اجازه برگزاری و ثبت نتیجه جلسه هیئت‌رئیسه را دارد یا خیر.
