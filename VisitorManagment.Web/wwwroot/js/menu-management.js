@@ -71,6 +71,7 @@
 
     var saveButton = document.querySelector('[data-save-menu-order]');
     saveButton.addEventListener('click', function () {
+        var originalContent = saveButton.innerHTML;
         var items = [];
         document.querySelectorAll('[data-menu-list]').forEach(function (list) {
             Array.prototype.forEach.call(list.children, function (node, index) {
@@ -80,6 +81,7 @@
         });
         var token = document.querySelector('[data-antiforgery] input[name="__RequestVerificationToken"]');
         saveButton.disabled = true;
+        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span>در حال ذخیره...</span>';
         fetch(window.location.pathname + '?handler=SaveOrder', {
             method: 'POST', credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token ? token.value : '' },
@@ -93,6 +95,9 @@
               var message = error.message || 'ذخیره چیدمان انجام نشد.';
               if (window.Swal) Swal.fire({ icon: 'error', title: 'خطا', text: message, confirmButtonText: 'باشه' });
               else alert(message);
-          }).finally(function () { saveButton.disabled = false; });
+          }).finally(function () {
+              saveButton.disabled = false;
+              saveButton.innerHTML = originalContent;
+          });
     });
 }());
