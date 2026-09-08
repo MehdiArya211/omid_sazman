@@ -1,5 +1,7 @@
 ﻿@page "{id}"
 @model VisitorManagment.Web.Pages.Visitor.Meets.MeetingInfo.HameshInfoMeetingHold.CreateHameshMeetingModel
+@using VisitorManagment.Core.Constants
+@using VisitorManagment.Web.Helpers
 @{
     ViewData["Title"] = "هامش";
     var fileId = ViewBag.fileId;
@@ -248,7 +250,7 @@
 
                                 </div>
 
-                                @if (User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "15")
+                                @if (User.HasAnyRoleId(SystemRoleIds.MeetingManager, SystemRoleIds.MeetingCoordinator))
                                 {
                                     @*  نظریه کاربر نزاجا (رئیس دفتر معاون هماهنگ کننده نیرو)  *@
                                     <div class="form-row">
