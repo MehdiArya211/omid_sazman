@@ -29,8 +29,6 @@ namespace VisitorManagment.DataLayer.Context
 
         public DbSet<Permission> Permission { get; set; }
         public DbSet<RolePermission> RolePermission { get; set; }
-        public DbSet<UnitRoleAccessProfile> UnitRoleAccessProfiles { get; set; }
-        public DbSet<UnitRolePermission> UnitRolePermissions { get; set; }
 
 
         #endregion
@@ -100,12 +98,6 @@ namespace VisitorManagment.DataLayer.Context
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UnitRoleAccessProfile>()
-                .HasIndex(profile => new { profile.UnitCode, profile.RoleId })
-                .IsUnique();
-            modelBuilder.Entity<UnitRolePermission>()
-                .HasIndex(permission => new { permission.UnitRoleAccessProfileId, permission.PermissionId })
-                .IsUnique();
             modelBuilder.Entity<ChatMessage>()
                 .Property(message => message.ReplyToMessage)
                 .HasMaxLength(180);
