@@ -57,4 +57,27 @@ namespace VisitorManagment.Core.DTOs
         public string RePassword { get; set; }
     }
 
+    /// <summary>
+    /// اطلاعات تغییر اجباری رمز عبور پس از بازنشانی توسط مدیر سامانه.
+    /// </summary>
+    public class RequiredPasswordChangeViewModel
+    {
+        [Display(Name = "رمز عبور موقت")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [MaxLength(200, ErrorMessage = "{0} نمی‌تواند بیشتر از {1} کاراکتر باشد")]
+        public string CurrentPassword { get; set; }
+
+        [Display(Name = "رمز عبور جدید")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [StringLength(64, MinimumLength = 8, ErrorMessage = "رمز عبور باید حداقل ۸ کاراکتر باشد")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}$",
+            ErrorMessage = "رمز باید شامل حرف بزرگ، حرف کوچک، عدد و نشانه باشد")]
+        public string NewPassword { get; set; }
+
+        [Display(Name = "تکرار رمز عبور جدید")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [Compare(nameof(NewPassword), ErrorMessage = "رمز عبور جدید و تکرار آن یکسان نیستند")]
+        public string ConfirmPassword { get; set; }
+    }
+
 }
