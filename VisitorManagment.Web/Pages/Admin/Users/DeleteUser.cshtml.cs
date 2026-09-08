@@ -3,6 +3,7 @@ using VisitorManagment.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using VisitorManagment.Core.Constants;
 
 namespace VisitorManagment.Web.Pages.Admin.Users
 {
@@ -32,7 +33,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             var userId = User.FindFirst("Id").Value;
             var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
 
-            if (roleTypeId != 100 && roleTypeId != 101 && roleTypeId != 102)
+            if (roleTypeId != SystemRoleTypes.SystemAdministrator &&
+                roleTypeId != SystemRoleTypes.HeadquartersAdministrator &&
+                roleTypeId != SystemRoleTypes.UnitAdministrator)
             {
                 return NotFound();
             }
