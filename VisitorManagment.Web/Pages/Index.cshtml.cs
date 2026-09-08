@@ -66,6 +66,23 @@ namespace VisitorManagment.Web.Pages
         public LoginViewModel LoginViewModel { get; set; }
         public ItoLogInfoViewModel itoLogInfoViewModel { get; set; }
 
+        /// <summary>
+        /// در محیط توسعه، نقص تنظیمات ورود آزمایشی را بدون نمایش مقدار رمز اعلام می‌کند.
+        /// </summary>
+        public string DevelopmentLoginConfigurationWarning
+        {
+            get
+            {
+                if (!_environment.IsDevelopment() || !_configuration.GetValue<bool>("DevelopmentLogin:Enabled"))
+                    return null;
+                if (string.IsNullOrEmpty(_configuration["DevelopmentLogin:Password"]))
+                    return "ورود آزمایشی فعال است اما رمز DevelopmentLogin تنظیم نشده است.";
+                if (GetDevelopmentLoginUsernames().Count == 0)
+                    return "ورود آزمایشی فعال است اما هیچ نام کاربری در AllowedUsernames ثبت نشده است.";
+                return null;
+            }
+        }
+
         #endregion
 
         #region Page handlers
@@ -226,16 +243,16 @@ namespace VisitorManagment.Web.Pages
                 return null;
 
             var configuredPassword = _configuration["DevelopmentLogin:Password"];
-            var allowedUsernames = _configuration.GetSection("DevelopmentLogin:AllowedUsernames")
-                .GetChildren()
-                .Select(item => item.Value)
-                .Where(item => !string.IsNullOrWhiteSpace(item))
-                .ToList();
+            var allowedUsernames = GetDevelopmentLoginUsernames();
 
             if (string.IsNullOrEmpty(configuredPassword) ||
                 !allowedUsernames.Contains(login.UserName, StringComparer.OrdinalIgnoreCase) ||
                 !SecureEquals(login.Password, configuredPassword))
+            {
+                if (string.IsNullOrEmpty(configuredPassword) || allowedUsernames.Count == 0)
+                    _logger.LogWarning("Development login is enabled but Password or AllowedUsernames is not configured.");
                 return null;
+            }
 
             var user = _context.Users
                 .Include(item => item.UserRoles)
@@ -245,6 +262,31 @@ namespace VisitorManagment.Web.Pages
                 _logger.LogWarning("Development login used for test account {UserName}.", user.UserName);
 
             return user;
+        }
+
+        /// <summary>
+        /// فهرست کاربران آزمایشی را هم از آرایه تنظیمات و هم از مقدار متنی جداشده با ویرگول
+        /// یا نقطه‌ویرگول می‌خواند تا تنظیم در IIS Express، CLI و Environment Variable یکسان عمل کند.
+        /// </summary>
+        private List<string> GetDevelopmentLoginUsernames()
+        {
+            var section = _configuration.GetSection("DevelopmentLogin:AllowedUsernames");
+            var usernames = section.GetChildren()
+                .Select(item => item.Value)
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Select(item => item.Trim())
+                .ToList();
+
+            if (usernames.Count > 0) return usernames;
+
+            var inlineValue = section.Value;
+            return string.IsNullOrWhiteSpace(inlineValue)
+                ? new List<string>()
+                : inlineValue.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(item => item.Trim())
+                    .Where(item => item.Length > 0)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
         }
 
         /// <summary>
