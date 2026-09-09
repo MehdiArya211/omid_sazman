@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Convertors;
@@ -61,7 +62,7 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <summary>
-        /// ویرایش هامش خالی که نفر هنگام ثبت درخواست ثبت کرده است
+        /// فقط برای تکمیل رکوردهای هامش خالی قدیمی نگهداری شده است.
         /// </summary>
         /// <param name="actionTypeId"></param>
         /// <param name="roleTypeId"></param>
@@ -74,7 +75,11 @@ namespace VisitorManagment.Core.Services
         public BaseResult EditHamesh(int actionTypeId, int roleTypeId, string roleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal,
             string userDesc, int userId, int fileId, double? mablaghVamDarkhasti, double? mablaghVamMohaghaghShode)
         {
-            var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
+            var editHamesh = _context.Hameshes
+                .Where(item => item.UserId == userId && item.FileId == fileId &&
+                               (item.UserDesc == null || item.UserDesc.Trim() == ""))
+                .OrderByDescending(item => item.RegDate).ThenByDescending(item => item.Id)
+                .FirstOrDefault();
 
             if (editHamesh == null)
             {
@@ -128,13 +133,16 @@ namespace VisitorManagment.Core.Services
         {
             var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
 
+            if (editHamesh == null || meetingHoldViewModel == null || string.IsNullOrWhiteSpace(meetingHoldViewModel.UserDesc))
+                return;
+
             editHamesh.ActionTypeId = actionTypeId;
-            editHamesh.UserDesc = meetingHoldViewModel.UserDesc;
+            editHamesh.UserDesc = meetingHoldViewModel.UserDesc.Trim();
             editHamesh.RegDate = DateTime.Now;
             UpdateHamesh(editHamesh);
         }
         /// <summary>
-        /// زمانیکه یه درخواست ملاقات ثبت میشه باید یه رکورد خالی هم تو هامش بخوره با شناسه نفری که لاگین کرده
+        /// ثبت اولیه درخواست را تأیید می‌کند؛ وضعیت انتظار اقدام فقط در کارتابل نگهداری می‌شود.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="FileId"></param>
@@ -229,10 +237,11 @@ namespace VisitorManagment.Core.Services
         public void AddToHameshWhenSendFileToCartableInMeetingHold(int userId, int fileId, int rcvrUserId, Hamesh hamehsViewModel)
         {
             var editHamesh = GetHameshByUserIdAndFileId(userId, fileId);
+            if (editHamesh == null || hamehsViewModel == null || string.IsNullOrWhiteSpace(hamehsViewModel.UserDesc))
+                return;
             editHamesh.FileId = fileId;
-            editHamesh.UserId = rcvrUserId;
             editHamesh.ActionTypeId = hamehsViewModel.ActionTypeId;
-            editHamesh.UserDesc = hamehsViewModel.UserDesc;
+            editHamesh.UserDesc = hamehsViewModel.UserDesc.Trim();
             editHamesh.RegDate = DateTime.Now;
             UpdateHamesh(editHamesh);
         }
@@ -269,7 +278,9 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public int? GetHameshIdByFileId(int fileId)
         {
-            return _context.Hameshes.Where(h => h.FileId == fileId).Select(h => h.ParentId).SingleOrDefault();
+            return _context.Hameshes.Where(h => h.FileId == fileId)
+                .OrderByDescending(h => h.RegDate).ThenByDescending(h => h.Id)
+                .Select(h => h.ParentId).FirstOrDefault();
         }
 
 
@@ -278,7 +289,9 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public int GetHameshIdByUseerIdAndFileId(int userId, int fileId)
         {
-            var hameshId = _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).Select(h => h.Id).SingleOrDefault();
+            var hameshId = _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId)
+                .OrderByDescending(h => h.RegDate).ThenByDescending(h => h.Id)
+                .Select(h => h.Id).FirstOrDefault();
             return hameshId;
         }
         /// <summary>
@@ -290,17 +303,9 @@ namespace VisitorManagment.Core.Services
 
         public Hamesh GetHameshByUserIdAndFileId(int userId, int fileId)
         {
-            if (userId == 132 || userId == 3709)
-            {
-                var userId1 = 132;
-                var userId2 = 3709;
-                return _context.Hameshes
-                        .Where(h => h.FileId == fileId && (h.UserId == userId1 || h.UserId == userId2))
-                        .OrderBy(h => h.RegDate).LastOrDefault();
-            }
             return _context.Hameshes
                 .Where(h => h.UserId == userId && h.FileId == fileId)
-                .OrderBy(h => h.RegDate).LastOrDefault();
+                .OrderByDescending(h => h.RegDate).ThenByDescending(h => h.Id).FirstOrDefault();
         }
 
 
@@ -309,8 +314,8 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public Hamesh GetHameshByUserIdAndFileId2(int userId, int? fileId)
         {
-            //return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).SingleOrDefault();
-            return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).OrderBy(h => h.RegDate).Last();
+            return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId)
+                .OrderByDescending(h => h.RegDate).ThenByDescending(h => h.Id).FirstOrDefault();
         }
 
         /// <summary>
@@ -318,7 +323,9 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public int? GetParentIdHameshByUserIdAndFileId(int userId, int fileId)
         {
-            return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId).OrderBy(h => h.RegDate).Select(h => h.ParentId).Last();
+            return _context.Hameshes.Where(h => h.UserId == userId && h.FileId == fileId)
+                .OrderByDescending(h => h.RegDate).ThenByDescending(h => h.Id)
+                .Select(h => h.ParentId).FirstOrDefault();
         }
 
         /// <summary>
@@ -363,7 +370,9 @@ namespace VisitorManagment.Core.Services
             int fileid = _context.Files.Where(f => f.Id == fileId).Select(f => f.Id).SingleOrDefault();
             int? meetingId = _context.Files.Where(f => f.Id == fileId).Select(f => f.MeetingId).SingleOrDefault();
 
-            IQueryable<Hamesh> result = _context.Hameshes.Where(r => r.FileId == fileId).OrderBy(x => x.RegDate);
+            IQueryable<Hamesh> result = _context.Hameshes
+                .Where(r => r.FileId == fileId && r.UserDesc != null && r.UserDesc.Trim() != "")
+                .OrderBy(x => x.RegDate).ThenBy(x => x.Id);
 
             var take = 1000;
             var skip = (pageId - 1) * take;
@@ -414,7 +423,7 @@ namespace VisitorManagment.Core.Services
                         f.Id,
                         f.MeetingId,
                         Hameshes = _context.Hameshes
-                            .Where(r => r.FileId == fileId)
+                            .Where(r => r.FileId == fileId && r.UserDesc != null && r.UserDesc.Trim() != "")
                             .OrderBy(x => x.RegDate)
                             .ToList() // تبدیل به لیست
                     })
@@ -507,14 +516,10 @@ namespace VisitorManagment.Core.Services
         /// <returns></returns>
         public Hamesh GetPervHameshForFRadeBalatar(int fileId)
         {
-            //کسی که داره میفرسته از جدول کارتابل رو میگیره تا بتونیم هامش نفر قبلی رو از روش پیدا کنیم
-            var sndrUserIdCartable = _context.Cartables.Where(x => x.FileId == fileId)
-                .OrderBy(x => x.Id).Select(x => x.SndrUserId)
-                .LastOrDefault();
-
-            return _context.Hameshes.Where(x => x.FileId == fileId && x.UserId == sndrUserIdCartable)
-                .OrderBy(x => x.Id)
-                .LastOrDefault();
+            return _context.Hameshes
+                .Where(item => item.FileId == fileId && item.UserDesc != null && item.UserDesc.Trim() != "")
+                .OrderByDescending(item => item.RegDate).ThenByDescending(item => item.Id)
+                .FirstOrDefault();
         }
 
         //get Perv Hamesh
@@ -524,7 +529,7 @@ namespace VisitorManagment.Core.Services
         public List<Hamesh> GetHameshMoavenatForFRadeBalatar(int fileId)
         {
             var result = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
-                .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.UnitCommand || x.RoleTypeId == SystemRoleTypes.DeputyOffice) && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.UnitCommand || x.RoleTypeId == SystemRoleTypes.DeputyOffice) && x.UserDesc != null && x.UserDesc.Trim() != "")
                 .Distinct().ToList();
             // return _context.Hameshes.Where(x => x.FileId == fileId).Include(x => x.User).ThenInclude(x => x.UserRoles).Where(y=>y.).Where(x=>x.);
             return result;
@@ -544,7 +549,7 @@ namespace VisitorManagment.Core.Services
 
             var result = _context.Hameshes.Include(x => x.User)
     .ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
-    .Where(x => x.FileId == fileId && x.RoleTypeFinalId == SystemRoleFinalTypes.UnitCommander && x.UserDesc != "").OrderBy(x => x.RegDate)
+    .Where(x => x.FileId == fileId && x.RoleTypeFinalId == SystemRoleFinalTypes.UnitCommander && x.UserDesc != null && x.UserDesc.Trim() != "").OrderBy(x => x.RegDate)
     .Select(x => x.UserDesc).LastOrDefault();
 
 
@@ -576,10 +581,9 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public string GetHameshFGharargah(int fileId)
         {
-            // var res = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).Where(x => x.FileId == fileId && x.RoleTypeId == 4 && x.UserDesc != "").Select(x => x.UserDesc).SingleOrDefault();
             var res = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles)
                 .ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
-                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.GharargahCommanderLegacy && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.GharargahCommanderLegacy && x.UserDesc != null && x.UserDesc.Trim() != "")
                 .OrderBy(x => x.RegDate)
                 .Select(x => x.UserDesc + "\n" + x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName + "\n" + x.RegDate.ToShamsi()).LastOrDefault();
             if (string.IsNullOrEmpty(res))
@@ -621,7 +625,7 @@ namespace VisitorManagment.Core.Services
             // آرایه محلی باعث می‌شود EF Core شرط Contains را مستقیماً به IN در SQL تبدیل کند.
             var excludedRoleTypes = SystemRoleTypes.GetMainWorkflowTypes().ToArray();
             var listhamesh = _context.Hameshes.Include(x => x.File)
-                .Where(x => x.FileId == fileId && !excludedRoleTypes.Contains(x.RoleTypeId) && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && !excludedRoleTypes.Contains(x.RoleTypeId) && x.UserDesc != null && x.UserDesc.Trim() != "")
                 .Select(x => new HameshInfoViewModel
                 {
                     FirstName = x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName,
@@ -640,7 +644,7 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public string GetlastHameshKarshenasgharagahAnsarNezaja(int fileId)
         {
-            string result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert && x.UserDesc != "")
+            string result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert && x.UserDesc != null && x.UserDesc.Trim() != "")
                .OrderBy(x => x.RegDate).Select(x => x.UserDesc).LastOrDefault();
 
             if (result == null)
@@ -661,7 +665,8 @@ namespace VisitorManagment.Core.Services
             var result = "";
             try
             {
-                result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.NezajaOperator).Select(x => x.UserDesc).FirstOrDefault();
+                result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.NezajaOperator && x.UserDesc != null && x.UserDesc.Trim() != "")
+                    .OrderByDescending(x => x.RegDate).ThenByDescending(x => x.Id).Select(x => x.UserDesc).FirstOrDefault();
 
                 if (result == null)
                 {
@@ -770,7 +775,7 @@ namespace VisitorManagment.Core.Services
         public List<HameshInfoViewModel> getAllHameshMoavenat(int fileId)
         {
             var listhamesh = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
-                .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.UnitCommand || x.RoleTypeId == SystemRoleTypes.DeputyOffice) && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.UnitCommand || x.RoleTypeId == SystemRoleTypes.DeputyOffice) && x.UserDesc != null && x.UserDesc.Trim() != "")
                 .Select(x => new HameshInfoViewModel
                 {
 
@@ -791,7 +796,8 @@ namespace VisitorManagment.Core.Services
         {
             //کسی که داره میفرسته از جدول کارتابل رو میگیره تا بتونیم هامش نفر قبلی رو از روش پیدا کنیم
             var hamesh = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
-                            .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.PresidingBoard) && x.UserDesc != "").Select(x => x.UserDesc).FirstOrDefault();
+                            .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.PresidingBoard && x.UserDesc != null && x.UserDesc.Trim() != "")
+                            .OrderByDescending(x => x.RegDate).ThenByDescending(x => x.Id).Select(x => x.UserDesc).FirstOrDefault();
 
             return hamesh;
         }
@@ -804,6 +810,9 @@ namespace VisitorManagment.Core.Services
         {
             var file = _context.Files.Include(x => x.RequestSubject).Where(x => x.Id == fileId).FirstOrDefault();
 
+            if (file == null)
+                throw new InvalidOperationException("درخواست ملاقات یافت نشد.");
+
             var listAttachmnetDastor = _context.FileAttachments.Where(x => x.FileId == fileId).ToList();
 
             var hamesh = new HameshFullInfoFileViewModel();
@@ -811,17 +820,17 @@ namespace VisitorManagment.Core.Services
             hamesh.file = new FactPersonalViewModel();
 
             hamesh.file.Id = file.Id;
-            hamesh.file.ReqSubTitle = file.RequestSubject.Title;
-            hamesh.file.ProblemDescription = file.ProblemDescription;
-            hamesh.file.RequestDescription = file.RequestDescription;
-            hamesh.file.FishAttachmentFileName = file.FishAttachment;
-            hamesh.file.attachDastor = file.AttachDastor;
-            hamesh.file.AttachmentFileName = file.Attachment;
+            hamesh.file.ReqSubTitle = file.RequestSubject?.Title ?? "";
+            hamesh.file.ProblemDescription = file.ProblemDescription ?? "";
+            hamesh.file.RequestDescription = file.RequestDescription ?? "";
+            hamesh.file.FishAttachmentFileName = file.FishAttachment ?? "";
+            hamesh.file.attachDastor = file.AttachDastor ?? "";
+            hamesh.file.AttachmentFileName = file.Attachment ?? "";
             hamesh.hameshKarshenasGharagahAnsarNezaja = GetlastHameshKarshenasgharagahAnsarNezaja(fileId);
             hamesh.hameshAllYegan = getAllHameshWithOutMoavenat(fileId);
             hamesh.HameshMoavenats = getAllHameshMoavenat(fileId);
             hamesh.HameshKarbarNezaja = GetlastHameshKarbarNezaja(fileId);
-            hamesh.PervHamesh = GetPervHameshForFRadeBalatar(fileId).UserDesc;
+            hamesh.PervHamesh = GetPervHameshForFRadeBalatar(fileId)?.UserDesc ?? "";
             // hamesh.HameshUserLogin = GetHameshByUserIdAndFileId(userId, fileId).UserDesc;
             // hamesh.ActionTypeIdUserLogin = GetHameshByUserIdAndFileId(userId, fileId).ActionTypeId;
             hamesh.hameshHeiatReeise = GetHameshHeiatReeiseByUserIdAndFileId(userId, fileId);
@@ -852,7 +861,7 @@ namespace VisitorManagment.Core.Services
         public string GetFirstHameshKarshenasgharagahAnsarNezaja(int fileId)
         {
             string result = _context.Hameshes
-                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert && x.UserDesc != null && x.UserDesc.Trim() != "")
                    .OrderByDescending(x => x.RegDate)
                    .Select(x => x.UserDesc)
                    .FirstOrDefault();
@@ -962,7 +971,14 @@ namespace VisitorManagment.Core.Services
             if (validReceiverIds.Count != receiverIds.Count)
                 return new BaseResult(false, "یک یا چند گیرنده یافت نشد یا حساب آن‌ها غیرفعال است.");
 
-            using (var transaction = _context.Database.BeginTransaction())
+            if (!_context.ActionTypes.Any(item => item.Id == actionTypeId))
+                return new BaseResult(false, "نوع اقدام انتخاب‌شده معتبر نیست.");
+            if (string.IsNullOrWhiteSpace(roleTypeTitle))
+                return new BaseResult(false, "اطلاعات نقش ثبت‌کننده کامل نیست.");
+            if (userDesc.Trim().Length > 4000)
+                return new BaseResult(false, "متن هامش نمی‌تواند بیشتر از ۴۰۰۰ کاراکتر باشد.");
+
+            using (var transaction = _context.Database.BeginTransaction(IsolationLevel.Serializable))
             {
                 try
                 {
@@ -993,7 +1009,7 @@ namespace VisitorManagment.Core.Services
                     completedHamesh.RoleTypeId = roleTypeId;
                     completedHamesh.RoleTypeTitle = roleTypeTitle ?? "نامشخص";
                     completedHamesh.RoleTypeFinalId = roleTypeIdFinal;
-                    completedHamesh.RoleTypeFinalTitle = roleTypeTitleFinal ?? "نامشخص";
+                    completedHamesh.RoleTypeFinalTitle = string.IsNullOrWhiteSpace(roleTypeTitleFinal) ? "نامشخص" : roleTypeTitleFinal;
                     completedHamesh.RegDate = DateTime.Now;
                     completedHamesh.MablaghVamDarkhasti = mablaghVamDarkhasti;
                     completedHamesh.MablaghVamMohaghaghSode = mablaghVamMohaghaghShode;
@@ -1028,7 +1044,7 @@ namespace VisitorManagment.Core.Services
 
 
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // در صورت بروز خطا، تراکنش را لغو می‌کنیم
                     transaction.Rollback();
@@ -1036,7 +1052,7 @@ namespace VisitorManagment.Core.Services
                     return new BaseResult()
                     {
                         Model = "",
-                        Message = $"خطایی رخ داد: {ex.Message}",
+                        Message = "ثبت هامش انجام نشد؛ اطلاعات قبلی بدون تغییر باقی ماند.",
                         Status = false
                     };
                 }
@@ -1195,28 +1211,46 @@ namespace VisitorManagment.Core.Services
         {
             var file = _fileService.GetFile(fileId);
 
+            if (file == null) return new BaseResult(false, "درخواست ملاقات یافت نشد.");
+            if (hamesh == null) return new BaseResult(false, "اطلاعات هامش ارسال نشده است.");
+            if (hamesh.ActionTypeId <= 0 || string.IsNullOrWhiteSpace(hamesh.UserDesc))
+                return new BaseResult(false, "نوع اقدام و متن هامش الزامی است.");
+            if (hamesh.RcvrId == null || !hamesh.RcvrId.Any())
+                return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
+
             try
             {
                 var resultEnableMeetingHold = _fileService.ActiveFiledMettingHoldFile(file.Id);
+                if (resultEnableMeetingHold == null || !resultEnableMeetingHold.Status)
+                    return new BaseResult(false, resultEnableMeetingHold?.Message ?? "فعال‌سازی درخواست جلسه انجام نشد.");
 
                 if (hamesh.VoiceRecord != null)
                 {
-                    _fileService.AddVoiceRecordToFile(hamesh.VoiceRecord, fileId);
+                    var voiceResult = _fileService.AddVoiceRecordToFile(hamesh.VoiceRecord, fileId);
+                    if (voiceResult == null || !voiceResult.Status)
+                        return new BaseResult(false, voiceResult?.Message ?? "ذخیره فایل صوتی انجام نشد.");
 
                 }
 
                 if (hamesh.AttachDastors != null)
                 {
                     //add AttachDastor TO Table File
-                    _fileService.AddListAttachDastorToFile(hamesh.AttachDastors, fileId);
+                    var attachmentResult = _fileService.AddListAttachDastorToFile(hamesh.AttachDastors, fileId);
+                    if (attachmentResult == null || !attachmentResult.Status)
+                        return new BaseResult(false, attachmentResult?.Message ?? "ذخیره پیوست‌ها انجام نشد.");
                 }
 
-                RegHamesh(hamesh.ActionTypeId, roleTypeId, roleTypeTitle, roleTypeFinalId, roleTypeFinalTitle, hamesh.UserDesc, userId, fileId, hamesh.SumMablaghVamDarkhasti, 0, hamesh.RcvrId);
+                var hameshResult = RegHamesh(hamesh.ActionTypeId, roleTypeId, roleTypeTitle, roleTypeFinalId,
+                    roleTypeFinalTitle, hamesh.UserDesc, userId, fileId, hamesh.SumMablaghVamDarkhasti, 0, hamesh.RcvrId);
+                if (hameshResult == null || !hameshResult.Status)
+                    return new BaseResult(false, hameshResult?.Message ?? "ثبت هامش انجام نشد.");
 
 
                 if (hamesh.SumMablaghVamDarkhasti != null)
                 {
-                    _fileService.addMablaghVamDarkhastiVaVamMohaghahShode(fileId, hamesh.SumMablaghVamDarkhasti, 0);
+                    var amountResult = _fileService.addMablaghVamDarkhastiVaVamMohaghahShode(fileId, hamesh.SumMablaghVamDarkhasti, 0);
+                    if (amountResult == null || !amountResult.Status)
+                        return new BaseResult(false, amountResult?.Message ?? "ثبت مبلغ وام انجام نشد.");
 
                 }
 
@@ -1225,18 +1259,18 @@ namespace VisitorManagment.Core.Services
 
                 return new BaseResult
                 {
-                    Message = " عملیات موفق",
+                    Message = "هامش جلسه با موفقیت ثبت و به کارتابل مقصد ارسال شد.",
                     Status = true
                 };
             }
 
-            catch (Exception)
+            catch (Exception ex)
             {
 
 
                 return new BaseResult
                 {
-                    Message = " عملیات ناموفق",
+                    Message = $"ثبت هامش جلسه انجام نشد: {ex.Message}",
                     Status = false
                 };
             }
