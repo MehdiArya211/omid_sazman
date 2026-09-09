@@ -38,30 +38,23 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<Users> GetRecieverUserListByFileId(int fileId, int userId)
         {
-            var users = _context.Hameshes.Include(h => h.User)
-                .Where(h => h.FileId == fileId)
-                .Select(h => h.User)
-                .OrderBy(h => h.Id).Distinct().ToList();
+            if (fileId <= 0 || userId <= 0) return new List<Users>();
 
-            #region تغییرات برای درکتر صدر ف ابهاد
-            //1617 => ر ابهاد
-            if (userId == 1617)
-            {
-                if (users.AsQueryable().Select(x => x.Id).Contains(575))
-                {
+            // فرستندگان ثبت‌شده در تاریخچه کارتابل، مقصدهای معتبر عودت هستند.
+            // برای داده‌های قدیمی که کارتابل آن‌ها حذف شده، ثبت‌کنندگان هامش نیز به‌عنوان مسیر جایگزین لحاظ می‌شوند.
+            var senderIds = _context.Cartables.AsNoTracking()
+                .Where(item => item.FileId == fileId)
+                .Select(item => item.SndrUserId)
+                .Union(_context.Hameshes.AsNoTracking()
+                    .Where(item => item.FileId == fileId && item.UserDesc != null && item.UserDesc.Trim() != "")
+                    .Select(item => item.UserId))
+                .Where(id => id != userId)
+                .Distinct();
 
-                }
-                else
-                {
-                    var karshenash = _context.Users.Where(x => x.Id == 575).FirstOrDefault();
-                    users.Add(karshenash);
-                }
-
-            }
-            #endregion
-
-
-            return users;
+            return _context.Users.AsNoTracking()
+                .Where(user => senderIds.Contains(user.Id) && user.IsActive && !user.IsDelete)
+                .OrderBy(user => user.FirstName).ThenBy(user => user.LastName)
+                .ToList();
         }
 
         /// <summary>
@@ -70,8 +63,12 @@ namespace VisitorManagment.Core.Services
         public Users GetRecieverUserByFileId(int fileId)
         {
 
-            var users = _context.Hameshes.Include(h => h.User).Where(h => h.FileId == fileId).Select(h => h.User).Distinct().SingleOrDefault();
-            return users;
+            var latestSenderId = _context.Cartables.AsNoTracking()
+                .Where(item => item.FileId == fileId)
+                .OrderByDescending(item => item.RegDate).ThenByDescending(item => item.Id)
+                .Select(item => item.SndrUserId).FirstOrDefault();
+
+            return _context.Users.AsNoTracking().FirstOrDefault(user => user.Id == latestSenderId);
         }
 
         /// <summary>
