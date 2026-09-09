@@ -34,6 +34,7 @@ namespace VisitorManagment.Web.Middleware
                                          required;
 
             var isAllowedPath = requestPath.StartsWithSegments("/ChangePasswordRequired") ||
+                                requestPath.StartsWithSegments("/DevelopmentImpersonation") ||
                                 requestPath.StartsWithSegments("/Admin/Users/Logout");
 
             if (passwordChangeRequired && !isAllowedPath)
