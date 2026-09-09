@@ -1,0 +1,100 @@
+/* دکمه‌های فشرده عملیات جدول کاربران؛ مستقل از فرم‌ها و دکمه‌های عمومی قالب */
+.users-index-page .users-actions-cell {
+    min-width: 154px;
+    padding: 8px !important;
+    vertical-align: middle !important;
+}
+
+.users-index-page .users-action-group {
+    display: flex !important;
+    width: auto !important;
+    min-width: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin: 0 !important;
+}
+
+.users-index-page .user-action-form {
+    display: inline-flex !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    align-items: center !important;
+}
+
+.users-index-page .user-action-button {
+    display: inline-flex !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+.users-index-page .user-action-button i {
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+}
+
+.users-index-page .user-action-button:hover {
+    transform: translateY(-1px);
+    text-decoration: none !important;
+}
+
+.users-index-page .user-action-button--edit {
+    color: #a96b08 !important;
+    border-color: #f2d7a7 !important;
+    background: #fff8e9 !important;
+}
+
+.users-index-page .user-action-button--delete {
+    color: #bd4051 !important;
+    border-color: #f0c6cc !important;
+    background: #fff2f4 !important;
+}
+
+.users-index-page .user-action-button--password {
+    color: #13768a !important;
+    border-color: #bce0e6 !important;
+    background: #eef9fb !important;
+}
+
+.users-index-page .user-action-button--impersonate {
+    color: #3157b8 !important;
+    border-color: #c8d5f5 !important;
+    background: #f0f4ff !important;
+}
+
+.users-index-page .user-action-button--edit:hover { color: #fff !important; border-color: #d99521 !important; background: #d99521 !important; }
+.users-index-page .user-action-button--delete:hover { color: #fff !important; border-color: #c84a5a !important; background: #c84a5a !important; }
+.users-index-page .user-action-button--password:hover { color: #fff !important; border-color: #16859a !important; background: #16859a !important; }
+.users-index-page .user-action-button--impersonate:hover { color: #fff !important; border-color: #4266c7 !important; background: #4266c7 !important; }
+
+@media (max-width: 767.98px) {
+    .users-index-page .users-actions-cell { min-width: 116px; }
+    .users-index-page .users-action-group { gap: 5px !important; }
+    .users-index-page .user-action-button {
+        width: 30px !important;
+        min-width: 30px !important;
+        max-width: 30px !important;
+        height: 30px !important;
+        min-height: 30px !important;
+    }
+}
