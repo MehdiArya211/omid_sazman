@@ -35,7 +35,13 @@
 
             <div class="users-index-heading">
                 <div><span>مدیریت متمرکز حساب‌ها</span><h4>فهرست کاربران سامانه</h4><p>کاربر موردنظر را بدون بارگذاری مجدد صفحه پیدا و مدیریت کنید.</p></div>
-                <a asp-page="CreateUsers" class="btn btn-success"><i class="ti-plus mr-2"></i> افزودن کاربر جدید</a>
+                <div class="d-flex flex-wrap align-items-center" style="gap:8px">
+                    @if (User.IsSystemAdministrator())
+                    {
+                        <a href="/Admin/VisitorRequests/Index" class="btn btn-info"><i class="fa fa-folder-open ml-2"></i> سوابق مراجعه‌کننده</a>
+                    }
+                    <a asp-page="CreateUsers" class="btn btn-success"><i class="ti-plus mr-2"></i> افزودن کاربر جدید</a>
+                </div>
             </div>
 
             <div class="user-live-filters" role="search" aria-label="جست‌وجوی زنده کاربران">
