@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
 using VisitorManagment.Web.Helpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using System.Net;
 
 namespace VisitorManagment.Web.Pages.Admin.Users
 {
@@ -11,15 +15,31 @@ namespace VisitorManagment.Web.Pages.Admin.Users
     public class IndexModel : PageModel
     {
         private readonly IUserService _userService;
-        private IHameshService _hameshService;
+        private readonly IHameshService _hameshService;
+        private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
 
-        public IndexModel(IUserService userService , IHameshService hameshService)
+        public IndexModel(IUserService userService, IHameshService hameshService,
+            IWebHostEnvironment environment, IConfiguration configuration)
         {
             _userService = userService;
             _hameshService = hameshService;
+            _environment = environment;
+            _configuration = configuration;
         }
 
         public UserForAdminViewModel UserForAdminViewModel { get; set; }
+
+        /// <summary>
+        /// دکمه ورود به‌جای کاربر فقط برای مدیر تست، در محیط توسعه و درخواست محلی نمایش داده می‌شود.
+        /// </summary>
+        public bool CanUseDevelopmentImpersonation =>
+            _environment.IsDevelopment() &&
+            _configuration.GetValue<bool>("DevelopmentLogin:Enabled") &&
+            User.IsSystemAdministrator() &&
+            User.FindFirst("PersonalCode")?.Value == "95003599" &&
+            HttpContext.Connection.RemoteIpAddress != null &&
+            IPAddress.IsLoopback(HttpContext.Connection.RemoteIpAddress);
 
        
 
