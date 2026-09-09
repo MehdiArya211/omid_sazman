@@ -85,7 +85,22 @@ namespace VisitorManagment.Web.Pages
                 return RedirectToPage("/Admin/Users/Index");
             }
 
-            var signedIn = await SignInAsAsync(targetUser, originalUserId, DevelopmentAdministratorUserName);
+            bool signedIn;
+            try
+            {
+                signedIn = await SignInAsAsync(targetUser, originalUserId, DevelopmentAdministratorUserName);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception,
+                    "Development impersonation failed for administrator {Administrator} and target user {TargetUser}.",
+                    DevelopmentAdministratorUserName, targetUser.UserName);
+                TempData["OperationTitle"] = "ورود به کارتابل انجام نشد";
+                TempData["OperationMessage"] = "اطلاعات نقش یا یگان کاربر مقصد کامل نیست. جزئیات خطا در لاگ ثبت شد.";
+                TempData["OperationIcon"] = "error";
+                return RedirectToPage("/Admin/Users/Index");
+            }
+
             if (!signedIn) return RedirectToPage("/Admin/Users/Index");
 
             _logger.LogWarning("Development impersonation started. Administrator {Administrator} is viewing as {TargetUser}.",
