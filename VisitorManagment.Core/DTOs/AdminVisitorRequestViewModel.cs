@@ -30,6 +30,8 @@ namespace VisitorManagment.Core.DTOs
         public bool IsArchived { get; set; }
         public bool IsFinished { get; set; }
         public DateTime RegDate { get; set; }
+        public int EmptyHameshCount { get; set; }
+        public List<string> CurrentOwners { get; set; } = new List<string>();
         public List<AdminVisitorHameshItemViewModel> Hameshes { get; set; } = new List<AdminVisitorHameshItemViewModel>();
     }
 
@@ -42,5 +44,11 @@ namespace VisitorManagment.Core.DTOs
         public string ActionTitle { get; set; }
         public string Description { get; set; }
         public DateTime RegDate { get; set; }
+    }
+
+    public class WorkflowReceiverViewModel
+    {
+        public int Id { get; set; }
+        public string DisplayTitle { get; set; }
     }
 }
