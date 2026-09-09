@@ -75,10 +75,12 @@ namespace VisitorManagment.Web.Pages
             {
                 if (!_environment.IsDevelopment() || !_configuration.GetValue<bool>("DevelopmentLogin:Enabled"))
                     return null;
-                if (string.IsNullOrEmpty(_configuration["DevelopmentLogin:Password"]))
-                    return "ورود آزمایشی فعال است اما رمز DevelopmentLogin تنظیم نشده است.";
+                if (!HasDevelopmentLoginPassword())
+                    return "ورود آزمایشی فعال است اما رمز یا هش رمز DevelopmentLogin تنظیم نشده است.";
                 if (GetDevelopmentLoginUsernames().Count == 0)
                     return "ورود آزمایشی فعال است اما هیچ نام کاربری در AllowedUsernames ثبت نشده است.";
+                if (!IsLocalRequest())
+                    return "ورود آزمایشی فقط از localhost قابل استفاده است.";
                 return null;
             }
         }
@@ -237,20 +239,22 @@ namespace VisitorManagment.Web.Pages
         {
             if (!_environment.IsDevelopment() ||
                 !_configuration.GetValue<bool>("DevelopmentLogin:Enabled") ||
+                !IsLocalRequest() ||
                 login == null ||
                 string.IsNullOrWhiteSpace(login.UserName) ||
                 string.IsNullOrEmpty(login.Password))
                 return null;
 
             var configuredPassword = _configuration["DevelopmentLogin:Password"];
+            var configuredPasswordHash = _configuration["DevelopmentLogin:PasswordSha256"];
             var allowedUsernames = GetDevelopmentLoginUsernames();
 
-            if (string.IsNullOrEmpty(configuredPassword) ||
+            if (!HasDevelopmentLoginPassword() ||
                 !allowedUsernames.Contains(login.UserName, StringComparer.OrdinalIgnoreCase) ||
-                !SecureEquals(login.Password, configuredPassword))
+                !MatchesDevelopmentPassword(login.Password, configuredPassword, configuredPasswordHash))
             {
-                if (string.IsNullOrEmpty(configuredPassword) || allowedUsernames.Count == 0)
-                    _logger.LogWarning("Development login is enabled but Password or AllowedUsernames is not configured.");
+                if (!HasDevelopmentLoginPassword() || allowedUsernames.Count == 0)
+                    _logger.LogWarning("Development login is enabled but Password/PasswordSha256 or AllowedUsernames is not configured.");
                 return null;
             }
 
@@ -262,6 +266,67 @@ namespace VisitorManagment.Web.Pages
                 _logger.LogWarning("Development login used for test account {UserName}.", user.UserName);
 
             return user;
+        }
+
+        /// <summary>
+        /// وجود رمز ورود توسعه را بررسی می‌کند. مقدار متنی متغیر محیطی بر هش موجود در
+        /// تنظیمات توسعه اولویت دارد تا در صورت نیاز بتوان رمز را بدون تغییر کد جایگزین کرد.
+        /// </summary>
+        private bool HasDevelopmentLoginPassword()
+        {
+            return !string.IsNullOrEmpty(_configuration["DevelopmentLogin:Password"]) ||
+                   !string.IsNullOrEmpty(_configuration["DevelopmentLogin:PasswordSha256"]);
+        }
+
+        /// <summary>
+        /// رمز ورودی را با رمز امن محیط یا هش SHA-256 مخصوص تست محلی مقایسه می‌کند.
+        /// </summary>
+        private static bool MatchesDevelopmentPassword(string suppliedPassword, string configuredPassword,
+            string configuredPasswordHash)
+        {
+            if (!string.IsNullOrEmpty(configuredPassword))
+                return SecureEquals(suppliedPassword, configuredPassword);
+
+            if (string.IsNullOrWhiteSpace(configuredPasswordHash)) return false;
+
+            using (var sha256 = SHA256.Create())
+            {
+                var suppliedHash = sha256.ComputeHash(Encoding.UTF8.GetBytes(suppliedPassword));
+                byte[] configuredHash;
+                try
+                {
+                    configuredHash = HexToBytes(configuredPasswordHash.Trim());
+                }
+                catch (FormatException)
+                {
+                    return false;
+                }
+
+                return suppliedHash.Length == configuredHash.Length &&
+                       CryptographicOperations.FixedTimeEquals(suppliedHash, configuredHash);
+            }
+        }
+
+        /// <summary>
+        /// رشته هگزادسیمال تنظیمات را بدون وابستگی به APIهای نسخه‌های جدید دات‌نت تبدیل می‌کند.
+        /// </summary>
+        private static byte[] HexToBytes(string value)
+        {
+            if (value.Length == 0 || value.Length % 2 != 0) throw new FormatException();
+
+            var result = new byte[value.Length / 2];
+            for (var index = 0; index < result.Length; index++)
+                result[index] = Convert.ToByte(value.Substring(index * 2, 2), 16);
+            return result;
+        }
+
+        /// <summary>
+        /// حتی در صورت اشتباه در تنظیم محیط سرور، ورود آزمایشی را به درخواست محلی محدود می‌کند.
+        /// </summary>
+        private bool IsLocalRequest()
+        {
+            var remoteAddress = HttpContext?.Connection?.RemoteIpAddress;
+            return remoteAddress != null && IPAddress.IsLoopback(remoteAddress);
         }
 
         /// <summary>
