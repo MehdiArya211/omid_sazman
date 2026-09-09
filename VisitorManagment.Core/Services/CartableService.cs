@@ -120,13 +120,16 @@ namespace VisitorManagment.Core.Services
         /// <param name="files"></param>
         public void SendListFileToCartable(List<int> rcvrUserId, int sndrUserId, List<Files> files)
         {
+            var receiverIds = (rcvrUserId ?? new List<int>()).Where(id => id > 0).Distinct().ToList();
+            if (receiverIds.Count == 0 || files == null || files.Count == 0) return;
+
             foreach (var file in files)
             {
-                _context.Cartables.Where(u => u.FileId == file.Id).ToList().ForEach(r => _context.Cartables.Remove(r));
+                var activeRows = _context.Cartables.Where(item => item.FileId == file.Id && !item.IsDone).ToList();
+                foreach (var row in activeRows) row.IsDone = true;
             }
 
-
-            foreach (int rcvrId in rcvrUserId)
+            foreach (int rcvrId in receiverIds)
             {
 
                 foreach (var file in files)
@@ -138,7 +141,8 @@ namespace VisitorManagment.Core.Services
                         FileId = file.Id,
                         StateCd = 0,
                         IsView = false,
-                        RegDate = file.RegDate
+                        IsDone = false,
+                        RegDate = DateTime.Now
                     });
                 }
 
@@ -156,9 +160,10 @@ namespace VisitorManagment.Core.Services
         public int SendFileToCartableWhenBackFile(int rcvrUserId, int sndrUserId, int fileId)
         {
             var file = _context.Files.Where(f => f.Id == fileId).SingleOrDefault();
+            if (file == null || rcvrUserId <= 0) return 0;
 
-            _context.Cartables.Where(u => u.FileId == fileId).ToList()
-                .ForEach(r => _context.Cartables.Remove(r));
+            _context.Cartables.Where(u => u.FileId == fileId && !u.IsDone).ToList()
+                .ForEach(row => row.IsDone = true);
 
 
             _context.Cartables.Add(new Cartable()
@@ -168,7 +173,8 @@ namespace VisitorManagment.Core.Services
                 FileId = fileId,
                 StateCd = 0,
                 IsView = false,
-                RegDate = file.RegDate
+                IsDone = false,
+                RegDate = DateTime.Now
             });
 
             _context.SaveChanges();
@@ -251,9 +257,20 @@ namespace VisitorManagment.Core.Services
         public BaseResult SendFileToCartableRecivers(List<int> rcvrUserId, int sndrUserId, int fileId)
         {
             var file = _context.Files.Where(f => f.Id == fileId).FirstOrDefault();
+            var receiverIds = (rcvrUserId ?? new List<int>()).Where(id => id > 0).Distinct().ToList();
+            if (file == null) return new BaseResult(false, "درخواست یافت نشد.");
+            if (!receiverIds.Any()) return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
 
+            var validReceiverIds = _context.Users
+                .Where(user => receiverIds.Contains(user.Id) && user.IsActive && !user.IsDelete)
+                .Select(user => user.Id).ToList();
+            if (validReceiverIds.Count != receiverIds.Count)
+                return new BaseResult(false, "یک یا چند گیرنده نامعتبر یا غیرفعال است.");
 
-            foreach (int rcvrId in rcvrUserId)
+            foreach (var row in _context.Cartables.Where(item => item.FileId == fileId && !item.IsDone).ToList())
+                row.IsDone = true;
+
+            foreach (int rcvrId in validReceiverIds)
             {
                 _context.Cartables.Add(new Cartable()
                 {
@@ -263,7 +280,7 @@ namespace VisitorManagment.Core.Services
                     StateCd = 0,
                     IsView = false,
                     IsDone = false,
-                    RegDate = file.RegDate
+                    RegDate = DateTime.Now
                 });
             }
             var res = _context.SaveChanges();
@@ -294,9 +311,14 @@ namespace VisitorManagment.Core.Services
         public BaseResult SendFileToCartableWhenRegHamesh(List<int> rcvrUserId, int sndrUserId, int fileId)
         {
             var file = _fileService.GetFileByFileId(fileId);
+            var receiverIds = (rcvrUserId ?? new List<int>()).Where(id => id > 0).Distinct().ToList();
+            if (file == null) return new BaseResult(false, "درخواست یافت نشد.");
+            if (!receiverIds.Any()) return new BaseResult(false, "حداقل یک گیرنده باید انتخاب شود.");
 
+            foreach (var row in _context.Cartables.Where(item => item.FileId == fileId && !item.IsDone).ToList())
+                row.IsDone = true;
 
-            foreach (int rcvrId in rcvrUserId)
+            foreach (int rcvrId in receiverIds)
             {
                 _context.Cartables.Add(new Cartable()
                 {
@@ -306,32 +328,12 @@ namespace VisitorManagment.Core.Services
                     StateCd = 0,
                     IsView = false,
                     IsDone = false,
-                    RegDate = file.RegDate
+                    RegDate = DateTime.Now
                 });
             }
-
-
-
-
-            //حذف از کارتابل نفرات قدیم
-            var isSuccess = RemoveCartable(fileId, sndrUserId);
-
-            if (isSuccess)//true
-            {
-                return new BaseResult
-                {
-                    Status = true,
-                    Message = "عملیات با موفقیت انجام شد"
-                };
-            }
-            else
-            {
-                return new BaseResult
-                {
-                    Status = false,
-                    Message = "عملیات با خطا مواجه شد"
-                };
-            }
+            return _context.SaveChanges() > 0
+                ? new BaseResult(true, "عملیات با موفقیت انجام شد")
+                : new BaseResult(false, "عملیات با خطا مواجه شد");
         }
     }
 }
