@@ -5,8 +5,11 @@
     ViewData["Title"] = "سوابق درخواست مراجعه‌کننده";
 }
 <link rel="stylesheet" href="~/css/admin-visitor-requests.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/workflow-recovery.css" asp-append-version="true" />
 
 <div class="container-fluid admin-visitor-requests">
+    @if (TempData["SuccessMessage"] != null) { <div class="workflow-alert success">@TempData["SuccessMessage"]</div> }
+    @if (TempData["ErrorMessage"] != null) { <div class="workflow-alert error">@TempData["ErrorMessage"]</div> }
     <header class="visitor-request-hero">
         <div><span>مدیریت متمرکز سوابق</span><h1>درخواست‌های مراجعه‌کننده</h1><p>کد پرسنلی را وارد کنید تا درخواست‌ها و تمام گردش هامش‌ها یکجا نمایش داده شود.</p></div>
         <i class="fa fa-folder-open" aria-hidden="true"></i>
@@ -39,8 +42,14 @@
                         <div class="visitor-request-badges"><span>@request.FileStatusTitle</span>@if(request.IsArchived){<span class="is-archived">بایگانی</span>}@if(request.IsFinished){<span class="is-finished">مختومه</span>}</div>
                     </header>
                     <div class="visitor-request-descriptions"><div><strong>شرح درخواست</strong><p>@request.RequestDescription</p></div><div><strong>شرح مشکل</strong><p>@request.ProblemDescription</p></div></div>
+                    <div class="workflow-status @(request.CurrentOwners.Count == 1 ? "healthy" : "warning")">
+                        <div><i class="fa fa-user-circle"></i><span>مسئول فعلی</span><strong>@(request.CurrentOwners.Count == 0 ? "بدون مسئول (نیازمند اصلاح مسیر)" : string.Join("، ", request.CurrentOwners))</strong></div>
+                        @if (request.CurrentOwners.Count > 1) { <small>این درخواست هم‌زمان در کارتابل چند نفر است و بهتر است مسیر آن اصلاح شود.</small> }
+                        @if (request.EmptyHameshCount > 0) { <small>@request.EmptyHameshCount هامش خالی قدیمی شناسایی شد؛ این موارد در گردش نمایش داده نمی‌شوند.</small> }
+                    </div>
                     <div class="visitor-request-actions">
                         <a href="/Visitor/File/PersonalNezami/EditFile/@request.Id" class="visitor-edit"><i class="fa fa-edit"></i> ویرایش درخواست</a>
+                        <button type="button" class="visitor-transfer" data-file-id="@request.Id" data-subject="@request.RequestSubjectTitle"><i class="fa fa-random"></i> اصلاح مسیر</button>
                         <button type="button" class="visitor-timeline-toggle" aria-expanded="false"><i class="fa fa-history"></i> گردش هامش‌ها <b>@request.Hameshes.Count</b></button>
                     </div>
                     <div class="visitor-hamesh-list" hidden>
@@ -60,6 +69,26 @@
             }
         </div>
     }
+</div>
+
+<div class="workflow-modal" id="workflowTransferModal" hidden>
+    <div class="workflow-modal-backdrop" data-close-transfer></div>
+    <section role="dialog" aria-modal="true" aria-labelledby="workflowModalTitle">
+        <header><div><small>ابزار بازیابی مدیر سامانه</small><h2 id="workflowModalTitle">اصلاح مسیر درخواست</h2><p id="workflowTransferSubject"></p></div><button type="button" data-close-transfer aria-label="بستن">×</button></header>
+        <form method="post" asp-page-handler="Transfer">
+            <input type="hidden" name="fileId" id="workflowFileId" />
+            <input type="hidden" name="personalCode" value="@Model.PersonalCode" />
+            <label for="workflowReceiver">مقصد جدید</label>
+            <select id="workflowReceiver" name="receiverUserId" required class="js-example-basic-single">
+                <option value="">کاربر مقصد را جست‌وجو و انتخاب کنید</option>
+                @foreach (var receiver in Model.Receivers) { <option value="@receiver.Id">@receiver.DisplayTitle</option> }
+            </select>
+            <label for="workflowReason">علت اصلاح مسیر</label>
+            <textarea id="workflowReason" name="transferReason" required maxlength="1000" rows="4" placeholder="مثلاً: درخواست اشتباهاً به کارتابل قبلی ارسال شده است."></textarea>
+            <div class="workflow-modal-note"><i class="fa fa-shield"></i> مالکیت‌های فعال قبلی بسته و انتقال با نام مدیر در تاریخچه ثبت می‌شود.</div>
+            <footer><button type="button" data-close-transfer>انصراف</button><button type="submit"><i class="fa fa-check"></i> تأیید و انتقال درخواست</button></footer>
+        </form>
+    </section>
 </div>
 
 @section Scripts {
