@@ -121,18 +121,23 @@ namespace VisitorManagment.Core.Services
         public void SendListFileToCartable(List<int> rcvrUserId, int sndrUserId, List<Files> files)
         {
             var receiverIds = (rcvrUserId ?? new List<int>()).Where(id => id > 0).Distinct().ToList();
-            if (receiverIds.Count == 0 || files == null || files.Count == 0) return;
+            var validReceiverIds = _context.Users
+                .Where(user => receiverIds.Contains(user.Id) && user.IsActive && !user.IsDelete)
+                .Select(user => user.Id).ToList();
+            var distinctFiles = (files ?? new List<Files>()).Where(file => file != null)
+                .GroupBy(file => file.Id).Select(group => group.First()).ToList();
+            if (validReceiverIds.Count != receiverIds.Count || validReceiverIds.Count == 0 || distinctFiles.Count == 0) return;
 
-            foreach (var file in files)
+            foreach (var file in distinctFiles)
             {
                 var activeRows = _context.Cartables.Where(item => item.FileId == file.Id && !item.IsDone).ToList();
                 foreach (var row in activeRows) row.IsDone = true;
             }
 
-            foreach (int rcvrId in receiverIds)
+            foreach (int rcvrId in validReceiverIds)
             {
 
-                foreach (var file in files)
+                foreach (var file in distinctFiles)
                 {
                     _context.Cartables.Add(new Cartable()
                     {
