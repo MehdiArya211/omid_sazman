@@ -89,6 +89,7 @@ namespace VisitorManagment.Web
 
             #region IOC
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IAdminVisitorRequestService, AdminVisitorRequestService>();
             services.AddTransient<IPermissionService, PermissionService>();
             services.AddTransient<IUserAccessContextService, UserAccessContextService>();
             services.AddTransient<IFileService, FileService>();
