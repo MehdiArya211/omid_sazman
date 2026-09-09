@@ -1,4 +1,6 @@
 using VisitorManagment.Core.DTOs;
+using VisitorManagment.Core.DTOs.Base;
+using System.Collections.Generic;
 
 namespace VisitorManagment.Core.Services.Interfaces
 {
@@ -8,5 +10,7 @@ namespace VisitorManagment.Core.Services.Interfaces
     public interface IAdminVisitorRequestService
     {
         AdminVisitorRequestSearchViewModel GetRequestsByPersonalCode(string personalCode);
+        List<WorkflowReceiverViewModel> GetActiveReceivers();
+        BaseResult TransferRequest(int fileId, int receiverUserId, int administratorUserId, string reason);
     }
 }
