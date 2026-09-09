@@ -101,6 +101,18 @@
                                                 </button>
                                             </form>
                                         }
+                                        @if (Model.CanUseDevelopmentImpersonation && user.UserName != "95003599")
+                                        {
+                                            <form method="post" asp-page="/DevelopmentImpersonation" asp-page-handler="Start" class="d-inline">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="AllIcon border-0 bg-transparent" title="ورود آزمایشی به‌جای این کاربر"
+                                                        data-confirm="سامانه با سطح دسترسی این کاربر نمایش داده شود؟"
+                                                        data-confirm-title="ورود آزمایشی به‌جای کاربر"
+                                                        data-confirm-button="بله، وارد شو">
+                                                    <i class="fa fa-user-secret text-primary"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     </div>
                                 </td>
                             </tr>
