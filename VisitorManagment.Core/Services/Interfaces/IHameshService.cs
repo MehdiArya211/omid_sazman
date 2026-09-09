@@ -18,7 +18,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// </summary>
         public List<VamCode> GetVamCode();
         /// <summary>
-        /// ویرایش هامش خالی که نفر هنگام ثبت درخواست ثبت کرده است
+        /// فقط رکوردهای انتظار قدیمی را تکمیل می‌کند و هامش ثبت‌شده را بازنویسی نمی‌کند.
         /// </summary>
         /// <param name="actionTypeId"></param>
         /// <param name="roleTypeId"></param>
@@ -35,7 +35,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// </summary>
         public void EditHameshForMeetingViewModel(int actionTypeId, MeetingHoldViewModel meetingHoldViewModel, int userId, int fileId);
         /// <summary>
-        /// زمانیکه یه درخواست ملاقات ثبت میشه باید یه رکورد خالی هم تو هامش بخوره با شناسه نفری که لاگین کرده
+        /// ثبت اولیه را تأیید می‌کند؛ انتظار اقدام در Cartable نگهداری می‌شود، نه در هامش خالی.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="FileId"></param>
@@ -48,7 +48,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// </summary>
         public void AddToHameshWhenSendListFileToFarmandehiNezaja(List<int> rcvrUserId, List<Files> files, int RoleTypeId, string RoleTypeTitle, int roleTypeIdFinal, string roleTypeTitleFinal, int userId);
         /// <summary>
-        /// وقتی درخواست ملاقات نفر رو به کارتابل هر کی ارسال میکنیم یه هامش خالی به گیرنده میفرستیم
+        /// امضای سازگاری مسیر قدیمی؛ گیرنده‌ها را اعتبارسنجی می‌کند و هامش خالی تولید نمی‌کند.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="fileId"></param>
@@ -61,7 +61,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// </summary>
         public void AddToHameshWhenSendListFileToCartable(int userId, List<Files> files, List<int> rcvrUserId , int RoleTypeId , string RoleTypeTitle);
         /// <summary>
-        /// وقتی هامش روش میزنه و عودت رو میزنه یه هامش خالی روش میزنه 
+        /// امضای سازگاری مسیر قدیمی عودت؛ هامش خالی تولید نمی‌کند.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="fileId"></param>
