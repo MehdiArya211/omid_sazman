@@ -3,6 +3,7 @@ using System.Linq;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.Core.Services.Interfaces;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.DataLayer.Context;
 using System.Collections.Generic;
 
@@ -231,7 +232,7 @@ namespace VisitorManagment.Core.Services
 
             if (roleType == 3000 || roleType == 7000)
             {
-                hameshUnit = GetHameshByRoleTypeFinal(fileId, 2); // فرمانده یگان
+                hameshUnit = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.UnitCommander);
 
                 if (roleTypeFinalId == 13) // لشگر
                 {
@@ -242,22 +243,22 @@ namespace VisitorManagment.Core.Services
                 }
                 else if (roleType == 7000)
                 {
-                    hameshGharagah = GetHameshByRoleTypeFinal(fileId, 9); // ف هوانیروز
+                    hameshGharagah = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.AviationCommander);
                 }
                 else
                 {
-                    hameshGharagah = GetHameshByRoleTypeFinal(fileId, 11); // ف ق منطقه‌ای
+                    hameshGharagah = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.RegionalCommander);
                 }
             }
             else if (roleType == 2000)
             {
-                hameshUnit = GetHameshByRoleTypeFinal(fileId, 6); // کارشناس ابهاد
-                hameshGharagah = GetHameshByRoleTypeFinal(fileId, 7); // دبیر ابهاد
+                hameshUnit = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.AbhadExpert);
+                hameshGharagah = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.AbhadSecretary);
             }
             else if (roleType == 5000)
             {
-                hameshUnit = GetHameshByRoleTypeFinal(fileId, 2); // فرمانده مرکز
-                hameshGharagah = GetHameshByRoleTypeFinal(fileId, 5); // کارشناس انصار نزاجا
+                hameshUnit = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.UnitCommander);
+                hameshGharagah = GetHameshByRoleTypeFinal(fileId, SystemRoleFinalTypes.AnsarExpert);
             }
 
             return new ReportTestInfoViewModelV2

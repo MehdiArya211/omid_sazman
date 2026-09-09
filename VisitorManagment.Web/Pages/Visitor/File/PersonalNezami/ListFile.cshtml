@@ -2,6 +2,8 @@
 @model VisitorManagment.Web.Pages.Visitor.ListFileModel
 @using VisitorManagment.Core.Convertors
 @using VisitorManagment.Core.DTOs
+@using VisitorManagment.Core.Constants
+@using VisitorManagment.Web.Helpers
 @{
     var personalCode = ViewBag.PersonalCodeUserLogined;
 }
@@ -68,7 +70,7 @@
                         <hr>
                         <br>
                         @*اگر کاربر عادی نبود سرچ ها رو نشون بده*@
-                        @if (ViewBag.roleTypeId != 1)
+                        @if (ViewBag.roleTypeId != SystemRoleTypes.OrdinaryUser)
                         {
                             <div class="container" id="listFileSection1">
 
@@ -120,7 +122,7 @@
                                         <div class="card card-body">
                                             <form method="post">
                                                 <div class="row">
-                                                    @if (User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "15")
+                                                    @if (User.HasAnyRoleId(SystemRoleIds.MeetingManager, SystemRoleIds.MeetingCoordinator))
                                                     {
 
                                                         <div class="col-md-4">
@@ -247,7 +249,7 @@
                                                             <i class="fa fa-edit text-warning"></i>
                                                         </a>
 
-                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2"))
+                                                        @if ((User.GetIntClaim("RoleTypeIdFinal") == SystemRoleFinalTypes.Headquarters || User.HasRoleId(SystemRoleIds.ExecutiveOffice)))
                                                         {
                                                             <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
                                            data-toggle="tooltip" data-placement="right" title="حذف">
@@ -267,7 +269,7 @@
                                                         </a>
 
 
-                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2") && file.IsArchived == false)
+                                                        @if ((User.GetIntClaim("RoleTypeIdFinal") == SystemRoleFinalTypes.Headquarters || User.HasRoleId(SystemRoleIds.ExecutiveOffice)) && file.IsArchived == false)
                                                         {
                                                             <a href="#" onclick="archive(@file.Id)"
                                            data-placement="right" title=" خاتمه / بایگانی" class=" AllIcon ">
@@ -323,7 +325,7 @@
                                                             <i class="fa fa-trash text-danger"></i>
                                                         </a>
 
-                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2"))
+                                                        @if ((User.GetIntClaim("RoleTypeIdFinal") == SystemRoleFinalTypes.Headquarters || User.HasRoleId(SystemRoleIds.ExecutiveOffice)))
                                                         {
                                                             <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
                                            data-toggle="tooltip" data-placement="right" title="حذف">
@@ -344,7 +346,7 @@
                                                             <i class="fa fa-history"></i>
                                                         </a>
 
-                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2") && file.IsArchived == false)
+                                                        @if ((User.GetIntClaim("RoleTypeIdFinal") == SystemRoleFinalTypes.Headquarters || User.HasRoleId(SystemRoleIds.ExecutiveOffice)) && file.IsArchived == false)
                                                         {
                                                             <a onclick="archive(@file.Id)"
                                            data-placement="right" title=" خاتمه / بایگانی" class=" AllIcon ">
@@ -389,7 +391,7 @@
                                                             <i class="fa fa-edit text-warning"></i>
                                                         </a>
 
-                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2"))
+                                                        @if ((User.GetIntClaim("RoleTypeIdFinal") == SystemRoleFinalTypes.Headquarters || User.HasRoleId(SystemRoleIds.ExecutiveOffice)))
                                                         {
                                                             <a href="/Visitor/File/PersonalNezami/Deletefile/@file.Id" class="AllIcon "
                                            data-toggle="tooltip" data-placement="right" title="حذف">
@@ -408,7 +410,7 @@
                                                             <i class="fa fa-history"></i>
                                                         </a>
 
-                                                        @if ((User.FindFirst("RoleTypeIdFinal").Value == "1" || User.FindFirst("RoleId").Value == "2") && file.IsArchived == false)
+                                                        @if ((User.GetIntClaim("RoleTypeIdFinal") == SystemRoleFinalTypes.Headquarters || User.HasRoleId(SystemRoleIds.ExecutiveOffice)) && file.IsArchived == false)
                                                         {
                                                             <a onclick="archive(@file.Id)"
                                            data-placement="right" title=" خاتمه / بایگانی" class=" AllIcon ">

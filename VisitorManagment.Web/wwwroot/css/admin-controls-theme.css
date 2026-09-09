@@ -1,0 +1,311 @@
+/*
+ * کنترل‌های مشترک صفحات مدیریت نقش، منو و دسترسی.
+ * رنگ‌ها از پالت اصلی قالب گرفته شده‌اند تا صفحات مدیریتی ظاهر یکسانی داشته باشند.
+ */
+.structure-page,
+.access-page {
+    --structure-primary: #3157d5;
+    --structure-primary-dark: #263f9e;
+    --structure-danger: #c84a5a;
+    --structure-edit: #148a9b;
+    --structure-border: #dfe4ed;
+}
+
+.structure-btn,
+.structure-form button,
+.structure-save-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    min-width: 118px;
+    height: 44px !important;
+    padding: 0 18px !important;
+    margin: 0;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none !important;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+.structure-btn i,
+.structure-form button i,
+.structure-save-order i {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.structure-btn--primary,
+.structure-form > button,
+.structure-save-order {
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--structure-primary), #5576dd) !important;
+    box-shadow: 0 6px 15px rgba(49, 87, 213, .17);
+}
+
+.structure-btn--primary:hover,
+.structure-form > button:hover,
+.structure-save-order:hover {
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--structure-primary-dark), var(--structure-primary)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 9px 20px rgba(49, 87, 213, .23);
+}
+
+.structure-btn--secondary {
+    color: #536079 !important;
+    border-color: var(--structure-border) !important;
+    background: #f8f9fc !important;
+    box-shadow: none;
+}
+
+.structure-btn--secondary:hover {
+    color: var(--structure-primary) !important;
+    border-color: #bdc9ee !important;
+    background: #f1f5ff !important;
+}
+
+.structure-btn--edit,
+.menu-node__row > [data-menu-edit] {
+    color: #087a8c !important;
+    border-color: #ccebed !important;
+    background: #eaf8fa !important;
+    box-shadow: none;
+}
+
+.structure-btn--edit:hover,
+.menu-node__row > [data-menu-edit]:hover {
+    color: #056575 !important;
+    border-color: #9edce1 !important;
+    background: #dcf3f5 !important;
+}
+
+.structure-btn--danger,
+.structure-delete {
+    color: #b83e50 !important;
+    border-color: #f1ccd2 !important;
+    background: #fff0f2 !important;
+    box-shadow: none;
+}
+
+.structure-btn--danger:hover,
+.structure-delete:hover {
+    color: #fff !important;
+    border-color: var(--structure-danger) !important;
+    background: var(--structure-danger) !important;
+}
+
+.structure-btn--icon,
+.menu-node__row > [data-menu-edit],
+.menu-node__row .structure-delete {
+    width: 40px;
+    min-width: 40px;
+    height: 40px !important;
+    padding: 0 !important;
+    border-radius: 9px !important;
+}
+
+.structure-btn:disabled,
+.structure-form button:disabled,
+.structure-save-order:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.structure-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.structure-row-actions form,
+.menu-node__row form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.menu-node__row > [data-menu-edit] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.structure-form > button {
+    align-self: end;
+    width: 100%;
+}
+
+.access-management-links .structure-btn {
+    min-width: 150px;
+}
+
+.access-role-picker__actions .structure-btn {
+    width: 100%;
+}
+
+/* مودال‌های مدیریت */
+.structure-modal .modal-content,
+#menuEditModal .modal-content {
+    overflow: hidden;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 24px 65px rgba(24, 39, 78, .22);
+}
+
+.structure-modal .modal-header,
+#menuEditModal .modal-header {
+    align-items: center;
+    padding: 17px 20px;
+    color: #fff;
+    border: 0;
+    background: linear-gradient(135deg, #263f9e, #3157d5);
+}
+
+.structure-modal .modal-title,
+#menuEditModal .modal-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.structure-modal .modal-header .close,
+#menuEditModal .modal-header .close {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: -2px auto -2px -2px;
+    color: #fff;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .14);
+    opacity: 1;
+}
+
+.structure-modal .modal-body,
+#menuEditModal .modal-body {
+    padding: 22px;
+    background: #f8fafc;
+}
+
+.structure-modal .modal-footer,
+#menuEditModal .modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 14px 20px;
+    border-color: #e9edf3;
+    background: #fff;
+}
+
+.structure-modal .modal-footer .btn,
+#menuEditModal .modal-footer .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 118px;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+@media (max-width: 767px) {
+    .structure-card {
+        padding: 18px;
+    }
+
+    .structure-card .table-responsive {
+        width: calc(100% + 36px);
+        margin: 0 -18px;
+        padding: 0 18px;
+    }
+
+    .access-management-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .access-management-links .structure-btn,
+    .access-role-picker__actions .structure-btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .menu-node__row {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .menu-node__row > span {
+        min-width: calc(100% - 40px);
+    }
+
+    .structure-modal .modal-dialog,
+    #menuEditModal .modal-dialog {
+        width: calc(100% - 24px);
+        margin: 12px auto;
+    }
+
+    .structure-modal .modal-content,
+    #menuEditModal .modal-content {
+        max-height: calc(100vh - 24px);
+    }
+
+    .structure-modal .modal-body,
+    #menuEditModal .modal-body {
+        overflow-y: auto;
+    }
+
+    .structure-modal .modal-footer,
+    #menuEditModal .modal-footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .structure-btn,
+    .structure-form button,
+    .structure-save-order {
+        min-width: 0;
+    }
+
+    .structure-heading .structure-save-order {
+        width: 100%;
+    }
+
+    .access-management-links,
+    .structure-modal .modal-footer,
+    #menuEditModal .modal-footer {
+        grid-template-columns: 1fr;
+    }
+
+    .structure-row-actions .structure-btn--edit span {
+        display: none;
+    }
+
+    .structure-row-actions .structure-btn--edit {
+        width: 40px;
+        min-width: 40px;
+        padding: 0 !important;
+    }
+
+    .structure-card table {
+        min-width: 720px;
+    }
+}

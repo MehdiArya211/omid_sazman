@@ -130,7 +130,8 @@
                     reverseButtons: true,
                     focusCancel: true
                 }).then(function (result) {
-                    if (!result.isConfirmed) return;
+                    // SweetAlert2 جدید isConfirmed و نسخه قدیمی موجود در قالب value برمی‌گرداند.
+                    if (!(result && (result.isConfirmed === true || result.value === true))) return;
                     form.dataset.confirmed = "true";
                     if (submitter && form.requestSubmit) form.requestSubmit(submitter);
                     else form.submit();

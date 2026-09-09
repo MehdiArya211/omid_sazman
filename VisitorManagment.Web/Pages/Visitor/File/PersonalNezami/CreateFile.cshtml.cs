@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using VisitorManagment.Core.DTOs;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.DataLayer.Entities.VisitorManagment;
 using VisitorManagment.Web.Helpers;
@@ -247,7 +248,7 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
             /*
              * کاربر عادی فقط مجاز است اطلاعات خودش را ببیند.
              */
-            if (roleId == 14 && result.Data.PersonalCode != username)
+            if (roleId == SystemRoleIds.DefaultVisitor && result.Data.PersonalCode != username)
             {
                 return new JsonResult(new
                 {

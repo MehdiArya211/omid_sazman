@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.DataLayer.Entities.User;
+using VisitorManagment.Web.Helpers;
+using VisitorManagment.Core.Constants;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace VisitorManagment.Web.Pages.Admin.Roles
 {
@@ -13,11 +16,33 @@ namespace VisitorManagment.Web.Pages.Admin.Roles
         private readonly IPermissionService _permissionService;
         public IndexModel(IPermissionService permissionService) { _permissionService = permissionService; }
         public System.Collections.Generic.List<Role> Roles { get; private set; }
+        public SelectList RoleTypeOptions { get; private set; }
+        public SelectList RoleFinalTypeOptions { get; private set; }
+
+        /// <summary>
+        /// عنوان خوانای سمت سازمانی را برای نمایش در جدول نقش‌ها برمی‌گرداند.
+        /// </summary>
+        public string GetRoleTypeTitle(int roleType)
+        {
+            var options = SystemRoleTypes.GetManagementOptions();
+            return options.ContainsKey(roleType) ? options[roleType] : $"کد {roleType}";
+        }
+
+        /// <summary>
+        /// عنوان خوانای سطح سازمانی نهایی را برای نمایش در جدول نقش‌ها برمی‌گرداند.
+        /// </summary>
+        public string GetRoleFinalTypeTitle(int? roleFinalType)
+        {
+            if (!roleFinalType.HasValue) return "—";
+            var options = SystemRoleFinalTypes.GetManagementOptions();
+            return options.ContainsKey(roleFinalType.Value) ? options[roleFinalType.Value] : $"کد {roleFinalType.Value}";
+        }
 
         public IActionResult OnGet()
         {
             if (!IsSystemAdmin()) return Forbid();
             Roles = _permissionService.GetAllRoles().Where(role => !role.IsDelete).OrderBy(role => role.SortNum).ThenBy(role => role.Title).ToList();
+            LoadOptions();
             return Page();
         }
 
@@ -58,7 +83,18 @@ namespace VisitorManagment.Web.Pages.Admin.Roles
             return RedirectWithMessage("حذف موفق", "نقش با موفقیت حذف شد.", "success");
         }
 
-        private bool IsSystemAdmin() => User.FindFirst("RoleTypeId")?.Value == "100";
+        private bool IsSystemAdmin() => User.IsSystemAdministrator();
+        private void LoadOptions()
+        {
+            var roleTypes = SystemRoleTypes.GetManagementOptions().ToDictionary(item => item.Key, item => item.Value);
+            foreach (var role in Roles.Where(role => !roleTypes.ContainsKey(role.RoleType)))
+                roleTypes[role.RoleType] = $"{role.Title} (کد فعلی {role.RoleType})";
+            RoleTypeOptions = new SelectList(roleTypes.OrderBy(item => item.Key), "Key", "Value");
+            var finalTypes = SystemRoleFinalTypes.GetManagementOptions().ToDictionary(item => item.Key, item => item.Value);
+            foreach (var role in Roles.Where(role => role.RoleTypeFinalId.HasValue && !finalTypes.ContainsKey(role.RoleTypeFinalId.Value)))
+                finalTypes[role.RoleTypeFinalId.Value] = $"سطح فعلی با کد {role.RoleTypeFinalId.Value}";
+            RoleFinalTypeOptions = new SelectList(finalTypes.OrderBy(item => item.Key), "Key", "Value");
+        }
         private IActionResult RedirectWithMessage(string title, string message, string icon) { TempData["OperationTitle"] = title; TempData["OperationMessage"] = message; TempData["OperationIcon"] = icon; return RedirectToPage(); }
     }
 }

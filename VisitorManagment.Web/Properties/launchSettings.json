@@ -16,14 +16,16 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DevelopmentLogin__Enabled": "true"
       }
     },
     "VisitorManagment.Web": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DevelopmentLogin__Enabled": "true"
       },
       "dotnetRunMessages": "true",
       "applicationUrl": "http://localhost:5000"

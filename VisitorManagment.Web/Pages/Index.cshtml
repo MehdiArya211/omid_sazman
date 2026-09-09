@@ -26,6 +26,15 @@
                     <div><h1>ورود به سامانه امید</h1><p>سامانه ملاقات عمومی کارکنان نزاجا</p></div>
                 </header>
 
+                @if (TempData["PasswordChanged"] is string passwordChangedMessage)
+                {
+                    <div class="alert alert-success" role="status">@passwordChangedMessage</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.DevelopmentLoginConfigurationWarning))
+                {
+                    <div class="alert alert-warning" role="status">@Model.DevelopmentLoginConfigurationWarning</div>
+                }
+
                 <form id="login-form" method="post" autocomplete="on">
                     <div asp-validation-summary="ModelOnly" role="alert"></div>
                     <div class="omid-field">

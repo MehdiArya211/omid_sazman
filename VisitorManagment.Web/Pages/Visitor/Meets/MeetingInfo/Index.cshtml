@@ -1,6 +1,8 @@
 ﻿@page
 @model VisitorManagment.Web.Pages.Visitor.MeetingInfo.IndexModel
 @using VisitorManagment.Core.Convertors
+@using VisitorManagment.Core.Constants
+@using VisitorManagment.Web.Helpers
 @{
 }
 @*پرونده های ملاقات با موفقیت ارسال شده باشد*@
@@ -130,7 +132,7 @@ else
                         </div>
 
                         <div class="col-md-12" style="margin: 10px 0;">
-                            @if (User.FindFirst("RoleTypeId").Value == "7" || User.FindFirst("RoleTypeId").Value == "100")
+                            @if (User.HasRoleType(SystemRoleTypes.NezajaOperator) || User.IsSystemAdministrator())
                             {
                                 <a href="/Visitor/Meets/MeetingInfo/CreateMeeting" style="color:white" class="btn btn-success btn-pulse" data-placement="right">
                                     <i class="ti-plus mr-2"></i>
@@ -166,7 +168,7 @@ else
 
                                         <td>
 
-                                            @if (User.FindFirst("RoleId").Value == "10")
+                                            @if (User.HasRoleId(SystemRoleIds.MeetingManager))
                                             {
                                                 //1=>فعال
                                                 if (meeting.MeetingStatusId == 1)
@@ -207,7 +209,7 @@ else
                                         <td class="text-center">
                                             <div class="row">
 
-                                                @if (User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleTypeId").Value == "100")
+                                                @if (User.HasRoleId(SystemRoleIds.MeetingManager) || User.IsSystemAdministrator())
                                                 {
                                                     <a href="/Visitor/Meets/MeetingInfo/EditMeeting/@meeting.Id" class="AllIcon " data-toggle="tooltip"
                                            data-placement="right" title="ویرایش">
@@ -230,7 +232,7 @@ else
                                                     <i class="fa fa-empire text-info"></i>
                                                 </a>
 
-                                                @if (meeting.IsOkay && User.FindFirst("RoleTypeId").Value == "7" || User.FindFirst("RoleTypeId").Value == "100")
+                                                @if (meeting.IsOkay && (User.HasRoleType(SystemRoleTypes.NezajaOperator) || User.IsSystemAdministrator()))
                                                 {
                                                     if (meeting.IsSend == false)
                                                     {
@@ -243,7 +245,7 @@ else
 
                                                 }
 
-                                                @if (meeting.IsOkay && meeting.IsSend && (User.FindFirst("RoleId").Value == "22" || User.FindFirst("RoleId").Value == "24" || User.FindFirst("RoleId").Value == "26" || User.FindFirst("RoleTypeId").Value == "100"))
+                                                @if (meeting.IsOkay && meeting.IsSend && (SystemRoleIds.CanHoldMeeting(User.GetIntClaim("RoleId")) || User.IsSystemAdministrator()))
                                                 {
                                                     <a href="/Visitor/Meets/MeetingInfo/MeetingHold/ListPersonalMeetingHold/@meeting.Id" class="AllIcon " data-toggle="tooltip" data-placement="right" title="برگزاری جلسه"><i class="fa fa-hospital-o text-dark"></i></a>
                                                 }
@@ -389,7 +391,6 @@ else
         }
     </script>
 }
-
 
 
 

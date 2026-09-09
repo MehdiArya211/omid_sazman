@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VisitorManagment.Core.DTOs;
 using Microsoft.EntityFrameworkCore;
+using VisitorManagment.Core.Constants;
 
 namespace VisitorManagment.Core.Services
 {
@@ -85,7 +86,7 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <summary>
-        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// نقش را با شناسه دیتابیسی آن دریافت می‌کند.
         /// </summary>
         public Role GetRoleById(int roleId)
         {
@@ -93,42 +94,28 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <summary>
-        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// نقش‌هایی را برمی‌گرداند که مدیر جاری مجاز است به یک کاربر اختصاص دهد.
+        /// مدیر سامانه همه نقش‌ها، مدیر قرارگاه نقش‌های زیرمجموعه قرارگاه و مدیر یگان
+        /// فقط نقش‌های عملیاتی همان سطح را مشاهده می‌کند.
         /// </summary>
         public List<Role> GetRoles(string roleTypeId)
         {
-            List<Role> role = _context.Roles.ToList();
+            if (!int.TryParse(roleTypeId, out var currentRoleType))
+                return new List<Role>();
 
-            //switch (roleTypeId)
-            //{
-            //    case "101":
-            //        roles = _context.Roles.Where(x=>x.RoleType==1 && x.RoleType==2 && x.RoleType==3).OrderBy(x => x.SortNum).ToList();
-            //        break;
-            //}
-            // return _context.Roles.OrderBy(x=>x.SortNum).ToList();
-            //return roles;
-            //*****************************
+            var roles = _context.Roles.AsNoTracking().Where(role => !role.IsDelete);
+            if (currentRoleType == SystemRoleTypes.SystemAdministrator)
+                return roles.OrderBy(role => role.SortNum).ThenBy(role => role.Title).ToList();
 
-            //اگر کاربر ادمین قرارگاه بود فقط بتونه نقش های کاربر عادی ، ف یگان مستقیم ، ف یگان عمده ، ادمین یگان سامانه رو بتونه بده 
+            var assignableTypes = currentRoleType == SystemRoleTypes.HeadquartersAdministrator
+                ? SystemRoleTypes.GetHeadquartersAdministratorAssignableTypes().ToArray()
+                : SystemRoleTypes.GetUnitAdministratorAssignableTypes().ToArray();
 
-            if (roleTypeId == "100")
-            {
-                role = role.OrderBy(x => x.SortNum).ToList();
-
-            }
-            else
-            {
-                if (roleTypeId == "102")
-                {
-                    role = role.Where(x => x.RoleType == 1 || x.RoleType == 2 || x.RoleType == 3).OrderBy(x => x.SortNum).ToList();
-                }
-                else
-                {
-                    role = role.Where(x => x.RoleType == 1 || x.RoleType == 2 || x.RoleType == 3 || x.RoleType == 102).OrderBy(x => x.SortNum).ToList();
-                }
-
-            }
-            return role;
+            return roles
+                .Where(role => assignableTypes.Contains(role.RoleType))
+                .OrderBy(role => role.SortNum)
+                .ThenBy(role => role.Title)
+                .ToList();
 
         }
 

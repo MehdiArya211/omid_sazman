@@ -6,9 +6,22 @@
     <title>سامانه ملاقات عمومی (امید)</title>
 
     <partial name="_Styles" />
+    <link rel="stylesheet" href="~/css/development-impersonation.css" asp-append-version="true" />
 </head>
 <body>
     <partial name="_OperationNotification" />
+    @if (User.Identity?.IsAuthenticated == true && User.FindFirst("IsImpersonating")?.Value == "true")
+    {
+        <div class="development-impersonation-banner" role="status">
+            <div>
+                <i class="fa fa-user-secret" aria-hidden="true"></i>
+                <span>حالت آزمایشی: در حال مشاهده سامانه به‌جای <strong>@User.Identity.Name</strong> هستید.</span>
+            </div>
+            <form method="post" asp-page="/DevelopmentImpersonation" asp-page-handler="Stop">
+                <button type="submit"><i class="fa fa-undo" aria-hidden="true"></i> بازگشت به حساب مدیر</button>
+            </form>
+        </div>
+    }
     <!-- begin::preloader-->
     <div class="preloader">
         <div class="preloader-icon"></div>

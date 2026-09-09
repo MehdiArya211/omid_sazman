@@ -1,6 +1,8 @@
 ﻿@page "{id}"
 @using VisitorManagment.Core.Convertors
 @model VisitorManagment.Web.Pages.Visitor.Meets.ReferenceToMeeting.EditReferenceToMeetingModel
+@using VisitorManagment.Core.Constants
+@using VisitorManagment.Web.Helpers
 @{
     var i = 0;
 }
@@ -45,7 +47,7 @@
 
                         }
                         <br>
-                        @if ((User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "2") && (Model.listviewmodel.IsOkayMeeting == false))
+                        @if (User.HasAnyRoleId(SystemRoleIds.MeetingManager, SystemRoleIds.ExecutiveOffice) && !Model.listviewmodel.IsOkayMeeting)
                         {
                             if (Model.listviewmodel.IsOkayMeeting == false)
                             {
@@ -103,7 +105,7 @@
                                             <td>@file.RegDate.ToShamsi()</td>
                                             <td>@file.Phone</td>
                                             @{
-                                                if ((User.FindFirst("RoleId").Value == "10" || User.FindFirst("RoleId").Value == "2") && (Model.listviewmodel.IsOkayMeeting == false))
+                                                if (User.HasAnyRoleId(SystemRoleIds.MeetingManager, SystemRoleIds.ExecutiveOffice) && !Model.listviewmodel.IsOkayMeeting)
                                                 {
                                                     <td class="text-center">
                                                         <button asp-page-handler="DeletePersonFromMeeting" value="@file.Id" name="FileId" title="حذف از جلسه"><i class="fa fa-trash text-danger"></i></button>

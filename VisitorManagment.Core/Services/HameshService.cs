@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.DTOs.Base;
@@ -650,7 +651,7 @@ namespace VisitorManagment.Core.Services
         public List<Hamesh> GetHameshMoavenatForFRadeBalatar(int fileId)
         {
             var result = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
-                .Where(x => x.FileId == fileId && (x.RoleTypeId == 6 || x.RoleTypeId == 10) && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.UnitCommand || x.RoleTypeId == SystemRoleTypes.DeputyOffice) && x.UserDesc != "")
                 .Distinct().ToList();
             // return _context.Hameshes.Where(x => x.FileId == fileId).Include(x => x.User).ThenInclude(x => x.UserRoles).Where(y=>y.).Where(x=>x.);
             return result;
@@ -670,7 +671,7 @@ namespace VisitorManagment.Core.Services
 
             var result = _context.Hameshes.Include(x => x.User)
     .ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
-    .Where(x => x.FileId == fileId && x.RoleTypeFinalId == 2 && x.UserDesc != "").OrderBy(x => x.RegDate)
+    .Where(x => x.FileId == fileId && x.RoleTypeFinalId == SystemRoleFinalTypes.UnitCommander && x.UserDesc != "").OrderBy(x => x.RegDate)
     .Select(x => x.UserDesc).LastOrDefault();
 
 
@@ -684,7 +685,7 @@ namespace VisitorManagment.Core.Services
         {
             var res = _context.Hameshes.Include(x => x.User)
                 .ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
-                .Where(x => x.FileId == fileId && x.RoleTypeId == 3000)
+                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.UnitCommanderLegacy)
                 .OrderBy(x => x.RegDate)
                 .Select(x => x.UserDesc + "\n" + x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName + "\n" + x.RegDate.ToShamsi())
                 .LastOrDefault();
@@ -705,7 +706,7 @@ namespace VisitorManagment.Core.Services
             // var res = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).Where(x => x.FileId == fileId && x.RoleTypeId == 4 && x.UserDesc != "").Select(x => x.UserDesc).SingleOrDefault();
             var res = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles)
                 .ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
-                .Where(x => x.FileId == fileId && x.RoleTypeId == 1000 && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.GharargahCommanderLegacy && x.UserDesc != "")
                 .OrderBy(x => x.RegDate)
                 .Select(x => x.UserDesc + "\n" + x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName + "\n" + x.RegDate.ToShamsi()).LastOrDefault();
             if (string.IsNullOrEmpty(res))
@@ -716,26 +717,26 @@ namespace VisitorManagment.Core.Services
         }
         #endregion
 
-        //Get Role Type Person
         /// <summary>
-        /// اطلاعات موردنیاز را دریافت می‌کند.
+        /// سمت اصلی کاربر را برای ثبت هامش و ساخت Claimهای ورود دریافت می‌کند.
+        /// در صورت نداشتن نقش فعال، مقدار null برگردانده می‌شود تا ورود کاربر با پیام مناسب متوقف شود.
         /// </summary>
         public HameshInfoViewModel GetRoleTypePerson(int userId)
         {
-            var role = _context.UserRoles.Include(x => x.Role)
-                .ThenInclude(r => r.RoleTypeFinal)
-                .Where(x => x.UserId == userId).SingleOrDefault();
+            if (userId <= 0) return null;
 
-
-            var roleType = new HameshInfoViewModel()
-            {
-                RoleTypeId = role.Role.RoleType,
-                RoleTypeTitle = role.Role.Title,
-                RoleTypeIdFinal = role.Role.RoleTypeFinalId,
-                RoleTypeTitleFinal = role.Role.RoleTypeFinal.Title,
-            };
-
-            return roleType;
+            return _context.UserRoles.AsNoTracking()
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .OrderBy(userRole => userRole.Role.SortNum)
+                .ThenBy(userRole => userRole.UR_Id)
+                .Select(userRole => new HameshInfoViewModel
+                {
+                    RoleTypeId = userRole.Role.RoleType,
+                    RoleTypeTitle = userRole.Role.Title,
+                    RoleTypeIdFinal = userRole.Role.RoleTypeFinalId,
+                    RoleTypeTitleFinal = userRole.Role.RoleTypeFinal == null ? null : userRole.Role.RoleTypeFinal.Title
+                })
+                .FirstOrDefault();
         }
 
         //get all hamesh
@@ -744,8 +745,10 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<HameshInfoViewModel> getAllHameshWithOutMoavenat(int fileId)
         {
+            // آرایه محلی باعث می‌شود EF Core شرط Contains را مستقیماً به IN در SQL تبدیل کند.
+            var excludedRoleTypes = SystemRoleTypes.GetMainWorkflowTypes().ToArray();
             var listhamesh = _context.Hameshes.Include(x => x.File)
-                .Where(x => x.FileId == fileId && x.RoleTypeId != 1 && x.RoleTypeId != 5 && x.RoleTypeId != 6 && x.RoleTypeId != 7 && x.RoleTypeId != 9 && x.RoleTypeId != 10 && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && !excludedRoleTypes.Contains(x.RoleTypeId) && x.UserDesc != "")
                 .Select(x => new HameshInfoViewModel
                 {
                     FirstName = x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName,
@@ -764,7 +767,7 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public string GetlastHameshKarshenasgharagahAnsarNezaja(int fileId)
         {
-            string result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == 5 && x.UserDesc != "")
+            string result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert && x.UserDesc != "")
                .OrderBy(x => x.RegDate).Select(x => x.UserDesc).LastOrDefault();
 
             if (result == null)
@@ -785,7 +788,7 @@ namespace VisitorManagment.Core.Services
             var result = "";
             try
             {
-                result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == 7).Select(x => x.UserDesc).FirstOrDefault();
+                result = _context.Hameshes.Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.NezajaOperator).Select(x => x.UserDesc).FirstOrDefault();
 
                 if (result == null)
                 {
@@ -894,7 +897,7 @@ namespace VisitorManagment.Core.Services
         public List<HameshInfoViewModel> getAllHameshMoavenat(int fileId)
         {
             var listhamesh = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
-                .Where(x => x.FileId == fileId && (x.RoleTypeId == 6 || x.RoleTypeId == 10) && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.UnitCommand || x.RoleTypeId == SystemRoleTypes.DeputyOffice) && x.UserDesc != "")
                 .Select(x => new HameshInfoViewModel
                 {
 
@@ -915,7 +918,7 @@ namespace VisitorManagment.Core.Services
         {
             //کسی که داره میفرسته از جدول کارتابل رو میگیره تا بتونیم هامش نفر قبلی رو از روش پیدا کنیم
             var hamesh = _context.Hameshes.Include(x => x.User).ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role)
-                            .Where(x => x.FileId == fileId && (x.RoleTypeId == 9) && x.UserDesc != "").Select(x => x.UserDesc).FirstOrDefault();
+                            .Where(x => x.FileId == fileId && (x.RoleTypeId == SystemRoleTypes.PresidingBoard) && x.UserDesc != "").Select(x => x.UserDesc).FirstOrDefault();
 
             return hamesh;
         }
@@ -976,7 +979,7 @@ namespace VisitorManagment.Core.Services
         public string GetFirstHameshKarshenasgharagahAnsarNezaja(int fileId)
         {
             string result = _context.Hameshes
-                .Where(x => x.FileId == fileId && x.RoleTypeId == 5 && x.UserDesc != "")
+                .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert && x.UserDesc != "")
                    .OrderByDescending(x => x.RegDate)
                    .Select(x => x.UserDesc)
                    .FirstOrDefault();

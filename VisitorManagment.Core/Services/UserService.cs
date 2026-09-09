@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using VisitorManagment.Core.Constants;
 using VisitorManagment.Core.Convertors;
 using VisitorManagment.DataLayer.Entities.User;
 using Newtonsoft.Json;
@@ -23,6 +24,7 @@ namespace VisitorManagment.Core.Services
 {
     public class UserService : IUserService
     {
+        private const string PasswordChangeRequiredMarker = "PASSWORD_CHANGE_REQUIRED";
         private string apiUrl;
         private readonly IConfiguration _configuration;
         private HttpClient _client;
@@ -364,7 +366,9 @@ namespace VisitorManagment.Core.Services
                 return null;
             }
 
-            var commanderRoleId = model.UnitCode == model.CodGha ? 7 : 6;
+            var commanderRoleId = model.UnitCode == model.CodGha
+                ? SystemRoleIds.MajorUnitCommander
+                : SystemRoleIds.UnitCommander;
             var commander = _context.UserRoles
                 .AsNoTracking()
                 .Where(userRole =>
@@ -560,6 +564,48 @@ namespace VisitorManagment.Core.Services
 
         }
 
+        /// <inheritdoc />
+        public bool ResetPasswordToPersonnelCode(int userId)
+        {
+            var user = _context.Users.SingleOrDefault(item => item.Id == userId && !item.IsDelete);
+            if (user == null || string.IsNullOrWhiteSpace(user.UserName)) return false;
+
+            user.Password = PasswordHelper.EncodePasswordMd5(user.UserName);
+            user.ActiveCode = PasswordChangeRequiredMarker;
+            user.EditDate = DateTime.Now;
+            _context.SaveChanges();
+            return true;
+        }
+
+        /// <inheritdoc />
+        public bool IsPasswordChangeRequired(int userId)
+        {
+            return _context.Users.AsNoTracking()
+                .Any(item => item.Id == userId && item.ActiveCode == PasswordChangeRequiredMarker);
+        }
+
+        /// <inheritdoc />
+        public bool ChangeRequiredPassword(int userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)) return false;
+
+            var currentPasswordHash = PasswordHelper.EncodePasswordMd5(currentPassword);
+            var user = _context.Users.SingleOrDefault(item =>
+                item.Id == userId &&
+                item.IsActive &&
+                !item.IsDelete &&
+                item.ActiveCode == PasswordChangeRequiredMarker &&
+                item.Password == currentPasswordHash);
+
+            if (user == null) return false;
+
+            user.Password = PasswordHelper.EncodePasswordMd5(newPassword);
+            user.ActiveCode = NameGenerator.GenerateUniqCode();
+            user.EditDate = DateTime.Now;
+            _context.SaveChanges();
+            return true;
+        }
+
 
         #endregion
 
@@ -618,7 +664,7 @@ namespace VisitorManagment.Core.Services
                 userId = AddUser(User);
                 _context.UserRoles.Add(new UserRole()
                 {
-                    RoleId = 14,
+                    RoleId = SystemRoleIds.DefaultVisitor,
                     UserId = userId
                 });
 
@@ -639,7 +685,7 @@ namespace VisitorManagment.Core.Services
             //اگر نفر قرارگاه بود
             if (unitCode==codeGha)
             {
-                 result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == 7 && x.User.UnitCode == unitCode)
+                 result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == SystemRoleIds.MajorUnitCommander && x.User.UnitCode == unitCode)
                     .Select(x=>x.User.UserName).SingleOrDefault();
                 if (result.PrsnNo==null)
                 {
@@ -653,7 +699,7 @@ namespace VisitorManagment.Core.Services
                 return result;
             }
 
-             result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == 6 && x.User.UnitCode == unitCode)
+             result.PrsnNo = _context.UserRoles.Include(x => x.User).Where(x => x.RoleId == SystemRoleIds.UnitCommander && x.User.UnitCode == unitCode)
                 .Select(x => x.User.UserName).SingleOrDefault();
 
             if (result.PrsnNo == null)
