@@ -67,14 +67,19 @@ namespace VisitorManagment.Web.Pages
         /// </summary>
         public async Task<IActionResult> OnPostStartAsync(int userId)
         {
-            if (!IsDevelopmentLocalRequest() ||
-                !User.IsSystemAdministrator() ||
-                User.FindFirst("PersonalCode")?.Value != DevelopmentAdministratorUserName ||
-                User.FindFirst("IsImpersonating")?.Value == "true")
-                return Forbid();
+            if (!IsDevelopmentLocalRequest())
+                return DevelopmentError("این قابلیت فقط در محیط Development و روی localhost فعال است.");
+
+            if (!User.IsSystemAdministrator() ||
+                User.FindFirst("PersonalCode")?.Value != DevelopmentAdministratorUserName)
+                return DevelopmentError("فقط مدیر تعیین‌شده سامانه اجازه ورود آزمایشی به کارتابل کاربران را دارد.");
+
+            if (User.FindFirst("IsImpersonating")?.Value == "true")
+                return DevelopmentError("ابتدا به حساب مدیر برگردید و سپس کاربر دیگری را انتخاب کنید.");
 
             var administratorId = User.FindFirst("Id")?.Value;
-            if (!int.TryParse(administratorId, out var originalUserId)) return Forbid();
+            if (!int.TryParse(administratorId, out var originalUserId))
+                return DevelopmentError("شناسه حساب مدیر معتبر نیست؛ یک‌بار از سامانه خارج و دوباره وارد شوید.");
 
             var targetUser = LoadActiveUser(userId);
             if (targetUser == null)
@@ -137,6 +142,14 @@ namespace VisitorManagment.Web.Pages
         #endregion
 
         #region Authentication helpers
+
+        private IActionResult DevelopmentError(string message)
+        {
+            TempData["OperationTitle"] = "ورود به کارتابل انجام نشد";
+            TempData["OperationMessage"] = message;
+            TempData["OperationIcon"] = "error";
+            return RedirectToPage("/Admin/Users/Index");
+        }
 
         private Users LoadActiveUser(int userId)
         {
