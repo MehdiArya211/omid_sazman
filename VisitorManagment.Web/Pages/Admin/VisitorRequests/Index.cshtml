@@ -1,0 +1,67 @@
+@page
+@using VisitorManagment.Core.Convertors
+@model VisitorManagment.Web.Pages.Admin.VisitorRequests.IndexModel
+@{
+    ViewData["Title"] = "سوابق درخواست مراجعه‌کننده";
+}
+<link rel="stylesheet" href="~/css/admin-visitor-requests.css" asp-append-version="true" />
+
+<div class="container-fluid admin-visitor-requests">
+    <header class="visitor-request-hero">
+        <div><span>مدیریت متمرکز سوابق</span><h1>درخواست‌های مراجعه‌کننده</h1><p>کد پرسنلی را وارد کنید تا درخواست‌ها و تمام گردش هامش‌ها یکجا نمایش داده شود.</p></div>
+        <i class="fa fa-folder-open" aria-hidden="true"></i>
+    </header>
+
+    <form method="get" class="visitor-request-search" role="search">
+        <label for="PersonalCode">کد پرسنلی مراجعه‌کننده</label>
+        <div><i class="fa fa-id-card-o"></i><input asp-for="PersonalCode" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="کد پرسنلی را وارد کنید" /><button type="submit"><i class="fa fa-search"></i> مشاهده سوابق</button></div>
+    </form>
+
+    @if (!string.IsNullOrWhiteSpace(Model.SearchMessage))
+    {
+        <div class="visitor-request-empty"><i class="fa fa-info-circle"></i><span>@Model.SearchMessage</span></div>
+    }
+
+    @if (Model.Result != null)
+    {
+        <section class="visitor-profile">
+            <div class="visitor-profile-avatar"><i class="fa fa-user"></i></div>
+            <div><small>مراجعه‌کننده</small><h2>@Model.Result.FullName</h2><p>@Model.Result.UnitTitle · @Model.Result.UnitDutyTitle</p></div>
+            <dl><div><dt>کد پرسنلی</dt><dd>@Model.Result.PersonalCode</dd></div><div><dt>تعداد درخواست</dt><dd>@Model.Result.Requests.Count</dd></div><div><dt>تلفن</dt><dd>@(string.IsNullOrWhiteSpace(Model.Result.Phone) ? "—" : Model.Result.Phone)</dd></div></dl>
+        </section>
+
+        <div class="visitor-request-list">
+            @foreach (var request in Model.Result.Requests)
+            {
+                <article class="visitor-request-card">
+                    <header>
+                        <div><span>درخواست شماره @request.Id</span><h3>@request.RequestSubjectTitle</h3><p>@request.FileTypeTitle · ثبت @request.RegDate.ToShamsi()</p></div>
+                        <div class="visitor-request-badges"><span>@request.FileStatusTitle</span>@if(request.IsArchived){<span class="is-archived">بایگانی</span>}@if(request.IsFinished){<span class="is-finished">مختومه</span>}</div>
+                    </header>
+                    <div class="visitor-request-descriptions"><div><strong>شرح درخواست</strong><p>@request.RequestDescription</p></div><div><strong>شرح مشکل</strong><p>@request.ProblemDescription</p></div></div>
+                    <div class="visitor-request-actions">
+                        <a href="/Visitor/File/PersonalNezami/EditFile/@request.Id" class="visitor-edit"><i class="fa fa-edit"></i> ویرایش درخواست</a>
+                        <button type="button" class="visitor-timeline-toggle" aria-expanded="false"><i class="fa fa-history"></i> گردش هامش‌ها <b>@request.Hameshes.Count</b></button>
+                    </div>
+                    <div class="visitor-hamesh-list" hidden>
+                        @if (request.Hameshes.Count == 0)
+                        {
+                            <div class="visitor-no-hamesh">برای این درخواست هامشی ثبت نشده است.</div>
+                        }
+                        else
+                        {
+                            @foreach (var hamesh in request.Hameshes)
+                            {
+                                <div class="visitor-hamesh-item"><i></i><div><header><strong>@hamesh.RegistrarFullName</strong><span>@hamesh.RoleTitle</span><time>@hamesh.RegDate.ToShamsi()</time></header><p>@hamesh.Description</p><footer><span>@hamesh.ActionTitle</span><small>@hamesh.RegistrarPersonalCode</small></footer></div></div>
+                            }
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-visitor-requests.js" asp-append-version="true"></script>
+}
