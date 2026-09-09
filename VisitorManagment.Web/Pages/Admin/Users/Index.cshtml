@@ -6,6 +6,7 @@
     ViewData["Title"] = "مدیریت کاربران";
 }
 <link rel="stylesheet" href="~/css/users-index.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/users-actions.css" asp-append-version="true" />
 <!-- begin::main -->
 <div class="page-header">
     <div class="container-fluid d-sm-flex justify-content-between">
@@ -84,32 +85,32 @@
                                 </td>
                                 <td class="text-width-align">@user.RegUserTitle</td>
 
-                                <td class="text-center">
-                                    <div class="row">
+                                <td class="text-center users-actions-cell">
+                                    <div class="users-action-group" role="group" aria-label="عملیات کاربر">
 
-                                        <a href="/Admin/Users/EditUser/@user.Id" class="AllIcon " data-toggle="tooltip" data-placement="right" title="ویرایش"><i class="fa fa-edit text-warning"></i></a>
-                                        <a href="/Admin/Users/DeleteUser/@user.Id" class="AllIcon " data-toggle="tooltip" data-placement="right" title="حذف"><i class="fa fa-trash text-danger"></i></a>
+                                        <a href="/Admin/Users/EditUser/@user.Id" class="user-action-button user-action-button--edit" data-toggle="tooltip" data-placement="top" title="ویرایش" aria-label="ویرایش"><i class="fa fa-edit"></i></a>
+                                        <a href="/Admin/Users/DeleteUser/@user.Id" class="user-action-button user-action-button--delete" data-toggle="tooltip" data-placement="top" title="حذف" aria-label="حذف"><i class="fa fa-trash"></i></a>
                                         @if (User.IsSystemAdministrator())
                                         {
-                                            <form method="post" asp-page-handler="ResetPassword" class="d-inline">
+                                            <form method="post" asp-page-handler="ResetPassword" class="user-action-form" data-ui-skip>
                                                 <input type="hidden" name="userId" value="@user.Id" />
-                                                <button type="submit" class="AllIcon border-0 bg-transparent" title="بازنشانی رمز عبور"
+                                                <button type="submit" class="user-action-button user-action-button--password" title="بازنشانی رمز عبور" aria-label="بازنشانی رمز عبور"
                                                         data-confirm="رمز این کاربر به کد پرسنلی او بازنشانی شود؟"
                                                         data-confirm-title="تأیید بازنشانی رمز"
                                                         data-confirm-button="بله، بازنشانی شود">
-                                                    <i class="fa fa-key text-info"></i>
+                                                    <i class="fa fa-key"></i>
                                                 </button>
                                             </form>
                                         }
                                         @if (Model.CanUseDevelopmentImpersonation && user.UserName != "95003599")
                                         {
-                                            <form method="post" asp-page="/DevelopmentImpersonation" asp-page-handler="Start" class="d-inline">
+                                            <form method="post" asp-page="/DevelopmentImpersonation" asp-page-handler="Start" class="user-action-form" data-ui-skip>
                                                 <input type="hidden" name="userId" value="@user.Id" />
-                                                <button type="submit" class="AllIcon border-0 bg-transparent" title="ورود آزمایشی به‌جای این کاربر"
+                                                <button type="submit" class="user-action-button user-action-button--impersonate" title="ورود آزمایشی به‌جای این کاربر" aria-label="ورود آزمایشی به‌جای این کاربر"
                                                         data-confirm="سامانه با سطح دسترسی این کاربر نمایش داده شود؟"
                                                         data-confirm-title="ورود آزمایشی به‌جای کاربر"
                                                         data-confirm-button="بله، وارد شو">
-                                                    <i class="fa fa-user-secret text-primary"></i>
+                                                    <i class="fa fa-user-secret"></i>
                                                 </button>
                                             </form>
                                         }
