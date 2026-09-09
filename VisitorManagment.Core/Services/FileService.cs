@@ -1448,7 +1448,12 @@ namespace VisitorManagment.Core.Services
                 CodGhaTitle = t.CodGhaTitle,
                 RegDate = t.RegDate,
                 RegDateFa = t.RegDate.ToShamsi(),
-                FinalHameshDesc = _context.Hameshes.Where(x => x.FileId == result.Select(x => x.Id).SingleOrDefault() && x.RoleTypeId == SystemRoleTypes.PresidingBoard).Select(x => x.UserDesc).SingleOrDefault(),
+                FinalHameshDesc = _context.Hameshes
+                    .Where(x => x.FileId == result.Select(file => file.Id).SingleOrDefault() &&
+                                x.RoleTypeId == SystemRoleTypes.PresidingBoard &&
+                                x.UserDesc != null && x.UserDesc.Trim() != "")
+                    .OrderByDescending(x => x.RegDate).ThenByDescending(x => x.Id)
+                    .Select(x => x.UserDesc).FirstOrDefault(),
 
             }).OrderByDescending(u => u.RegDate).ToList();
 
