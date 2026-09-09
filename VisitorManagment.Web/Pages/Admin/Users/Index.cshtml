@@ -104,12 +104,11 @@
                                         }
                                         @if (Model.CanUseDevelopmentImpersonation && user.UserName != "95003599")
                                         {
-                                            <form method="post" asp-page="/DevelopmentImpersonation" asp-page-handler="Start" class="user-action-form" data-ui-skip>
+                                            <form method="post" action="/DevelopmentImpersonation?handler=Start" class="user-action-form" data-ui-skip data-no-busy="true">
+                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="userId" value="@user.Id" />
                                                 <button type="submit" class="user-action-button user-action-button--impersonate" title="ورود آزمایشی به‌جای این کاربر" aria-label="ورود آزمایشی به‌جای این کاربر"
-                                                        data-confirm="سامانه با سطح دسترسی این کاربر نمایش داده شود؟"
-                                                        data-confirm-title="ورود آزمایشی به‌جای کاربر"
-                                                        data-confirm-button="بله، وارد شو">
+                                                        formmethod="post" formaction="/DevelopmentImpersonation?handler=Start">
                                                     <i class="fa fa-user-secret"></i>
                                                 </button>
                                             </form>
