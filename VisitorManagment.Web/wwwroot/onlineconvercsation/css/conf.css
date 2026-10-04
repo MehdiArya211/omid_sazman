@@ -613,3 +613,119 @@ table.dataTable {
     border-radius: 0px 10px 10px 10px !important;
     background-color: #909090 !important
 }
+
+
+/* پیام‌های پایدار چت جلسه */
+.chatElement {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.chat-message-mine {
+    direction: rtl;
+    justify-content: flex-start;
+}
+
+.chat-message-other {
+    direction: ltr;
+    justify-content: flex-start;
+}
+
+.chat-message-avatar {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #eef2f7;
+}
+
+.chat_card_mine,
+.chat_card_other {
+    max-width: min(82%, 520px);
+    padding: 8px 11px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(29, 53, 87, .08);
+}
+
+.chat_card_mine {
+    color: #17324d;
+    background: #dff4ee;
+    border-bottom-right-radius: 4px;
+}
+
+.chat_card_other {
+    color: #243447;
+    background: #f1f4f8;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-message-sender {
+    margin-bottom: 3px;
+    color: #287d73;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.chat-message-body {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.chat-message-meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    margin-top: 3px;
+    color: #718096;
+    font-size: 9px;
+    direction: rtl;
+}
+
+.chat-message-status {
+    font-weight: 700;
+    letter-spacing: -2px;
+}
+
+.chat-message-status.is-read {
+    color: #168aad;
+}
+
+.chat-message-delete {
+    border: 0;
+    background: transparent;
+    color: #9aa5b1;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.chat-message-delete:hover {
+    color: #d64545;
+}
+
+.chat_input_wrapper__btn:disabled,
+.chat_input_wrapper__input:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+@media (max-width: 768px) {
+    .chat_card_mine,
+    .chat_card_other {
+        max-width: 88%;
+    }
+
+    .chat-message-avatar {
+        width: 26px;
+        height: 26px;
+        flex-basis: 26px;
+    }
+}
