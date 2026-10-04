@@ -6,6 +6,7 @@ using VisitorManagment.DataLayer.Entities.Views;
 using VisitorManagment.DataLayer.Entities.Ranking;
 using VisitorManagment.DataLayer.Entities.SystemChatRoom;
 using VisitorManagment.DataLayer.Entities.NotificationInfo;
+using VisitorManagment.DataLayer.Entities.OnlineConversation;
 using VisitorManagment.DataLayer.Entities;
 
 namespace VisitorManagment.DataLayer.Context
@@ -82,6 +83,7 @@ namespace VisitorManagment.DataLayer.Context
         #region چت آنلاین
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<OnlineConversationMessage> OnlineConversationMessages { get; set; }
 
         #endregion
 
