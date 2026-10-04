@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -7,12 +9,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using VisitorManagment.DataLayer.Entities.VisitorManagment;
+using VisitorManagment.DataLayer.Entities.OnlineConversation;
+using VisitorManagment.DataLayer.Context;
 
 namespace VisitorManagment.Web.Hubs
 {
+    [Authorize]
     public class NezRTCHub : Hub
     {
+        private readonly VisitorManagmentContext _context;
         private static RoomManager roomManager = new RoomManager();
+
+        public NezRTCHub(VisitorManagmentContext context)
+        {
+            _context = context;
+        }
 
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
@@ -197,54 +208,310 @@ namespace VisitorManagment.Web.Hubs
 
 
 
-        // chatroom hub 
+        #region چت پایدار جلسه
+
         /// <summary>
-        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// کاربر را به چت جلسه متصل کرده و تاریخچه پیام‌ها را برای او ارسال می‌کند.
+        /// این متد برای سازگاری با کد قبلی نام ChatJoin را حفظ کرده است.
         /// </summary>
         public async Task ChatJoin(string roomId)
         {
-            // joining to given room id
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+            int meetingId;
+            if (!TryGetMeetingId(roomId, out meetingId))
+            {
+                throw new HubException("شناسه جلسه معتبر نیست.");
+            }
 
-            
-            // notify self and all other users
-            await Clients.Caller.SendAsync("chatjoined_self", roomId);
-            await Clients.Group(roomId).SendAsync("chatjoined", roomId);
+            await JoinMeetingChat(meetingId);
         }
-        // Leave
+
         /// <summary>
-        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// اتصال کاربر به گروه چت جلسه و بازیابی آخرین پیام‌های ذخیره‌شده.
+        /// </summary>
+        public async Task JoinMeetingChat(int meetingId)
+        {
+            await EnsureMeetingExists(meetingId);
+
+            var groupName = GetChatGroupName(meetingId);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+            var messages = await _context.OnlineConversationMessages
+                .AsNoTracking()
+                .Where(message => message.MeetingId == meetingId)
+                .OrderByDescending(message => message.SentAtUtc)
+                .Take(200)
+                .OrderBy(message => message.SentAtUtc)
+                .Select(message => new
+                {
+                    message.Id,
+                    message.MeetingId,
+                    message.SenderUserId,
+                    message.SenderName,
+                    message.SenderAvatar,
+                    message.Message,
+                    message.SentAtUtc,
+                    message.IsDelivered,
+                    message.DeliveredAtUtc,
+                    message.IsRead,
+                    message.ReadAtUtc
+                })
+                .ToListAsync();
+
+            await Clients.Caller.SendAsync("chat_history", meetingId, messages);
+            await Clients.Caller.SendAsync("chatjoined_self", groupName);
+            await Clients.OthersInGroup(groupName).SendAsync("chatjoined", groupName);
+        }
+
+        /// <summary>
+        /// کاربر را از گروه چت جلسه خارج می‌کند.
         /// </summary>
         public async Task LeaveChatRoom(string roomId)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
-            await Clients.Group(roomId).SendAsync("chatBye");
+            int meetingId;
+            if (!TryGetMeetingId(roomId, out meetingId))
+            {
+                return;
+            }
+
+            var groupName = GetChatGroupName(meetingId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Clients.OthersInGroup(groupName).SendAsync("chatBye");
         }
 
-        // ChatMessage
         /// <summary>
-        /// عملیات مربوط به این بخش را انجام می‌دهد.
+        /// پیام را ابتدا در دیتابیس ثبت و سپس نتیجه قطعی را برای اعضای جلسه ارسال می‌کند.
         /// </summary>
-        public async Task ChatMessage(string roomId, string message, string uuid)
+        public async Task ChatMessage(string roomId, string message, string clientMessageId)
         {
-            await Clients.OthersInGroup(roomId).SendAsync("on_chatroom_message", message, uuid);
+            int meetingId;
+            if (!TryGetMeetingId(roomId, out meetingId))
+            {
+                throw new HubException("شناسه جلسه معتبر نیست.");
+            }
+
+            await SaveChatMessage(meetingId, message, clientMessageId);
         }
 
         /// <summary>
-        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// نسخه صریح متد ارسال پیام برای کدهای جدید سمت کاربر.
+        /// </summary>
+        public async Task SendMeetingChatMessage(int meetingId, string message, string clientMessageId)
+        {
+            await SaveChatMessage(meetingId, message, clientMessageId);
+        }
+
+        private async Task SaveChatMessage(int meetingId, string message, string clientMessageId)
+        {
+            await EnsureMeetingExists(meetingId);
+
+            var normalizedMessage = (message ?? string.Empty).Trim();
+            if (normalizedMessage.Length == 0)
+            {
+                throw new HubException("متن پیام نمی‌تواند خالی باشد.");
+            }
+
+            if (normalizedMessage.Length > 4000)
+            {
+                throw new HubException("متن پیام بیشتر از حد مجاز است.");
+            }
+
+            var userId = GetCurrentUserId();
+            var user = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.Id == userId);
+
+            if (user == null)
+            {
+                throw new HubException("اطلاعات کاربر فرستنده یافت نشد.");
+            }
+
+            var now = DateTime.UtcNow;
+            var entity = new OnlineConversationMessage
+            {
+                Id = Guid.NewGuid(),
+                MeetingId = meetingId,
+                SenderUserId = user.Id,
+                SenderName = BuildSenderName(user.RankTitle, user.FirstName, user.LastName),
+                SenderAvatar = NormalizeAvatar(user.UserAvatar),
+                Message = normalizedMessage,
+                SentAtUtc = now,
+                IsDelivered = false,
+                IsRead = false
+            };
+
+            _context.OnlineConversationMessages.Add(entity);
+            await _context.SaveChangesAsync();
+
+            await Clients.Group(GetChatGroupName(meetingId)).SendAsync("chat_message_saved", new
+            {
+                entity.Id,
+                entity.MeetingId,
+                entity.SenderUserId,
+                entity.SenderName,
+                entity.SenderAvatar,
+                entity.Message,
+                entity.SentAtUtc,
+                entity.IsDelivered,
+                entity.DeliveredAtUtc,
+                entity.IsRead,
+                entity.ReadAtUtc,
+                ClientMessageId = clientMessageId
+            });
+        }
+
+        /// <summary>
+        /// دریافت یا خوانده‌شدن پیام توسط طرف مقابل را ثبت می‌کند.
+        /// </summary>
+        public async Task AcknowledgeChatMessage(Guid messageId, bool isRead)
+        {
+            var userId = GetCurrentUserId();
+            var entity = await _context.OnlineConversationMessages
+                .FirstOrDefaultAsync(message => message.Id == messageId);
+
+            if (entity == null || entity.SenderUserId == userId)
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            if (!entity.IsDelivered)
+            {
+                entity.IsDelivered = true;
+                entity.DeliveredAtUtc = now;
+            }
+
+            if (isRead && !entity.IsRead)
+            {
+                entity.IsRead = true;
+                entity.ReadAtUtc = now;
+            }
+
+            await _context.SaveChangesAsync();
+
+            await Clients.Group(GetChatGroupName(entity.MeetingId)).SendAsync("chat_message_status", new
+            {
+                entity.Id,
+                entity.IsDelivered,
+                entity.DeliveredAtUtc,
+                entity.IsRead,
+                entity.ReadAtUtc
+            });
+        }
+
+        /// <summary>
+        /// تمام پیام‌های یک جلسه را از دیتابیس و رابط کاربران حذف می‌کند.
         /// </summary>
         public async Task RemoveAllChats(string roomId)
         {
-            await Clients.Group(roomId).SendAsync("remove_chat_messages", roomId);
+            int meetingId;
+            if (!TryGetMeetingId(roomId, out meetingId))
+            {
+                return;
+            }
+
+            var messages = await _context.OnlineConversationMessages
+                .Where(message => message.MeetingId == meetingId)
+                .ToListAsync();
+
+            if (messages.Count > 0)
+            {
+                _context.OnlineConversationMessages.RemoveRange(messages);
+                await _context.SaveChangesAsync();
+            }
+
+            await Clients.Group(GetChatGroupName(meetingId)).SendAsync("remove_chat_messages");
         }
 
         /// <summary>
-        /// اطلاعات مشخص‌شده را حذف می‌کند.
+        /// پیام فقط توسط فرستنده آن قابل حذف است.
         /// </summary>
-        public async Task RemoveSingleChatMessage(string roomId, string uuid)
+        public async Task RemoveSingleChatMessage(string roomId, string messageId)
         {
-            await Clients.OthersInGroup(roomId).SendAsync("remove_single_chat_messages", uuid);
+            int meetingId;
+            Guid parsedMessageId;
+            if (!TryGetMeetingId(roomId, out meetingId) || !Guid.TryParse(messageId, out parsedMessageId))
+            {
+                return;
+            }
+
+            var userId = GetCurrentUserId();
+            var entity = await _context.OnlineConversationMessages.FirstOrDefaultAsync(message =>
+                message.Id == parsedMessageId &&
+                message.MeetingId == meetingId &&
+                message.SenderUserId == userId);
+
+            if (entity == null)
+            {
+                return;
+            }
+
+            _context.OnlineConversationMessages.Remove(entity);
+            await _context.SaveChangesAsync();
+            await Clients.Group(GetChatGroupName(meetingId)).SendAsync("remove_single_chat_messages", entity.Id);
         }
+
+        private async Task EnsureMeetingExists(int meetingId)
+        {
+            if (meetingId <= 0 || !await _context.Meetings.AsNoTracking().AnyAsync(meeting => meeting.Id == meetingId))
+            {
+                throw new HubException("جلسه انتخاب‌شده وجود ندارد یا غیرفعال شده است.");
+            }
+        }
+
+        private int GetCurrentUserId()
+        {
+            int userId;
+            var value = Context.User == null ? null : Context.User.FindFirst("Id")?.Value;
+            if (!int.TryParse(value, out userId))
+            {
+                throw new HubException("هویت کاربر معتبر نیست.");
+            }
+
+            return userId;
+        }
+
+        private static bool TryGetMeetingId(string roomId, out int meetingId)
+        {
+            meetingId = 0;
+            if (string.IsNullOrWhiteSpace(roomId))
+            {
+                return false;
+            }
+
+            var normalized = roomId.EndsWith("_chat", StringComparison.OrdinalIgnoreCase)
+                ? roomId.Substring(0, roomId.Length - 5)
+                : roomId;
+
+            return int.TryParse(normalized, out meetingId) && meetingId > 0;
+        }
+
+        private static string GetChatGroupName(int meetingId)
+        {
+            return string.Format("meeting-{0}-chat", meetingId);
+        }
+
+        private static string BuildSenderName(string rankTitle, string firstName, string lastName)
+        {
+            return string.Join(" ", new[] { rankTitle, firstName, lastName }
+                .Where(value => !string.IsNullOrWhiteSpace(value)));
+        }
+
+        private static string NormalizeAvatar(string avatar)
+        {
+            if (string.IsNullOrWhiteSpace(avatar))
+            {
+                return "/UserAvatar/Default.jpg";
+            }
+
+            if (avatar.StartsWith("/", StringComparison.Ordinal))
+            {
+                return avatar;
+            }
+
+            return "/UserAvatar/" + avatar.TrimStart('/');
+        }
+
+        #endregion
 
     }
 
