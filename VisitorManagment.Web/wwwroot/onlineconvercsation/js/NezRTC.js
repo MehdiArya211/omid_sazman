@@ -215,7 +215,9 @@ function gotDevices(deviceInfos) {
     });
 }
 
-navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+}
 
 
 
