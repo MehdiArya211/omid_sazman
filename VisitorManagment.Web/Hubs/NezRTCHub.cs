@@ -304,6 +304,9 @@ namespace VisitorManagment.Web.Hubs
         {
             await EnsureMeetingExists(meetingId);
 
+            // حتی اگر کاربر بلافاصله پس از انتخاب جلسه پیام بفرستد، پاسخ ثبت‌شده را دریافت می‌کند.
+            await Groups.AddToGroupAsync(Context.ConnectionId, GetChatGroupName(meetingId));
+
             var normalizedMessage = (message ?? string.Empty).Trim();
             if (normalizedMessage.Length == 0)
             {
