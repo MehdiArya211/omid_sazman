@@ -4,6 +4,7 @@
     
 }
 
+<div id="onlineConversationContext" data-user-id="@User.FindFirst("Id")?.Value" hidden></div>
 <link href="~/onlineconvercsation/css/conf.css" rel="stylesheet" />
 
 
@@ -53,7 +54,7 @@
                     </ul>
                     <div class="chat_input_wrapper">
                         <input type="text" class="chat_input_wrapper__input" placeholder="متن پیام را وارد کنید" />
-                        <button class="chat_input_wrapper__btn">ارسال  </button>
+                        <button type="button" class="chat_input_wrapper__btn">ارسال  </button>
                     </div>
                 </div>
 
@@ -305,7 +306,7 @@
             </select>
 
             @*<input class="personalCodeInput" type="text" placeholder="کد پرسنلی فرمانده یگان را وارد نمایید" value="@ViewBag.UnitCode" style="padding:4px ;width: 100%;border-radius:4px;border-color:whitesmoke;font-size:14px;margin-bottom:8px;color:black;font-weight:bold" readonly />*@
-            <button onclick="createRoom()" class="btn btn-primary btn-pulse">
+            <button type="button" onclick="createRoom()" class="btn btn-primary btn-pulse">
                 ایجاد جلسه
             </button>
         </div>
