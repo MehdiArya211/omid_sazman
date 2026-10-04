@@ -6,6 +6,7 @@
     ViewData["Title"] = "مکالمه تصویری";
 }
 
+<div id="onlineConversationContext" data-user-id="@User.FindFirst("Id")?.Value" hidden></div>
 @*hi*@
 @*hi*@
 <link href="~/onlineconvercsation/css/webrtc.css" rel="stylesheet" />
@@ -73,7 +74,7 @@
                   </ul>
                   <div class="chat_input_wrapper">
                         <input type="text" class="chat_input_wrapper__input" placeholder="متن پیام را وارد کنید" />
-                        <button class="chat_input_wrapper__btn">ارسال  </button>
+                        <button type="button" class="chat_input_wrapper__btn">ارسال  </button>
                   </div>
                   <button id="removeAllChatMessages" style="margin-top: 10px; outline: none; border: none; padding: 10px; border-radius: 11px; color:  white; background: red; width: 100%;">پاک کردن تمام چت ها</button>
                 </div>
