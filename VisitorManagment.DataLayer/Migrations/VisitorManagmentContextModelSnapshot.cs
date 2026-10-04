@@ -310,6 +310,56 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("ZaribRankings");
                 });
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.OnlineConversation.OnlineConversationMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeliveredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDelivered")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MeetingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SentAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SenderAvatar")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("SenderName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SenderUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MeetingId", "SentAtUtc");
+
+                    b.HasIndex("SenderUserId");
+
+                    b.ToTable("OnlineConversationMessages");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.SystemChatRoom.ChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
