@@ -680,7 +680,7 @@ ${item.Name}
     connection.on('bye', function () {
         localStorage.removeItem("currentRoomId");
         hasRoomJoined = false;
-        hangupStyles();
+        hangup(false);
         toastr.info(`مخاطب شما گفتگو را ترک کرد. شناسه گفتگو: ${myRoomId}.`);
         // connectionStatusMessage.innerText = `مخاطب شما گفتگو را ترک کرد. شناسه گفتگو: ${myRoomId}.`;
 
@@ -932,17 +932,7 @@ const ansarHangup = document.querySelector('#hangupansar');
 
 if (hangupbtn) {
     hangupbtn.addEventListener('click', async () => {
-
-
-        if (hasRoomJoined) {
-            const currentRoomId = localStorage.getItem("currentRoomId");
-            connection.invoke("LeaveRoom", currentRoomId).catch(function (err) {
-                console.error(err.toString());
-            });
-
-
-            document.getElementById('hangup').style.opacity = '1';
-        }
+        await hangup(true);
     });
 }
 
