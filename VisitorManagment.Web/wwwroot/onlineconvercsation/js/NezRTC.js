@@ -60,7 +60,7 @@ const remoteVideo = getId('remoteVideo');
 const audioInputSelect = document.querySelector('select#audioSource');
 const audioOutputSelect = document.querySelector('select#audioOutput');
 const videoSelect = document.querySelector('select#videoSource');
-const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
+const selectors = [audioInputSelect, audioOutputSelect, videoSelect].filter(Boolean);
 
 
 //متغیر های سراسری
@@ -179,7 +179,9 @@ function setUserStatus(personalCodeNeedToBeOnline) {
 ****************************************************************************/
 
 //انتخابگر ابزار های های متصل
-audioOutputSelect.disabled = !('sinkId' in HTMLMediaElement.prototype);
+if (audioOutputSelect) {
+    audioOutputSelect.disabled = !('sinkId' in HTMLMediaElement.prototype);
+}
 
 function gotDevices(deviceInfos) {
     // شناسایی ابزار های متصل شده به سیستم شامل میکروفن، اسپیکر و دوربین
@@ -241,14 +243,15 @@ function handleError(error) {
     console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
 }
 function changeAudioDestination() {
+    if (!audioOutputSelect || !localVideo) return;
     const audioDestination = audioOutputSelect.value;
     attachSinkId(localVideo, audioDestination);
 }
 
 //هنگام تغییر ابزار های متصل، فراخوانی جدید ابزار صورت می گیرد.
-audioInputSelect.onchange = grabWebCamVideo;
-audioOutputSelect.onchange = changeAudioDestination;
-videoSelect.onchange = grabWebCamVideo;
+if (audioInputSelect) audioInputSelect.onchange = grabWebCamVideo;
+if (audioOutputSelect) audioOutputSelect.onchange = changeAudioDestination;
+if (videoSelect) videoSelect.onchange = grabWebCamVideo;
 
 
 function changeVideoTextStyle() {
@@ -257,41 +260,48 @@ function changeVideoTextStyle() {
 }
 
 // گرفتن اطلاعات وب کم کاربر و خواندن آن
-function grabWebCamVideo() {
+async function grabWebCamVideo() {
+    cameraSituation = false;
 
-    cameraSituation = true;
-    //changeVideoTextStyle();
-    if (window.stream) {
-        window.stream.getTracks().forEach(track => {
-            track.stop();
-        });
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toastr.error('مرورگر شما امکان دسترسی به دوربین و میکروفن را پشتیبانی نمی‌کند.');
+        return false;
     }
-    const audioSource = audioInputSelect.value;
-    const videoSource = videoSelect.value;
-    //const hasEchoCancellation = document.querySelector('#echoCancellation').checked;
-    //console.log(hasEchoCancellation, 'echo checked')
-    const constraints = {
 
+    if (window.stream) {
+        window.stream.getTracks().forEach(track => track.stop());
+    }
+
+    const audioSource = audioInputSelect ? audioInputSelect.value : null;
+    const videoSource = videoSelect ? videoSelect.value : null;
+    const constraints = {
         audio: {
             deviceId: audioSource ? { exact: audioSource } : undefined,
-            echoCancellation: true /*{ exact: hasEchoCancellation },*/
+            echoCancellation: true
         },
-        video: { deviceId: videoSource ? { exact: videoSource } : undefined }
+        video: {
+            deviceId: videoSource ? { exact: videoSource } : undefined
+        }
     };
 
-    navigator.mediaDevices.getUserMedia(constraints).then(gotStream)
-        .catch(function (e) {
-            console.log('getUserMedia() error: ' + e);
-        });
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        gotStream(stream);
+        await navigator.mediaDevices.enumerateDevices().then(gotDevices);
+        return true;
+    } catch (error) {
+        cameraSituation = false;
+        handleError(error);
+        toastr.error('دسترسی به دوربین یا میکروفن برقرار نشد. مجوز مرورگر و اتصال تجهیزات را بررسی کنید.');
+        return false;
+    }
 }
 
 
-//برای باز شدن دوربین بعد از لود شدن صفحه
+// دوربین فقط یک‌بار و پس از کامل‌شدن DOM درخواست می‌شود.
 window.addEventListener('load', function () {
-
     grabWebCamVideo();
-
-});
+}, { once: true });
 
 
 
@@ -335,19 +345,23 @@ function muteAudio() {
 
 // ست کردن استریم و ویدئو کاربر در صفحه
 function gotStream(stream) {
-    cameraSituation: true;
+    cameraSituation = true;
+    window.stream = stream;
     //recordButton.disabled = false;
     localVideo.srcObject = stream;
     tmpLocalStream = stream;
     localStream = stream;
 
-    getSupportedMimeTypes().forEach(mimeType => {
-        const option = document.createElement('option');
-        option.value = mimeType;
-        option.innerText = option.value;
-        codecPreferences.appendChild(option);
-    });
-    codecPreferences.disabled = false;
+    const codecPreferencesElement = document.getElementById('codecPreferences');
+    if (codecPreferencesElement && codecPreferencesElement.options.length === 0) {
+        getSupportedMimeTypes().forEach(mimeType => {
+            const option = document.createElement('option');
+            option.value = mimeType;
+            option.innerText = option.value;
+            codecPreferencesElement.appendChild(option);
+        });
+        codecPreferencesElement.disabled = false;
+    }
     return navigator.mediaDevices.enumerateDevices();
 }
 
@@ -694,7 +708,41 @@ ${item.Name}
     });
 
 }).catch(function (err) {
-    return console.error(err.toString());
+    console.error(err.toString());
+    scheduleSignalRReconnect();
+});
+
+let signalRReconnectTimer = null;
+let signalRReconnectAttempt = 0;
+
+function scheduleSignalRReconnect() {
+    if (signalRReconnectTimer) return;
+
+    const delays = [1000, 3000, 5000, 10000, 15000];
+    const delay = delays[Math.min(signalRReconnectAttempt, delays.length - 1)];
+    signalRReconnectTimer = window.setTimeout(async function () {
+        signalRReconnectTimer = null;
+        try {
+            await connection.start();
+            signalRReconnectAttempt = 0;
+            await connection.invoke("GetRoomInfo");
+
+            const activeMeetingId = parseInt(localStorage.getItem("active_meeting_id"), 10);
+            if (activeMeetingId > 0) {
+                await connection.invoke("JoinMeetingChat", activeMeetingId);
+            }
+
+            toastr.success('ارتباط با جلسه مجدداً برقرار شد.');
+        } catch (error) {
+            signalRReconnectAttempt++;
+            scheduleSignalRReconnect();
+        }
+    }, delay);
+}
+
+connection.onclose(function () {
+    hasRoomJoined = false;
+    scheduleSignalRReconnect();
 });
 
 /**
@@ -715,7 +763,7 @@ function createPeerConnection(isInitiator, config) {
     // 2. send local media to peer connection
     //sendStreamToRTCConnection();
     if (localStream) {
-        peerConn.addStream(localStream);
+        localStream.getTracks().forEach(track => peerConn.addTrack(track, localStream));
     }
 
     // 3. handling incoming media from a remote source
@@ -843,10 +891,9 @@ function getSupportedMimeTypes() {
 
 
 window.addEventListener('load', function () {
-    grabWebCamVideo();
-    document.querySelector('.videoStyle').style.display = 'block';
-
-})
+    const videoElement = document.querySelector('.videoStyle');
+    if (videoElement) videoElement.style.display = 'block';
+}, { once: true })
 
 
 ////دریافت مدیا از کاربر
@@ -917,22 +964,48 @@ if (ansarHangup) {
 
 
 
-function hangup() {
-    //// location.reload();
-    //if (localStream != null)
-    //    localStream.getTracks().forEach(track => track.stop());
-    //if (remoteStream != null)
-    //    remoteStream.getTracks().forEach(track => track.stop());
-    //localStream = null;
-    //remoteStream = null;
-    //localVideo.src = null;
-    //remoteVideo.src = null;
-    //cameraSituation = false;
-    //peerConn.close();
-    //peerConn = null;
-    //let audioTrack = localStream.getTracks.find(track => track.kind === 'audio');
-    //audioTrack.enabled = false
-    //// grabWebCamVideo();
+async function hangup(notifyRoom = true) {
+    const roomId = myRoomId || localStorage.getItem("currentRoomId");
+
+    if (notifyRoom && roomId && connection.state === signalR.HubConnectionState.Connected) {
+        try {
+            await connection.invoke("LeaveRoom", roomId);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    if (peerConn) {
+        peerConn.ontrack = null;
+        peerConn.onicecandidate = null;
+        peerConn.onnegotiationneeded = null;
+        peerConn.close();
+        peerConn = null;
+    }
+
+    if (remoteStream) {
+        remoteStream.getTracks().forEach(track => track.stop());
+    }
+
+    remoteStream = null;
+    if (remoteVideo) remoteVideo.srcObject = null;
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+
+    localStream = null;
+    tmpLocalStream = null;
+    window.stream = null;
+    if (localVideo) localVideo.srcObject = null;
+
+    cameraSituation = false;
+    hasRoomJoined = false;
+    isPicToPic = false;
+    isInitiator = false;
+    myRoomId = null;
+    localStorage.removeItem("currentRoomId");
+    hangupStyles();
 }
 
 // برای قطع ارتباط تصویری مورد استفاده قرار میگیرد
@@ -954,17 +1027,7 @@ function hangupStyles() {
     // let audioTrack = localStream.getTracks.find(track => track.kind === 'audio');
     // audioTrack.enabled = false
 
-    // 3. پاک کردن استریم لوکال در وب آر تی سی
-    if (localStream) {
-        peerConn.removeStream(localStream);
-    }
-
-
-    // 4. در نهایت کانکشن وب آر تی سی تا می بندیم
-    if (peerConn) {
-        peerConn.close();
-        // peerConn = null;
-    }
+    // Stream و PeerConnection در تابع hangup به‌صورت کامل آزاد می‌شوند.
 
 
 
@@ -1179,244 +1242,274 @@ function callHandler(RoomId, Name) {
  */
 
 
-//handle chats list
-
-/*
- * 1. get content section
- * 2. get user list btn
- * 3. get chat room btn
- * 4. when user clicks on user_list_btn switch to user list
- * 5. when user clicks on chat_list
- */
-
-const userList_content = document.getElementById("userList_content") 
-const userList_chat = document.getElementById("userList_chat")
-const userList_btn = document.getElementById("userList_btn") 
-const chatList_btn = document.getElementById("chatList_btn")
-const chatContainer = document.querySelector(".userList_chat_list")
-
-    userList_btn && userList_btn.addEventListener('click', () => {
-        userList_chat.style.display = 'none'
-        userList_content.style.display = 'block'
-    })
-
-
-
-
-chatList_btn.addEventListener('click', () => {
-    userList_chat.style.display = 'block'
-    userList_content.style.display = 'none'
-})
-
-
-const __CHAT_ARRAY__ = [];
-/*
- * {
- *      me: boolean,
- *      msg: string,
- *      name: string
- *  }
- */
-
- 
-/*
- 0. create chat array
- 1. get the input ref
- 2. get the chat send btn ref
- 3. when user press Enter / or send_btn -> add it to the chat array
- 4. 
- */
-
+// مدیریت چت پایدار جلسه
+const userList_content = document.getElementById("userList_content");
+const userList_chat = document.getElementById("userList_chat");
+const userList_btn = document.getElementById("userList_btn");
+const chatList_btn = document.getElementById("chatList_btn");
+const chatContainer = document.querySelector(".userList_chat_list");
 const chatInput = document.querySelector(".chat_input_wrapper__input");
 const chatSendBtn = document.querySelector(".chat_input_wrapper__btn");
+const conversationContext = document.getElementById("onlineConversationContext");
+const currentConversationUserId = conversationContext
+    ? parseInt(conversationContext.dataset.userId, 10)
+    : 0;
+const pendingReadMessages = new Set();
+const renderedChatMessages = new Map();
 
+if (userList_btn) {
+    userList_btn.addEventListener("click", function () {
+        if (userList_chat) userList_chat.style.display = "none";
+        if (userList_content) userList_content.style.display = "block";
+    });
+}
 
+if (chatList_btn) {
+    chatList_btn.addEventListener("click", function () {
+        if (userList_chat) userList_chat.style.display = "block";
+        if (userList_content) userList_content.style.display = "none";
+        acknowledgePendingMessages();
+    });
+}
 
+function getActiveMeetingId() {
+    const value = parseInt(localStorage.getItem("active_meeting_id"), 10);
+    return value > 0 ? value : null;
+}
 
-
-
-
-const sendChat = (message, isSelf = true, uuid) => {
-
-    
-    let hasError = false;
-    const currentTime = new Date().toString().split(" ")[4].split(":");
-    currentTime.pop();
-
-
-    if (message === "") return;
-
-    const chat = {
-        me: isSelf,
-        msg: message,
-        time: currentTime.join(":"),
-        uuid
+function createClientMessageId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
     }
 
+    return Date.now().toString(36) + "-" + Math.random().toString(36).substring(2);
+}
 
+function formatPersianMessageDate(value) {
+    if (!value) return "";
 
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
 
-    if (isSelf) {
-        const chatRoomId = localStorage.getItem("active_meeting_id");
+    return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(date);
+}
 
-        const _uuid = crypto.randomUUID();
-        chat.uuid = _uuid;
+function getMessageStatusText(message) {
+    if (message.isRead) return "✓✓";
+    if (message.isDelivered) return "✓✓";
+    return "✓";
+}
 
-        connection.invoke("ChatMessage", `${chatRoomId}_chat`, message, _uuid).catch(function (err) {
-            toastr.error('مشکلی در ارسال با چت روم به وجود آمده است.');
-            console.error(err);
-            hasError = true;
+function updateMessageStatus(status) {
+    if (!status || !status.id) return;
+
+    const element = renderedChatMessages.get(String(status.id));
+    if (!element) return;
+
+    const statusElement = element.querySelector(".chat-message-status");
+    if (!statusElement) return;
+
+    statusElement.textContent = status.isRead ? "✓✓" : (status.isDelivered ? "✓✓" : "✓");
+    statusElement.classList.toggle("is-read", !!status.isRead);
+}
+
+function renderChatMessage(message, scrollToEnd) {
+    if (!chatContainer || !message || !message.id) return;
+
+    const messageKey = String(message.id);
+    if (renderedChatMessages.has(messageKey)) {
+        updateMessageStatus(message);
+        return;
+    }
+
+    const isMine = Number(message.senderUserId) === currentConversationUserId;
+    const wrapper = document.createElement("div");
+    wrapper.className = "chatElement " + (isMine ? "chat-message-mine" : "chat-message-other");
+    wrapper.dataset.messageId = messageKey;
+
+    const avatar = document.createElement("img");
+    avatar.className = "chat-message-avatar";
+    avatar.alt = "";
+    avatar.src = message.senderAvatar || "/UserAvatar/Default.jpg";
+    avatar.addEventListener("error", function () {
+        avatar.src = "/UserAvatar/Default.jpg";
+    }, { once: true });
+
+    const card = document.createElement("div");
+    card.className = "chat_card " + (isMine ? "chat_card_mine" : "chat_card_other");
+
+    const sender = document.createElement("div");
+    sender.className = "chat-message-sender";
+    sender.textContent = message.senderName || "کاربر";
+
+    const body = document.createElement("p");
+    body.className = "chat-message-body";
+    body.textContent = message.message || "";
+
+    const meta = document.createElement("div");
+    meta.className = "chat-message-meta";
+
+    const time = document.createElement("time");
+    time.textContent = formatPersianMessageDate(message.sentAtUtc);
+
+    meta.appendChild(time);
+
+    if (isMine) {
+        const status = document.createElement("span");
+        status.className = "chat-message-status";
+        status.textContent = getMessageStatusText(message);
+        status.classList.toggle("is-read", !!message.isRead);
+        meta.appendChild(status);
+    }
+
+    card.appendChild(sender);
+    card.appendChild(body);
+    card.appendChild(meta);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(card);
+
+    if (isMine) {
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "chat-message-delete";
+        removeButton.setAttribute("aria-label", "حذف پیام");
+        removeButton.textContent = "×";
+        removeButton.addEventListener("click", async function () {
+            const meetingId = getActiveMeetingId();
+            if (!meetingId) return;
+
+            try {
+                await connection.invoke("RemoveSingleChatMessage", meetingId + "_chat", messageKey);
+            } catch (error) {
+                toastr.error("حذف پیام انجام نشد.");
+            }
         });
+        wrapper.appendChild(removeButton);
     }
 
+    chatContainer.appendChild(wrapper);
+    renderedChatMessages.set(messageKey, wrapper);
 
-    if (hasError) return;
-
-     __CHAT_ARRAY__.push(chat)
-
-
-    const offset = renderUI(chat)
-    chatInput.value = "";
-
-    chatContainer.scrollTo({
-        top: offset,
-        behavior: "smooth"
-     })
-    
+    if (scrollToEnd !== false) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 }
 
-const renderUI = (chat) => {
-    const chatElement = document.createElement('div')
-    chatElement.style.display = "flex";
-    chatElement.classList.add("chatElement")
-    chatElement.setAttribute("data-uuid", chat.uuid);
+async function acknowledgeMessage(message, forceRead) {
+    if (!message || !message.id || Number(message.senderUserId) === currentConversationUserId) return;
 
-    const name = document.querySelector(".loggein > a").innerText.split("\n")[0];
-
-
-
-    if (!chat.me) {
-        chatElement.style.flexDirection = "row-reverse";
+    const shouldMarkRead = forceRead || document.visibilityState === "visible";
+    if (!shouldMarkRead) {
+        pendingReadMessages.add(String(message.id));
     }
 
-
-    let element = `
-        <div style="min-width: 28px; min-height: 28px; height: 28px; width: 28px; background: #d1d1d1 url('https://localhost:44395/UserAvatar/Default.jpg??/useravatar/Default.jpg') center center; background-size: cover; border-radius: 999px; ${chat.me ? 'margin-left: 6px;' : 'margin-right: 6px;'}"></div>
-        <li class="chat_card ${!chat.me ? 'chat_other' : ''}">
-            ${!chat.me ? `<p style="margin-bottom: 0; color: #ffffffbd">${name}</p>`: ''}
-            <p style="margin-bottom: 0; font-size: 14px; word-break: break-all;">${chat.msg}</p>
-            <p style="margin-bottom: 0; font-size:10px !important">${chat.time}</p>
-        </li>
-    `
-
-    if (chat.me) {
-        element += `<i class="fa fa-trash delete_icon" style="align-self: flex-end;margin-bottom: 11px;margin-right: 6px; cursor: pointer; font-size: 15px;"></i>`
+    try {
+        await connection.invoke("AcknowledgeChatMessage", message.id, shouldMarkRead);
+        if (shouldMarkRead) pendingReadMessages.delete(String(message.id));
+    } catch (error) {
+        pendingReadMessages.add(String(message.id));
     }
-
-    chatElement.innerHTML = element
-
-
-
-    chatContainer.appendChild(chatElement)
-
-
-    const deleteIcons = document.querySelectorAll(".delete_icon");
-    deleteIcons.forEach(icon => {
-        icon.addEventListener("click", (e) => {
-            const parent = e.target.parentElement;
-            const uuid = parent.getAttribute("data-uuid");
-
-            const chatRoomId = localStorage.getItem("active_meeting_id");
-            chatContainer.removeChild(parent);  
-            connection.invoke("RemoveSingleChatMessage", `${chatRoomId}_chat`, uuid).catch(function (err) {
-                toastr.error('مشکلی در ارسال با چت روم به وجود آمده است.');
-                console.error(err);
-            });
-
-
-        })
-    })
-
-
-    return chatElement.offsetTop;
 }
 
+async function acknowledgePendingMessages() {
+    if (document.visibilityState !== "visible" || pendingReadMessages.size === 0) return;
 
-
-
-// chatroom hub events
-
-connection.on("chatjoined_self", function (roomId) {
-    console.log("chatjoined_self")
-})
-
-connection.on("chatjoined", function (roomId) {
-    console.log("another user joined to:", roomId);
-})
-
-
-connection.on("remove_chat_messages", function () {
-    console.log("removing chat messages");
-    const chatElements = document.querySelectorAll(".chatElement");
-
-    chatElements.forEach((elem) => {
-        chatContainer.removeChild(elem);
-    })
-})
-
-
-connection.on("remove_single_chat_messages", function (uuid) {
-    console.log("removing single chat messages");
-    const chatElements = document.querySelectorAll(".chatElement");
-
-    const chatElementsArray = Array.from(chatElements);
-
-    const foundElement = chatElementsArray.find((chat) => {
-        const _uuid = chat.getAttribute("data-uuid");
-
-        if (_uuid === uuid) {
-            return chat;
+    const ids = Array.from(pendingReadMessages);
+    for (const id of ids) {
+        try {
+            await connection.invoke("AcknowledgeChatMessage", id, true);
+            pendingReadMessages.delete(id);
+        } catch (error) {
+            break;
         }
+    }
+}
 
-        return false;
-    })
+async function sendChatMessage() {
+    if (!chatInput || !chatSendBtn) return;
 
-    chatContainer.removeChild(foundElement);
-})
+    const meetingId = getActiveMeetingId();
+    const message = chatInput.value.trim();
 
+    if (!meetingId) {
+        toastr.warning("ابتدا جلسه را انتخاب کنید.");
+        return;
+    }
 
+    if (!message) return;
 
+    chatSendBtn.disabled = true;
+    chatInput.disabled = true;
 
-connection.on('on_chatroom_message', function (message, uuid) {
+    try {
+        await connection.invoke("SendMeetingChatMessage", meetingId, message, createClientMessageId());
+        chatInput.value = "";
+    } catch (error) {
+        toastr.error("پیام ثبت نشد؛ اتصال شبکه را بررسی و دوباره تلاش کنید.");
+        console.error(error);
+    } finally {
+        chatSendBtn.disabled = false;
+        chatInput.disabled = false;
+        chatInput.focus();
+    }
+}
 
-    console.log("recieving new message")
-    const isSelf = false;
-    sendChat(message, isSelf, uuid)
+connection.on("chat_history", function (meetingId, messages) {
+    if (Number(meetingId) !== getActiveMeetingId() || !chatContainer) return;
+
+    chatContainer.innerHTML = "";
+    renderedChatMessages.clear();
+
+    (messages || []).forEach(function (message) {
+        renderChatMessage(message, false);
+        acknowledgeMessage(message, false);
+    });
+
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 });
 
+connection.on("chat_message_saved", function (message) {
+    if (!message || Number(message.meetingId) !== getActiveMeetingId()) return;
 
+    renderChatMessage(message, true);
+    acknowledgeMessage(message, false);
+});
 
-chatSendBtn.addEventListener("click", () => {
-    const message = chatInput.value;
-    sendChat(message);
+connection.on("chat_message_status", updateMessageStatus);
 
+connection.on("remove_chat_messages", function () {
+    if (!chatContainer) return;
+    chatContainer.innerHTML = "";
+    renderedChatMessages.clear();
+    pendingReadMessages.clear();
+});
 
-})
+connection.on("remove_single_chat_messages", function (messageId) {
+    const key = String(messageId);
+    const element = renderedChatMessages.get(key);
+    if (element) element.remove();
+    renderedChatMessages.delete(key);
+    pendingReadMessages.delete(key);
+});
 
-chatInput.addEventListener("keydown", (e) => {
-    
-    if (e.key !== "Enter") return;
+document.addEventListener("visibilitychange", acknowledgePendingMessages);
 
-    const message = chatInput.value;
-    sendChat(message);
+if (chatSendBtn) {
+    chatSendBtn.type = "button";
+    chatSendBtn.addEventListener("click", sendChatMessage);
+}
 
-})
-
-
-
-
-
-
-
-
+if (chatInput) {
+    chatInput.addEventListener("keydown", function (event) {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        sendChatMessage();
+    });
+}
 
