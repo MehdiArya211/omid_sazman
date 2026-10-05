@@ -7,11 +7,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using VisitorManagment.DataLayer.Entities.VisitorManagment;
+using VisitorManagment.Core.Services.Interfaces;
 
 namespace VisitorManagment.Web.Hubs
 {
     public class NezRTCHub : Hub
     {
+        private readonly IInspectionService _inspectionService;
+        public NezRTCHub(IInspectionService inspectionService) => _inspectionService = inspectionService;
+
         private static RoomManager roomManager = new RoomManager();
 
         /// <summary>
@@ -27,9 +31,35 @@ namespace VisitorManagment.Web.Hubs
         /// </summary>
         public override Task OnDisconnectedAsync(Exception exception)
         {
+            _inspectionService.EndAttendance(Context.ConnectionId);
             roomManager.DeleteRoom(Context.ConnectionId);
             _ = NotifyRoomInfoAsync(false);
             return base.OnDisconnectedAsync(exception);
+        }
+
+        /// <summary>پس از کنترل جلسه و یگان، ورود واقعی کاربر را با هویت موجود در Claim ثبت می‌کند.</summary>
+        public Task<object> RegisterInspectionAttendance(int meetingId)
+        {
+            var unitValue = Context.User?.FindFirst("UnitCode")?.Value;
+            if (!int.TryParse(unitValue, out var unitCode))
+                return Task.FromResult<object>(new { isSuccess = false, message = "کد یگان کاربر معتبر نیست." });
+
+            var result = _inspectionService.StartAttendance(
+                meetingId,
+                Context.User?.FindFirst("PersonalCode")?.Value,
+                Context.User?.FindFirst("FullName")?.Value ?? Context.User?.Identity?.Name,
+                Context.User?.FindFirst("RankTitle")?.Value,
+                unitCode,
+                Context.User?.FindFirst("UnitCodeTitle")?.Value,
+                Context.ConnectionId);
+            return Task.FromResult<object>(new { isSuccess = result.IsSuccess, message = result.Message });
+        }
+
+        /// <summary>خروج ارادی را ثبت می‌کند؛ قطع ناگهانی نیز در OnDisconnected پوشش داده شده است.</summary>
+        public Task EndInspectionAttendance()
+        {
+            _inspectionService.EndAttendance(Context.ConnectionId);
+            return Task.CompletedTask;
         }
 
         /// <summary>
