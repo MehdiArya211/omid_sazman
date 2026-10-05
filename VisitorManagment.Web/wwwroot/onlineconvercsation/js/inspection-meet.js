@@ -48,8 +48,13 @@
         startButton.disabled = connection.state !== signalR.HubConnectionState.Connected || !selectedMeetingId;
         if (selectedMeetingId) connection.invoke('GetRoomInfo').catch(console.error);
     }));
-    startButton.addEventListener('click', async () => { if (!selectedMeetingId || !await ensureMedia()) return; isInitiator = true; await connection.invoke('CreateRoom', unitCode, `inspection-${selectedMeetingId}`); startButton.disabled = true; leaveButton.disabled = false; });
-    leaveButton.addEventListener('click', () => closeCall(true));
+    async function registerAttendance() {
+        const result = await connection.invoke('RegisterInspectionAttendance', Number(selectedMeetingId));
+        if (!result || !result.isSuccess) { notify(result?.message || 'ثبت حضور در جلسه انجام نشد.'); return false; }
+        return true;
+    }
+    startButton.addEventListener('click', async () => { if (!selectedMeetingId || !await ensureMedia() || !await registerAttendance()) return; isInitiator = true; await connection.invoke('CreateRoom', unitCode, `inspection-${selectedMeetingId}`); startButton.disabled = true; leaveButton.disabled = false; });
+    leaveButton.addEventListener('click', async () => { await connection.invoke('EndInspectionAttendance').catch(() => {}); await closeCall(true); });
     micButton.addEventListener('click', () => { const track=localStream?.getAudioTracks()[0]; if(track){track.enabled=!track.enabled;micButton.classList.toggle('is-muted',!track.enabled);} });
     cameraButton.addEventListener('click', () => { const track=localStream?.getVideoTracks()[0]; if(track){track.enabled=!track.enabled;cameraButton.classList.toggle('is-muted',!track.enabled);} });
     connection.on('created', id => { roomId=id; connection.invoke('ChatJoin', `inspection-${selectedMeetingId}-chat`).catch(console.error); });
@@ -57,7 +62,7 @@
     connection.on('ready', async id => { if(id===roomId && isInitiator) await makeOffer(); });
     connection.on('message', async data => { if(!localStream && !await ensureMedia()) return; if(!peer) createPeer(); if(data.description){await peer.setRemoteDescription(data.description);if(data.description.type==='offer'){const answer=await peer.createAnswer();await peer.setLocalDescription(answer);sendSignal({description:peer.localDescription});}} else if(data.candidate){await peer.addIceCandidate(data.candidate);} });
     connection.on('bye', () => closeCall(false));
-    connection.on('updateRoom', data => { if(!selectedMeetingId) return; const rooms=JSON.parse(data).filter(x=>String(x.MeetId)===`inspection-${selectedMeetingId}`); roomList.innerHTML=''; rooms.forEach(room=>{if(String(room.PersonalCode)===String(unitCode))return;const button=document.createElement('button');button.type='button';button.className='btn btn-outline-info';button.textContent=`ورود به اتاق یگان ${room.PersonalCode}`;button.onclick=async()=>{if(!await ensureMedia())return;isInitiator=false;roomId=String(room.RoomId);await connection.invoke('Join',roomId);};roomList.appendChild(button);}); });
+    connection.on('updateRoom', data => { if(!selectedMeetingId) return; const rooms=JSON.parse(data).filter(x=>String(x.MeetId)===`inspection-${selectedMeetingId}`); roomList.innerHTML=''; rooms.forEach(room=>{if(String(room.PersonalCode)===String(unitCode))return;const button=document.createElement('button');button.type='button';button.className='btn btn-outline-info';button.textContent=`ورود به اتاق یگان ${room.PersonalCode}`;button.onclick=async()=>{if(!await ensureMedia()||!await registerAttendance())return;isInitiator=false;roomId=String(room.RoomId);await connection.invoke('Join',roomId);leaveButton.disabled=false;};roomList.appendChild(button);}); });
     connection.onclose(() => { setConnected(false); setTimeout(startConnection, 3000); });
     async function startConnection(){try{if(connection.state===signalR.HubConnectionState.Disconnected)await connection.start();setConnected(true);await connection.invoke('GetRoomInfo');}catch{setConnected(false);setTimeout(startConnection,3000);}}
     window.addEventListener('beforeunload',()=>{if(localStream)localStream.getTracks().forEach(track=>track.stop());});
