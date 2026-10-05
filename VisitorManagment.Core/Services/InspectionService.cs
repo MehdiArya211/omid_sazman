@@ -126,6 +126,58 @@ namespace VisitorManagment.Core.Services
                 && (x.Status == InspectionMeetingStatus.Published || x.Status == InspectionMeetingStatus.InProgress)
                 && x.Units.Any(unit => unit.UnitCode == unitCode));
 
+        public InspectionOperationResult StartAttendance(int meetingId, string personalCode, string fullName, string rankTitle, int unitCode, string unitTitle, string connectionId)
+        {
+            if (!CanUnitEnterMeeting(meetingId, unitCode)) return InspectionOperationResult.Failure("دسترسی ورود به این جلسه برای یگان شما ثبت نشده است.");
+            if (string.IsNullOrWhiteSpace(personalCode) || string.IsNullOrWhiteSpace(connectionId)) return InspectionOperationResult.Failure("هویت کاربر برای ثبت حضور کامل نیست.");
+
+            // یک اتصال SignalR فقط یک رکورد حضور باز دارد؛ این شرط از ثبت تکراری کلیک جلوگیری می‌کند.
+            if (_context.InspectionAttendances.Any(x => x.ConnectionId == connectionId && x.LeftAt == null))
+                return InspectionOperationResult.Success("حضور قبلاً ثبت شده است.");
+
+            _context.InspectionAttendances.Add(new InspectionAttendance
+            {
+                InspectionMeetingId = meetingId, PersonalCode = NormalizeDigits(personalCode), FullName = string.IsNullOrWhiteSpace(fullName) ? personalCode : fullName.Trim(),
+                RankTitle = rankTitle?.Trim(), UnitCode = unitCode, UnitTitle = unitTitle?.Trim(), ConnectionId = connectionId,
+                JoinedAt = DateTime.Now
+            });
+            _context.SaveChanges();
+            return InspectionOperationResult.Success("حضور در جلسه ثبت شد.");
+        }
+
+        public void EndAttendance(string connectionId)
+        {
+            var now = DateTime.Now;
+            var openAttendances = _context.InspectionAttendances.Where(x => x.ConnectionId == connectionId && x.LeftAt == null).ToList();
+            foreach (var attendance in openAttendances)
+            {
+                attendance.LeftAt = now;
+                attendance.DurationSeconds = Math.Max(0, (int)(now - attendance.JoinedAt).TotalSeconds);
+            }
+            if (openAttendances.Any()) _context.SaveChanges();
+        }
+
+        public IReadOnlyList<InspectionAttendanceSummaryViewModel> GetAttendanceHistory(int? meetingId = null, string search = null)
+        {
+            var query = _context.InspectionAttendances.AsNoTracking().Include(x => x.Meeting).AsQueryable();
+            if (meetingId.HasValue) query = query.Where(x => x.InspectionMeetingId == meetingId.Value);
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+                query = query.Where(x => x.PersonalCode.Contains(search) || x.FullName.Contains(search) || x.UnitTitle.Contains(search));
+            }
+            var rows = query.OrderByDescending(x => x.JoinedAt).ToList();
+            return rows.GroupBy(x => new { x.PersonalCode, x.FullName, x.RankTitle, x.UnitCode, x.UnitTitle })
+                .Select(group => new InspectionAttendanceSummaryViewModel
+                {
+                    PersonalCode = group.Key.PersonalCode, FullName = group.Key.FullName, RankTitle = group.Key.RankTitle,
+                    UnitCode = group.Key.UnitCode, UnitTitle = group.Key.UnitTitle,
+                    MeetingsCount = group.Select(x => x.InspectionMeetingId).Distinct().Count(), ConnectionsCount = group.Count(),
+                    TotalDurationSeconds = group.Sum(x => x.DurationSeconds),
+                    Details = group.Select(x => new InspectionAttendanceDetailViewModel { MeetingId = x.InspectionMeetingId, MeetingTitle = x.Meeting.Title, MeetingDate = x.Meeting.MeetingDate, JoinedAt = x.JoinedAt, LeftAt = x.LeftAt, DurationSeconds = x.DurationSeconds }).ToList()
+                }).OrderByDescending(x => x.MeetingsCount).ThenBy(x => x.FullName).ToList();
+        }
+
         private static string NormalizeDigits(string value) => value?.Trim()
             .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3').Replace('۴', '4')
             .Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9')
