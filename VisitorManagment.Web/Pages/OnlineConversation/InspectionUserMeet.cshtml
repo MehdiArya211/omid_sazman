@@ -1,0 +1,25 @@
+@page
+@model VisitorManagment.Web.Pages.OnlineConversation.InspectionUserMeetModel
+@{ ViewData["Title"] = "برگزاری جلسه بازرسی"; }
+<link rel="stylesheet" href="~/assets/css/inspection-management.css" />
+<div class="inspection-meet" dir="rtl" data-unit-code="@Model.UnitCode">
+ <header class="inspection-meet-header"><div><span>مدیریت بازرسی</span><h2>برگزاری جلسه</h2><p>@Model.UnitTitle</p></div><div id="connectionState" class="inspection-connection is-offline">در حال اتصال...</div></header>
+ <div class="inspection-meet-layout">
+  <aside class="inspection-meeting-panel"><h4>جلسات قابل ورود</h4><p>جلسه مربوط به تاریخ موردنظر را انتخاب کنید.</p><div class="inspection-meeting-list">
+   @if(Model.Meetings.Count==0){<div class="inspection-empty">جلسه منتشرشده‌ای برای یگان شما وجود ندارد.</div>}
+   @foreach(var meeting in Model.Meetings){<button type="button" class="inspection-meeting-item" data-meeting-id="@meeting.Id"><b>@meeting.Title</b><span><i class="ti-calendar"></i> @meeting.MeetingDate · @meeting.StartTime</span><small>@meeting.Description</small></button>}
+  </div></aside>
+  <main class="inspection-call-panel">
+   <div id="callPlaceholder" class="inspection-call-placeholder"><i class="ti-video-camera"></i><h3>جلسه را انتخاب کنید</h3><p>دوربین فقط پس از انتخاب جلسه و تأیید شما فعال می‌شود.</p></div>
+   <div class="inspection-videos"><video id="remoteInspectionVideo" autoplay playsinline></video><video id="localInspectionVideo" autoplay muted playsinline></video></div>
+   <div id="roomList" class="inspection-room-list"></div>
+   <div class="inspection-call-controls">
+    <button type="button" id="startInspectionRoom" class="btn btn-success inspection-action" disabled><i class="ti-video-camera"></i> ایجاد/ورود به جلسه</button>
+    <button type="button" id="toggleInspectionMic" class="btn btn-light inspection-round" disabled aria-label="قطع و وصل میکروفن"><i class="ti-microphone"></i></button>
+    <button type="button" id="toggleInspectionCamera" class="btn btn-light inspection-round" disabled aria-label="قطع و وصل دوربین"><i class="ti-video-camera"></i></button>
+    <button type="button" id="leaveInspectionRoom" class="btn btn-danger inspection-action" disabled><i class="ti-close"></i> خروج</button>
+   </div>
+  </main>
+ </div>
+</div>
+@section Scripts { <script src="~/onlineconvercsation/js/inspection-meet.js" asp-append-version="true"></script> }
