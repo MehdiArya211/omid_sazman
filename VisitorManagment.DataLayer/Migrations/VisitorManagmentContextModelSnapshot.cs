@@ -71,6 +71,48 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("NotificationUsers");
                 });
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int").HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("Description").HasMaxLength(1000).HasColumnType("nvarchar(1000)");
+                    b.Property<bool>("IsActive").HasColumnType("bit");
+                    b.Property<bool>("IsDeleted").HasColumnType("bit");
+                    b.Property<string>("MeetingDate").IsRequired().HasMaxLength(10).HasColumnType("nvarchar(10)");
+                    b.Property<DateTime>("RegisteredAt").HasColumnType("datetime2");
+                    b.Property<int>("RegisteredByUserId").HasColumnType("int");
+                    b.Property<string>("StartTime").IsRequired().HasMaxLength(5).HasColumnType("nvarchar(5)");
+                    b.Property<int>("Status").HasColumnType("int");
+                    b.Property<string>("Title").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.HasKey("Id");
+                    b.ToTable("InspectionMeetings");
+                });
+
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeetingUnit", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int").HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int>("InspectionMeetingId").HasColumnType("int");
+                    b.Property<DateTime>("RegisteredAt").HasColumnType("datetime2");
+                    b.Property<int>("RegisteredByUserId").HasColumnType("int");
+                    b.Property<int>("UnitCode").HasColumnType("int");
+                    b.Property<string>("UnitTitle").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.HasKey("Id");
+                    b.HasIndex("InspectionMeetingId", "UnitCode").IsUnique();
+                    b.ToTable("InspectionMeetingUnits");
+                });
+
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionPerson", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int").HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int?>("BranchCode").HasColumnType("int"); b.Property<string>("BranchTitle").HasMaxLength(150).HasColumnType("nvarchar(150)");
+                    b.Property<string>("FirstName").IsRequired().HasMaxLength(100).HasColumnType("nvarchar(100)"); b.Property<bool>("IsActive").HasColumnType("bit"); b.Property<bool>("IsDeleted").HasColumnType("bit");
+                    b.Property<string>("JobDescription").HasMaxLength(250).HasColumnType("nvarchar(250)"); b.Property<string>("LastName").IsRequired().HasMaxLength(150).HasColumnType("nvarchar(150)");
+                    b.Property<string>("PersonalCode").IsRequired().HasMaxLength(10).HasColumnType("nvarchar(10)"); b.Property<int?>("RankCode").HasColumnType("int"); b.Property<string>("RankTitle").HasMaxLength(100).HasColumnType("nvarchar(100)");
+                    b.Property<int?>("RegionalCommandCode").HasColumnType("int"); b.Property<string>("RegionalCommandTitle").HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.Property<DateTime>("RegisteredAt").HasColumnType("datetime2"); b.Property<int>("RegisteredByUserId").HasColumnType("int");
+                    b.Property<int?>("UnitCode").HasColumnType("int"); b.Property<int?>("UnitDutyCode").HasColumnType("int"); b.Property<string>("UnitDutyTitle").HasMaxLength(200).HasColumnType("nvarchar(200)"); b.Property<string>("UnitTitle").HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.HasKey("Id"); b.HasIndex("PersonalCode").IsUnique(); b.ToTable("InspectionPeople");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.Permission", b =>
                 {
                     b.Property<int>("PermissionId")
@@ -1927,6 +1969,13 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Navigation("Notification");
                 });
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeetingUnit", b =>
+                {
+                    b.HasOne("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", "Meeting")
+                        .WithMany("Units").HasForeignKey("InspectionMeetingId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.Navigation("Meeting");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.Permission", b =>
                 {
                     b.HasOne("VisitorManagment.DataLayer.Entities.Permissions.Permission", null)
@@ -2237,6 +2286,11 @@ namespace VisitorManagment.DataLayer.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", b =>
+                {
+                    b.Navigation("Units");
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.Permission", b =>
