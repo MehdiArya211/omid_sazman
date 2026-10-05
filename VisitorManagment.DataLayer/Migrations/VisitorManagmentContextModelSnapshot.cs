@@ -71,6 +71,22 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("NotificationUsers");
                 });
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionAttendance", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int").HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("ConnectionId").IsRequired().HasMaxLength(100).HasColumnType("nvarchar(100)");
+                    b.Property<int>("DurationSeconds").HasColumnType("int");
+                    b.Property<string>("FullName").IsRequired().HasMaxLength(250).HasColumnType("nvarchar(250)");
+                    b.Property<int>("InspectionMeetingId").HasColumnType("int");
+                    b.Property<DateTime>("JoinedAt").HasColumnType("datetime2");
+                    b.Property<DateTime?>("LeftAt").HasColumnType("datetime2");
+                    b.Property<string>("PersonalCode").IsRequired().HasMaxLength(10).HasColumnType("nvarchar(10)");
+                    b.Property<string>("RankTitle").HasMaxLength(100).HasColumnType("nvarchar(100)");
+                    b.Property<int>("UnitCode").HasColumnType("int");
+                    b.Property<string>("UnitTitle").HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.HasKey("Id"); b.HasIndex("InspectionMeetingId", "PersonalCode"); b.ToTable("InspectionAttendances");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", b =>
                 {
                     b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int").HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -85,6 +101,13 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Property<string>("Title").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
                     b.HasKey("Id");
                     b.ToTable("InspectionMeetings");
+                });
+
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionAttendance", b =>
+                {
+                    b.HasOne("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", "Meeting")
+                        .WithMany("Attendances").HasForeignKey("InspectionMeetingId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.Navigation("Meeting");
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeetingUnit", b =>
@@ -2290,6 +2313,7 @@ namespace VisitorManagment.DataLayer.Migrations
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", b =>
                 {
+                    b.Navigation("Attendances");
                     b.Navigation("Units");
                 });
 
