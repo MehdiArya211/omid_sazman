@@ -94,6 +94,7 @@ namespace VisitorManagment.Web
             services.AddTransient<IUserAccessContextService, UserAccessContextService>();
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IWebApiService, WebApiService>();
+            services.AddTransient<IInspectionService, InspectionService>();
             services.AddTransient<IWorkFlowService, WorkFlowService>();
             services.AddTransient<ICartableService, CartableService>();
             services.AddTransient<IHameshService, HameshService>();
