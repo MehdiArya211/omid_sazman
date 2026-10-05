@@ -1,0 +1,25 @@
+@page
+@model VisitorManagment.Web.Pages.Admin.Inspection.Meetings.IndexModel
+@using VisitorManagment.DataLayer.Entities.Inspection
+@{ ViewData["Title"] = "ثبت جلسه بازرسی"; }
+<link rel="stylesheet" href="~/assets/css/inspection-management.css" />
+<div class="inspection-page" dir="rtl">
+ <div class="inspection-hero"><div><span class="inspection-kicker">مدیریت بازرسی</span><h2>ثبت جلسه</h2><p>زمان‌بندی جلسه و انتخاب یگان‌های دارای نفر ثبت‌شده</p></div><i class="ti-calendar"></i></div>
+ @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+ <div class="inspection-card"><form method="post" id="meetingForm"><div asp-validation-summary="ModelOnly" class="text-danger"></div>
+  <div class="inspection-grid"><div class="form-group"><label asp-for="Input.Title"></label><input asp-for="Input.Title" class="form-control" /><span asp-validation-for="Input.Title" class="text-danger"></span></div>
+  <div class="form-group"><label asp-for="Input.MeetingDate"></label><input asp-for="Input.MeetingDate" class="form-control" placeholder="1405/07/13" /><span asp-validation-for="Input.MeetingDate" class="text-danger"></span></div>
+  <div class="form-group"><label asp-for="Input.StartTime"></label><input asp-for="Input.StartTime" type="time" class="form-control" /><span asp-validation-for="Input.StartTime" class="text-danger"></span></div></div>
+  <div class="form-group"><label asp-for="Input.Description"></label><textarea asp-for="Input.Description" class="form-control" rows="3"></textarea></div>
+  <div class="inspection-unit-header"><div><h5>یگان‌های دعوت‌شده</h5><small>فقط یگان‌هایی نمایش داده می‌شوند که حداقل یک نفر ثبت‌شده دارند.</small></div><input id="unitSearch" class="form-control" placeholder="جستجوی یگان..." /></div>
+  <div class="inspection-unit-list" id="unitList">@foreach(var unit in Model.Units){<label class="inspection-unit"><input type="checkbox" name="Input.UnitCodes" value="@unit.UnitCode" checked="@(Model.Input.UnitCodes.Contains(unit.UnitCode) ? "checked" : null)" /><span><b>@unit.UnitTitle</b><small>کد @unit.UnitCode · @unit.PeopleCount نفر</small></span></label>}</div>
+  @if(Model.Units.Count == 0){<div class="inspection-empty">ابتدا از بخش «افزودن نفرات»، افراد یگان‌ها را ثبت کنید.</div>}
+  <label class="inspection-switch"><input asp-for="Input.Publish" /><span>جلسه پس از ثبت برای یگان‌ها قابل ورود باشد</span></label>
+  <button type="submit" class="btn btn-success inspection-action" @(Model.Units.Count == 0 ? "disabled" : null)><i class="ti-save"></i> ثبت جلسه</button>
+ </form></div>
+ <div class="inspection-card"><div class="inspection-card-title"><h4>جلسات ثبت‌شده</h4><span>@Model.Meetings.Count جلسه</span></div><div class="table-responsive"><table class="table table-hover inspection-table"><thead><tr><th>عنوان</th><th>تاریخ</th><th>ساعت</th><th>یگان‌ها</th><th>وضعیت</th></tr></thead><tbody>
+ @if(Model.Meetings.Count==0){<tr><td colspan="5" class="inspection-empty">جلسه‌ای ثبت نشده است.</td></tr>}
+ @foreach(var meeting in Model.Meetings){<tr><td>@meeting.Title</td><td>@meeting.MeetingDate</td><td>@meeting.StartTime</td><td>@meeting.Units.Count</td><td><span class="inspection-status">@(meeting.Status == InspectionMeetingStatus.Draft ? "پیش‌نویس" : meeting.Status == InspectionMeetingStatus.Published ? "منتشرشده" : meeting.Status.ToString())</span></td></tr>}
+ </tbody></table></div></div>
+</div>
+@section Scripts{<partial name="_ValidationScriptsPartial" /><script>document.getElementById('unitSearch').addEventListener('input',e=>{const q=e.target.value.trim();document.querySelectorAll('.inspection-unit').forEach(x=>x.hidden=!x.textContent.includes(q));});document.getElementById('meetingForm').addEventListener('submit',e=>{const b=e.currentTarget.querySelector('[type=submit]');if(e.currentTarget.checkValidity()){b.disabled=true;b.innerHTML='در حال ثبت...';}});</script>}
