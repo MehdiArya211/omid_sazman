@@ -53,4 +53,27 @@ namespace VisitorManagment.Core.DTOs.Inspection
         public static InspectionOperationResult Success(string message) => new InspectionOperationResult { IsSuccess = true, Message = message };
         public static InspectionOperationResult Failure(string message) => new InspectionOperationResult { Message = message };
     }
+
+    public class InspectionAttendanceSummaryViewModel
+    {
+        public string PersonalCode { get; set; }
+        public string FullName { get; set; }
+        public string RankTitle { get; set; }
+        public int UnitCode { get; set; }
+        public string UnitTitle { get; set; }
+        public int MeetingsCount { get; set; }
+        public int ConnectionsCount { get; set; }
+        public int TotalDurationSeconds { get; set; }
+        public List<InspectionAttendanceDetailViewModel> Details { get; set; } = new List<InspectionAttendanceDetailViewModel>();
+    }
+
+    public class InspectionAttendanceDetailViewModel
+    {
+        public int MeetingId { get; set; }
+        public string MeetingTitle { get; set; }
+        public string MeetingDate { get; set; }
+        public System.DateTime JoinedAt { get; set; }
+        public System.DateTime? LeftAt { get; set; }
+        public int DurationSeconds { get; set; }
+    }
 }
