@@ -97,6 +97,7 @@ namespace VisitorManagment.DataLayer.Context
         public DbSet<InspectionPerson> InspectionPeople { get; set; }
         public DbSet<InspectionMeeting> InspectionMeetings { get; set; }
         public DbSet<InspectionMeetingUnit> InspectionMeetingUnits { get; set; }
+        public DbSet<InspectionAttendance> InspectionAttendances { get; set; }
         #endregion
 
 
@@ -115,6 +116,13 @@ namespace VisitorManagment.DataLayer.Context
                 .HasOne(unit => unit.Meeting)
                 .WithMany(meeting => meeting.Units)
                 .HasForeignKey(unit => unit.InspectionMeetingId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<InspectionAttendance>()
+                .HasIndex(attendance => new { attendance.InspectionMeetingId, attendance.PersonalCode });
+            modelBuilder.Entity<InspectionAttendance>()
+                .HasOne(attendance => attendance.Meeting)
+                .WithMany(meeting => meeting.Attendances)
+                .HasForeignKey(attendance => attendance.InspectionMeetingId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<ChatMessage>()
                 .Property(message => message.ReplyToMessage)
