@@ -7,6 +7,7 @@ using VisitorManagment.DataLayer.Entities.Ranking;
 using VisitorManagment.DataLayer.Entities.SystemChatRoom;
 using VisitorManagment.DataLayer.Entities.NotificationInfo;
 using VisitorManagment.DataLayer.Entities;
+using VisitorManagment.DataLayer.Entities.Inspection;
 
 namespace VisitorManagment.DataLayer.Context
 {
@@ -92,12 +93,29 @@ namespace VisitorManagment.DataLayer.Context
 
         #endregion
 
+        #region مدیریت بازرسی
+        public DbSet<InspectionPerson> InspectionPeople { get; set; }
+        public DbSet<InspectionMeeting> InspectionMeetings { get; set; }
+        public DbSet<InspectionMeetingUnit> InspectionMeetingUnits { get; set; }
+        #endregion
+
 
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<InspectionPerson>()
+                .HasIndex(person => person.PersonalCode)
+                .IsUnique();
+            modelBuilder.Entity<InspectionMeetingUnit>()
+                .HasIndex(unit => new { unit.InspectionMeetingId, unit.UnitCode })
+                .IsUnique();
+            modelBuilder.Entity<InspectionMeetingUnit>()
+                .HasOne(unit => unit.Meeting)
+                .WithMany(meeting => meeting.Units)
+                .HasForeignKey(unit => unit.InspectionMeetingId)
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<ChatMessage>()
                 .Property(message => message.ReplyToMessage)
                 .HasMaxLength(180);
