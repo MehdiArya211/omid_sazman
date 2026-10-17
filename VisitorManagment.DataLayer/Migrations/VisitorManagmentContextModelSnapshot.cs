@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System;
 using VisitorManagment.DataLayer.Context;
 
 namespace VisitorManagment.DataLayer.Migrations
