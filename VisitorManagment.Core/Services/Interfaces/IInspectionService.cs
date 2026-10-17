@@ -14,8 +14,6 @@ namespace VisitorManagment.Core.Services.Interfaces
         IReadOnlyList<InspectionMeeting> GetMeetings();
         IReadOnlyList<InspectionMeeting> GetAvailableMeetings(int unitCode);
         bool CanUnitEnterMeeting(int meetingId, int unitCode);
-        InspectionOperationResult StartAttendance(int meetingId, string personalCode, string fullName, string rankTitle, int unitCode, string unitTitle, string connectionId);
-        void EndAttendance(string connectionId);
-        IReadOnlyList<InspectionAttendanceSummaryViewModel> GetAttendanceHistory(int? meetingId = null, string search = null);
+        IReadOnlyList<InspectionParticipationSummaryViewModel> GetParticipationHistory(int? meetingId = null, string search = null);
     }
 }
