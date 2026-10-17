@@ -16,6 +16,7 @@ namespace VisitorManagment.Web.Pages.Admin.Inspection.Meetings
         [BindProperty] public InspectionMeetingCreateViewModel Input { get; set; } = new InspectionMeetingCreateViewModel();
         public IReadOnlyList<InspectionUnitViewModel> Units { get; private set; }
         public IReadOnlyList<InspectionMeeting> Meetings { get; private set; }
+        public IReadOnlyList<InspectionPerson> People { get; private set; }
         public void OnGet() => LoadPage();
         public IActionResult OnPost()
         {
@@ -28,6 +29,6 @@ namespace VisitorManagment.Web.Pages.Admin.Inspection.Meetings
             ModelState.AddModelError(string.Empty, result.Message);
             return Page();
         }
-        private void LoadPage() { Units = _inspectionService.GetRegisteredUnits(); Meetings = _inspectionService.GetMeetings(); }
+        private void LoadPage() { Units = _inspectionService.GetRegisteredUnits(); People = _inspectionService.GetPeople(); Meetings = _inspectionService.GetMeetings(); }
     }
 }
