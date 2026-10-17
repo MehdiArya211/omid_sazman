@@ -20,6 +20,6 @@ namespace VisitorManagment.DataLayer.Entities.Inspection
         public DateTime RegisteredAt { get; set; }
         public int RegisteredByUserId { get; set; }
         public ICollection<InspectionMeetingUnit> Units { get; set; } = new List<InspectionMeetingUnit>();
-        public ICollection<InspectionAttendance> Attendances { get; set; } = new List<InspectionAttendance>();
+        public ICollection<InspectionMeetingPerson> People { get; set; } = new List<InspectionMeetingPerson>();
     }
 }
