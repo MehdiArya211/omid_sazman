@@ -1,0 +1,14 @@
+@page
+@model VisitorManagment.Web.Pages.Admin.Inspection.Participation.IndexModel
+@{ ViewData["Title"] = "سابقه شرکت در جلسات بازرسی"; }
+<link rel="stylesheet" href="~/assets/css/inspection-management.css" />
+<div class="inspection-page" dir="rtl">
+ <div class="inspection-hero"><div><span class="inspection-kicker">مدیریت بازرسی</span><h2>سابقه شرکت در جلسات</h2><p>تعداد دفعات ثبت هر نفر و تاریخ جلساتی که در آن‌ها شرکت داده شده است</p></div><i class="ti-time"></i></div>
+ <div class="inspection-card"><form method="get" class="inspection-grid inspection-attendance-filter"><div class="form-group"><label>جلسه</label><select name="meetingId" asp-items="Model.Meetings" class="form-control"><option value="">همه جلسات</option></select></div><div class="form-group"><label>جستجو</label><input name="search" value="@Model.Search" class="form-control" placeholder="کد پرسنلی، نام یا یگان" /></div><div class="form-group inspection-filter-actions"><button class="btn btn-info inspection-action"><i class="ti-search"></i> نمایش</button><a asp-page="./Index" class="btn btn-light inspection-action">پاک‌کردن فیلتر</a></div></form></div>
+ <div class="inspection-card"><div class="inspection-card-title"><h4>گزارش شرکت در جلسات</h4><span>@Model.History.Count نفر</span></div><div class="table-responsive"><table class="table table-hover inspection-table"><thead><tr><th>کد پرسنلی</th><th>نام و نام خانوادگی</th><th>درجه</th><th>یگان</th><th>تعداد دفعات شرکت</th><th>جزئیات</th></tr></thead><tbody>
+ @if(Model.History.Count==0){<tr><td colspan="6" class="inspection-empty">سابقه‌ای با این شرایط یافت نشد.</td></tr>}
+ @for(var index=0;index<Model.History.Count;index++){var person=Model.History[index];<tr><td>@person.PersonalCode</td><td>@person.FullName</td><td>@person.RankTitle</td><td>@person.UnitTitle</td><td><b>@person.MeetingsCount جلسه</b></td><td><button type="button" class="btn btn-sm btn-outline-info attendance-details-toggle" data-target="details-@index">مشاهده</button></td></tr>
+ <tr id="details-@index" class="attendance-details" hidden><td colspan="6"><div class="table-responsive"><table class="table table-sm"><thead><tr><th>عنوان جلسه</th><th>تاریخ جلسه</th><th>ساعت</th></tr></thead><tbody>@foreach(var detail in person.Details){<tr><td>@detail.MeetingTitle</td><td>@detail.MeetingDate</td><td>@detail.StartTime</td></tr>}</tbody></table></div></td></tr>}
+ </tbody></table></div></div>
+</div>
+@section Scripts { <script>document.querySelectorAll('.attendance-details-toggle').forEach(button=>button.addEventListener('click',()=>{const row=document.getElementById(button.dataset.target);row.hidden=!row.hidden;button.textContent=row.hidden?'مشاهده':'بستن';}));</script> }
