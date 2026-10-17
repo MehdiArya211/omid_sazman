@@ -37,6 +37,7 @@ namespace VisitorManagment.Core.DTOs.Inspection
         [Display(Name = "انتشار و قابل ورود")]
         public bool Publish { get; set; } = true;
         public List<int> UnitCodes { get; set; } = new List<int>();
+        public List<int> PersonIds { get; set; } = new List<int>();
     }
 
     public class InspectionUnitViewModel
@@ -54,7 +55,7 @@ namespace VisitorManagment.Core.DTOs.Inspection
         public static InspectionOperationResult Failure(string message) => new InspectionOperationResult { Message = message };
     }
 
-    public class InspectionAttendanceSummaryViewModel
+    public class InspectionParticipationSummaryViewModel
     {
         public string PersonalCode { get; set; }
         public string FullName { get; set; }
@@ -62,18 +63,15 @@ namespace VisitorManagment.Core.DTOs.Inspection
         public int UnitCode { get; set; }
         public string UnitTitle { get; set; }
         public int MeetingsCount { get; set; }
-        public int ConnectionsCount { get; set; }
-        public int TotalDurationSeconds { get; set; }
-        public List<InspectionAttendanceDetailViewModel> Details { get; set; } = new List<InspectionAttendanceDetailViewModel>();
+        public List<InspectionParticipationDetailViewModel> Details { get; set; } = new List<InspectionParticipationDetailViewModel>();
     }
 
-    public class InspectionAttendanceDetailViewModel
+    public class InspectionParticipationDetailViewModel
     {
         public int MeetingId { get; set; }
         public string MeetingTitle { get; set; }
         public string MeetingDate { get; set; }
-        public System.DateTime JoinedAt { get; set; }
-        public System.DateTime? LeftAt { get; set; }
-        public int DurationSeconds { get; set; }
+        public string StartTime { get; set; }
+        public System.DateTime RegisteredAt { get; set; }
     }
 }
