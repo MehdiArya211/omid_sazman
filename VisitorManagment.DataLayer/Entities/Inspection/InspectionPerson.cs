@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace VisitorManagment.DataLayer.Entities.Inspection
 {
@@ -25,5 +26,6 @@ namespace VisitorManagment.DataLayer.Entities.Inspection
         public bool IsDeleted { get; set; }
         public DateTime RegisteredAt { get; set; }
         public int RegisteredByUserId { get; set; }
+        public ICollection<InspectionMeetingPerson> Meetings { get; set; } = new List<InspectionMeetingPerson>();
     }
 }

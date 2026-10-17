@@ -97,7 +97,7 @@ namespace VisitorManagment.DataLayer.Context
         public DbSet<InspectionPerson> InspectionPeople { get; set; }
         public DbSet<InspectionMeeting> InspectionMeetings { get; set; }
         public DbSet<InspectionMeetingUnit> InspectionMeetingUnits { get; set; }
-        public DbSet<InspectionAttendance> InspectionAttendances { get; set; }
+        public DbSet<InspectionMeetingPerson> InspectionMeetingPeople { get; set; }
         #endregion
 
 
@@ -117,13 +117,12 @@ namespace VisitorManagment.DataLayer.Context
                 .WithMany(meeting => meeting.Units)
                 .HasForeignKey(unit => unit.InspectionMeetingId)
                 .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<InspectionAttendance>()
-                .HasIndex(attendance => new { attendance.InspectionMeetingId, attendance.PersonalCode });
-            modelBuilder.Entity<InspectionAttendance>()
-                .HasOne(attendance => attendance.Meeting)
-                .WithMany(meeting => meeting.Attendances)
-                .HasForeignKey(attendance => attendance.InspectionMeetingId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<InspectionMeetingPerson>()
+                .HasIndex(item => new { item.InspectionMeetingId, item.InspectionPersonId }).IsUnique();
+            modelBuilder.Entity<InspectionMeetingPerson>().HasOne(item => item.Meeting).WithMany(meeting => meeting.People)
+                .HasForeignKey(item => item.InspectionMeetingId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<InspectionMeetingPerson>().HasOne(item => item.Person).WithMany(person => person.Meetings)
+                .HasForeignKey(item => item.InspectionPersonId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<ChatMessage>()
                 .Property(message => message.ReplyToMessage)
                 .HasMaxLength(180);

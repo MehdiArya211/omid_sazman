@@ -36,8 +36,22 @@ namespace VisitorManagment.DataLayer.Migrations
                 UnitCode = table.Column<int>(nullable: false), UnitTitle = table.Column<string>(maxLength: 200, nullable: false), RegisteredAt = table.Column<DateTime>(nullable: false), RegisteredByUserId = table.Column<int>(nullable: false)
             }, constraints: table => { table.PrimaryKey("PK_InspectionMeetingUnits", x => x.Id); table.ForeignKey("FK_InspectionMeetingUnits_InspectionMeetings_InspectionMeetingId", x => x.InspectionMeetingId, "InspectionMeetings", "Id", onDelete: ReferentialAction.Cascade); });
 
+            migrationBuilder.CreateTable(name: "InspectionMeetingPeople", columns: table => new
+            {
+                Id = table.Column<int>(nullable: false).Annotation("SqlServer:Identity", "1, 1"),
+                InspectionMeetingId = table.Column<int>(nullable: false), InspectionPersonId = table.Column<int>(nullable: false),
+                RegisteredAt = table.Column<DateTime>(nullable: false), RegisteredByUserId = table.Column<int>(nullable: false)
+            }, constraints: table =>
+            {
+                table.PrimaryKey("PK_InspectionMeetingPeople", x => x.Id);
+                table.ForeignKey("FK_InspectionMeetingPeople_InspectionMeetings_InspectionMeetingId", x => x.InspectionMeetingId, "InspectionMeetings", "Id", onDelete: ReferentialAction.Cascade);
+                table.ForeignKey("FK_InspectionMeetingPeople_InspectionPeople_InspectionPersonId", x => x.InspectionPersonId, "InspectionPeople", "Id", onDelete: ReferentialAction.Restrict);
+            });
+
             migrationBuilder.CreateIndex("IX_InspectionPeople_PersonalCode", "InspectionPeople", "PersonalCode", unique: true);
             migrationBuilder.CreateIndex("IX_InspectionMeetingUnits_InspectionMeetingId_UnitCode", "InspectionMeetingUnits", new[] { "InspectionMeetingId", "UnitCode" }, unique: true);
+            migrationBuilder.CreateIndex("IX_InspectionMeetingPeople_InspectionMeetingId_InspectionPersonId", "InspectionMeetingPeople", new[] { "InspectionMeetingId", "InspectionPersonId" }, unique: true);
+            migrationBuilder.CreateIndex("IX_InspectionMeetingPeople_InspectionPersonId", "InspectionMeetingPeople", "InspectionPersonId");
 
             migrationBuilder.Sql(@"
 DECLARE @ParentId int;
@@ -50,6 +64,7 @@ END;
 IF NOT EXISTS (SELECT 1 FROM Permission WHERE MenuUrl='/Admin/Inspection/People') INSERT INTO Permission (PermissionTitle,ParentID,ParentUrl,SubUrl,[Order],ShowAll,IsActive,IconName,MenuUrl) VALUES (N'افزودن نفرات', @ParentId, '/Inspection', '/Admin/Inspection/People', 1, 0, 1, 'ti-user', '/Admin/Inspection/People');
 IF NOT EXISTS (SELECT 1 FROM Permission WHERE MenuUrl='/Admin/Inspection/Meetings') INSERT INTO Permission (PermissionTitle,ParentID,ParentUrl,SubUrl,[Order],ShowAll,IsActive,IconName,MenuUrl) VALUES (N'ثبت جلسه', @ParentId, '/Inspection', '/Admin/Inspection/Meetings', 2, 0, 1, 'ti-calendar', '/Admin/Inspection/Meetings');
 IF NOT EXISTS (SELECT 1 FROM Permission WHERE MenuUrl='/OnlineConversation/InspectionUserMeet') INSERT INTO Permission (PermissionTitle,ParentID,ParentUrl,SubUrl,[Order],ShowAll,IsActive,IconName,MenuUrl) VALUES (N'برگزاری جلسه', @ParentId, '/Inspection', '/OnlineConversation/InspectionUserMeet', 3, 0, 1, 'ti-video-camera', '/OnlineConversation/InspectionUserMeet');
+IF NOT EXISTS (SELECT 1 FROM Permission WHERE MenuUrl='/Admin/Inspection/Participation') INSERT INTO Permission (PermissionTitle,ParentID,ParentUrl,SubUrl,[Order],ShowAll,IsActive,IconName,MenuUrl) VALUES (N'سابقه شرکت نفرات', @ParentId, '/Inspection', '/Admin/Inspection/Participation', 4, 0, 1, 'ti-time', '/Admin/Inspection/Participation');
 
 INSERT INTO RolePermission (RoleId, PermissionId)
 SELECT r.RoleId, p.PermissionId FROM Roles r CROSS JOIN Permission p
@@ -62,6 +77,7 @@ AND NOT EXISTS (SELECT 1 FROM RolePermission rp WHERE rp.RoleId=r.RoleId AND rp.
         {
             migrationBuilder.Sql(@"DECLARE @ParentId int= (SELECT PermissionId FROM Permission WHERE MenuUrl='#inspection-management'); DELETE FROM RolePermission WHERE PermissionId=@ParentId OR PermissionId IN (SELECT PermissionId FROM Permission WHERE ParentID=@ParentId); DELETE FROM Permission WHERE ParentID=@ParentId; DELETE FROM Permission WHERE PermissionId=@ParentId;");
             migrationBuilder.DropTable("InspectionMeetingUnits");
+            migrationBuilder.DropTable("InspectionMeetingPeople");
             migrationBuilder.DropTable("InspectionPeople");
             migrationBuilder.DropTable("InspectionMeetings");
         }
