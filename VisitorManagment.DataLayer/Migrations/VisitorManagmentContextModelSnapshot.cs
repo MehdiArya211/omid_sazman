@@ -2,7 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
+// این alias وابستگی Snapshot به فضای نام Metadata را صریح نگه می‌دارد و از
+// خطای شناسایی نشدن SqlServerValueGenerationStrategy هنگام Build جلوگیری می‌کند.
+using SqlServerValueGenerationStrategy = Microsoft.EntityFrameworkCore.Metadata.SqlServerValueGenerationStrategy;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VisitorManagment.DataLayer.Context;
 
