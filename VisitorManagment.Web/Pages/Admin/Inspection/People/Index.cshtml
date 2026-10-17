@@ -18,8 +18,7 @@
         </form>
     </div>
     <div class="inspection-card"><div class="inspection-card-title"><h4>نفرات ثبت‌شده</h4><span>@Model.People.Count نفر</span></div>
-        <div class="table-responsive"><table class="table table-striped table-hover inspection-table"><thead><tr><th>کد پرسنلی</th><th>نام و نام خانوادگی</th><th>درجه</th><th>یگان</th><th>یگان خدمتی</th><th>شغل</th></tr></thead><tbody>
-        @if (Model.People.Count == 0) { <tr><td colspan="6" class="inspection-empty">هنوز فردی ثبت نشده است.</td></tr> }
+        <div class="table-responsive"><table id="inspectionPeopleTable" class="table table-striped table-hover inspection-table" data-datatable><thead><tr><th>کد پرسنلی</th><th>نام و نام خانوادگی</th><th>درجه</th><th>یگان</th><th>یگان خدمتی</th><th>شغل</th></tr></thead><tbody>
         @foreach (var person in Model.People) { <tr><td>@person.PersonalCode</td><td>@person.FirstName @person.LastName</td><td>@person.RankTitle</td><td>@person.UnitTitle</td><td>@person.UnitDutyTitle</td><td>@person.JobDescription</td></tr> }
         </tbody></table></div>
     </div>
