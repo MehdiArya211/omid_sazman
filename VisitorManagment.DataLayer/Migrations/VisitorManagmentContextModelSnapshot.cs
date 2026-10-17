@@ -71,20 +71,17 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("NotificationUsers");
                 });
 
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionAttendance", b =>
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeetingPerson", b =>
                 {
                     b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int").HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-                    b.Property<string>("ConnectionId").IsRequired().HasMaxLength(100).HasColumnType("nvarchar(100)");
-                    b.Property<int>("DurationSeconds").HasColumnType("int");
-                    b.Property<string>("FullName").IsRequired().HasMaxLength(250).HasColumnType("nvarchar(250)");
                     b.Property<int>("InspectionMeetingId").HasColumnType("int");
-                    b.Property<DateTime>("JoinedAt").HasColumnType("datetime2");
-                    b.Property<DateTime?>("LeftAt").HasColumnType("datetime2");
-                    b.Property<string>("PersonalCode").IsRequired().HasMaxLength(10).HasColumnType("nvarchar(10)");
-                    b.Property<string>("RankTitle").HasMaxLength(100).HasColumnType("nvarchar(100)");
-                    b.Property<int>("UnitCode").HasColumnType("int");
-                    b.Property<string>("UnitTitle").HasMaxLength(200).HasColumnType("nvarchar(200)");
-                    b.HasKey("Id"); b.HasIndex("InspectionMeetingId", "PersonalCode"); b.ToTable("InspectionAttendances");
+                    b.Property<int>("InspectionPersonId").HasColumnType("int");
+                    b.Property<DateTime>("RegisteredAt").HasColumnType("datetime2");
+                    b.Property<int>("RegisteredByUserId").HasColumnType("int");
+                    b.HasKey("Id");
+                    b.HasIndex("InspectionMeetingId", "InspectionPersonId").IsUnique();
+                    b.HasIndex("InspectionPersonId");
+                    b.ToTable("InspectionMeetingPeople");
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", b =>
@@ -103,11 +100,14 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("InspectionMeetings");
                 });
 
-            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionAttendance", b =>
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeetingPerson", b =>
                 {
                     b.HasOne("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", "Meeting")
-                        .WithMany("Attendances").HasForeignKey("InspectionMeetingId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                        .WithMany("People").HasForeignKey("InspectionMeetingId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.HasOne("VisitorManagment.DataLayer.Entities.Inspection.InspectionPerson", "Person")
+                        .WithMany("Meetings").HasForeignKey("InspectionPersonId").OnDelete(DeleteBehavior.Restrict).IsRequired();
                     b.Navigation("Meeting");
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeetingUnit", b =>
@@ -2313,8 +2313,13 @@ namespace VisitorManagment.DataLayer.Migrations
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionMeeting", b =>
                 {
-                    b.Navigation("Attendances");
+                    b.Navigation("People");
                     b.Navigation("Units");
+                });
+
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Inspection.InspectionPerson", b =>
+                {
+                    b.Navigation("Meetings");
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.Permissions.Permission", b =>
