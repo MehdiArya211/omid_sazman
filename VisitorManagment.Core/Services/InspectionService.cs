@@ -93,6 +93,11 @@ namespace VisitorManagment.Core.Services
             if (!selectedCodes.Any()) return InspectionOperationResult.Failure("حداقل یک یگان را انتخاب کنید.");
             var units = GetRegisteredUnits().Where(unit => selectedCodes.Contains(unit.UnitCode)).ToList();
             if (units.Count != selectedCodes.Count) return InspectionOperationResult.Failure("یک یا چند یگان انتخاب‌شده معتبر نیست.");
+            var selectedPersonIds = (model.PersonIds ?? new List<int>()).Where(id => id > 0).Distinct().ToList();
+            if (!selectedPersonIds.Any()) return InspectionOperationResult.Failure("حداقل یک نفر را برای جلسه انتخاب کنید.");
+            var people = _context.InspectionPeople.Where(person => selectedPersonIds.Contains(person.Id) && person.IsActive && !person.IsDeleted).ToList();
+            if (people.Count != selectedPersonIds.Count || people.Any(person => !person.UnitCode.HasValue || !selectedCodes.Contains(person.UnitCode.Value)))
+                return InspectionOperationResult.Failure("افراد انتخاب‌شده باید فعال و متعلق به یگان‌های انتخاب‌شده باشند.");
 
             using var transaction = _context.Database.BeginTransaction();
             var meeting = new InspectionMeeting
@@ -108,12 +113,17 @@ namespace VisitorManagment.Core.Services
                 InspectionMeetingId = meeting.Id, UnitCode = unit.UnitCode, UnitTitle = unit.UnitTitle,
                 RegisteredAt = DateTime.Now, RegisteredByUserId = userId
             }));
+            _context.InspectionMeetingPeople.AddRange(people.Select(person => new InspectionMeetingPerson
+            {
+                InspectionMeetingId = meeting.Id, InspectionPersonId = person.Id,
+                RegisteredAt = DateTime.Now, RegisteredByUserId = userId
+            }));
             _context.SaveChanges();
             transaction.Commit();
             return InspectionOperationResult.Success("جلسه و یگان‌های دعوت‌شده با موفقیت ثبت شدند.");
         }
 
-        public IReadOnlyList<InspectionMeeting> GetMeetings() => _context.InspectionMeetings.AsNoTracking().Include(x => x.Units)
+        public IReadOnlyList<InspectionMeeting> GetMeetings() => _context.InspectionMeetings.AsNoTracking().Include(x => x.Units).Include(x => x.People)
             .Where(x => !x.IsDeleted).OrderByDescending(x => x.Id).ToList();
 
         public IReadOnlyList<InspectionMeeting> GetAvailableMeetings(int unitCode) => _context.InspectionMeetings.AsNoTracking().Include(x => x.Units)
@@ -126,55 +136,23 @@ namespace VisitorManagment.Core.Services
                 && (x.Status == InspectionMeetingStatus.Published || x.Status == InspectionMeetingStatus.InProgress)
                 && x.Units.Any(unit => unit.UnitCode == unitCode));
 
-        public InspectionOperationResult StartAttendance(int meetingId, string personalCode, string fullName, string rankTitle, int unitCode, string unitTitle, string connectionId)
+        public IReadOnlyList<InspectionParticipationSummaryViewModel> GetParticipationHistory(int? meetingId = null, string search = null)
         {
-            if (!CanUnitEnterMeeting(meetingId, unitCode)) return InspectionOperationResult.Failure("دسترسی ورود به این جلسه برای یگان شما ثبت نشده است.");
-            if (string.IsNullOrWhiteSpace(personalCode) || string.IsNullOrWhiteSpace(connectionId)) return InspectionOperationResult.Failure("هویت کاربر برای ثبت حضور کامل نیست.");
-
-            // یک اتصال SignalR فقط یک رکورد حضور باز دارد؛ این شرط از ثبت تکراری کلیک جلوگیری می‌کند.
-            if (_context.InspectionAttendances.Any(x => x.ConnectionId == connectionId && x.LeftAt == null))
-                return InspectionOperationResult.Success("حضور قبلاً ثبت شده است.");
-
-            _context.InspectionAttendances.Add(new InspectionAttendance
-            {
-                InspectionMeetingId = meetingId, PersonalCode = NormalizeDigits(personalCode), FullName = string.IsNullOrWhiteSpace(fullName) ? personalCode : fullName.Trim(),
-                RankTitle = rankTitle?.Trim(), UnitCode = unitCode, UnitTitle = unitTitle?.Trim(), ConnectionId = connectionId,
-                JoinedAt = DateTime.Now
-            });
-            _context.SaveChanges();
-            return InspectionOperationResult.Success("حضور در جلسه ثبت شد.");
-        }
-
-        public void EndAttendance(string connectionId)
-        {
-            var now = DateTime.Now;
-            var openAttendances = _context.InspectionAttendances.Where(x => x.ConnectionId == connectionId && x.LeftAt == null).ToList();
-            foreach (var attendance in openAttendances)
-            {
-                attendance.LeftAt = now;
-                attendance.DurationSeconds = Math.Max(0, (int)(now - attendance.JoinedAt).TotalSeconds);
-            }
-            if (openAttendances.Any()) _context.SaveChanges();
-        }
-
-        public IReadOnlyList<InspectionAttendanceSummaryViewModel> GetAttendanceHistory(int? meetingId = null, string search = null)
-        {
-            var query = _context.InspectionAttendances.AsNoTracking().Include(x => x.Meeting).AsQueryable();
+            var query = _context.InspectionMeetingPeople.AsNoTracking().Include(x => x.Meeting).Include(x => x.Person).AsQueryable();
             if (meetingId.HasValue) query = query.Where(x => x.InspectionMeetingId == meetingId.Value);
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
-                query = query.Where(x => x.PersonalCode.Contains(search) || x.FullName.Contains(search) || x.UnitTitle.Contains(search));
+                query = query.Where(x => x.Person.PersonalCode.Contains(search) || (x.Person.FirstName + " " + x.Person.LastName).Contains(search) || x.Person.UnitTitle.Contains(search));
             }
-            var rows = query.OrderByDescending(x => x.JoinedAt).ToList();
-            return rows.GroupBy(x => new { x.PersonalCode, x.FullName, x.RankTitle, x.UnitCode, x.UnitTitle })
-                .Select(group => new InspectionAttendanceSummaryViewModel
+            var rows = query.OrderByDescending(x => x.Meeting.MeetingDate).ToList();
+            return rows.GroupBy(x => new { x.Person.PersonalCode, x.Person.FirstName, x.Person.LastName, x.Person.RankTitle, x.Person.UnitCode, x.Person.UnitTitle })
+                .Select(group => new InspectionParticipationSummaryViewModel
                 {
-                    PersonalCode = group.Key.PersonalCode, FullName = group.Key.FullName, RankTitle = group.Key.RankTitle,
-                    UnitCode = group.Key.UnitCode, UnitTitle = group.Key.UnitTitle,
-                    MeetingsCount = group.Select(x => x.InspectionMeetingId).Distinct().Count(), ConnectionsCount = group.Count(),
-                    TotalDurationSeconds = group.Sum(x => x.DurationSeconds),
-                    Details = group.Select(x => new InspectionAttendanceDetailViewModel { MeetingId = x.InspectionMeetingId, MeetingTitle = x.Meeting.Title, MeetingDate = x.Meeting.MeetingDate, JoinedAt = x.JoinedAt, LeftAt = x.LeftAt, DurationSeconds = x.DurationSeconds }).ToList()
+                    PersonalCode = group.Key.PersonalCode, FullName = (group.Key.FirstName + " " + group.Key.LastName).Trim(), RankTitle = group.Key.RankTitle,
+                    UnitCode = group.Key.UnitCode ?? 0, UnitTitle = group.Key.UnitTitle,
+                    MeetingsCount = group.Select(x => x.InspectionMeetingId).Distinct().Count(),
+                    Details = group.Select(x => new InspectionParticipationDetailViewModel { MeetingId = x.InspectionMeetingId, MeetingTitle = x.Meeting.Title, MeetingDate = x.Meeting.MeetingDate, StartTime = x.Meeting.StartTime, RegisteredAt = x.RegisteredAt }).ToList()
                 }).OrderByDescending(x => x.MeetingsCount).ThenBy(x => x.FullName).ToList();
         }
 
