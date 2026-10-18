@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.DataLayer.Entities.VisitorManagment;
 
 namespace VisitorManagment.Web.Hubs
@@ -13,6 +14,12 @@ namespace VisitorManagment.Web.Hubs
     public class NezRTCHub : Hub
     {
         private static RoomManager roomManager = new RoomManager();
+        private readonly IInspectionService _inspectionService;
+
+        public NezRTCHub(IInspectionService inspectionService)
+        {
+            _inspectionService = inspectionService;
+        }
 
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
@@ -51,6 +58,36 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>اتاق جلسه بازرسی را پس از کنترل یگان و مجوز ورود ایجاد می‌کند.</summary>
+        public async Task CreateInspectionRoom(int meetingId)
+        {
+            var unitCode = GetInspectionUnitCode();
+            if (meetingId <= 0 || !_inspectionService.CanUnitEnterMeeting(meetingId, unitCode))
+                throw new HubException("این جلسه برای یگان شما قابل ورود نیست.");
+
+            await CreateRoom(unitCode.ToString(), $"inspection-{meetingId}");
+        }
+
+        /// <summary>ورود به اتاق بازرسی را فقط برای جلسه و یگان مجاز انجام می‌دهد.</summary>
+        public async Task JoinInspectionRoom(string roomId, int meetingId)
+        {
+            var unitCode = GetInspectionUnitCode();
+            var meetingKey = $"inspection-{meetingId}";
+            if (meetingId <= 0 || !_inspectionService.CanUnitEnterMeeting(meetingId, unitCode))
+                throw new HubException("این جلسه برای یگان شما قابل ورود نیست.");
+            if (!roomManager.CanJoin(roomId, meetingKey, unitCode.ToString()))
+                throw new HubException("اتاق انتخاب‌شده دیگر معتبر یا در دسترس نیست.");
+
+            await Join(roomId);
+        }
+
+        private int GetInspectionUnitCode()
+        {
+            if (!int.TryParse(Context.User?.FindFirst("UnitCode")?.Value, out var unitCode) || unitCode <= 0)
+                throw new HubException("یگان کاربر مشخص نیست.");
+            return unitCode;
+        }
+
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
         /// </summary>
@@ -73,7 +110,16 @@ namespace VisitorManagment.Web.Hubs
         /// </summary>
         public async Task LeaveRoom(string roomId)
         {
-            await Clients.Group(roomId).SendAsync("bye");
+            if (string.IsNullOrWhiteSpace(roomId)) return;
+
+            // پیام پایان تماس فقط برای طرف مقابل ارسال می‌شود تا کلاینت خروج‌کننده
+            // هم‌زمان دو بار عملیات پاک‌سازی را اجرا نکند.
+            await Clients.OthersInGroup(roomId).SendAsync("bye");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+
+            // فقط میزبان اجازه حذف اتاق را دارد؛ خروج مهمان نباید اتاق میزبان را پاک کند.
+            if (roomManager.DeleteRoom(roomId, Context.ConnectionId))
+                await NotifyRoomInfoAsync(false);
         }
 
         /// <summary>
@@ -322,12 +368,30 @@ namespace VisitorManagment.Web.Hubs
             }
         }
 
+        /// <summary>اتاق را فقط زمانی حذف می‌کند که درخواست از اتصال میزبان همان اتاق آمده باشد.</summary>
+        public bool DeleteRoom(string roomId, string connectionId)
+        {
+            if (!int.TryParse(roomId, out var parsedRoomId)) return false;
+            if (!rooms.TryGetValue(parsedRoomId, out var room)) return false;
+            if (!string.Equals(room.HostConnectionId, connectionId, StringComparison.Ordinal)) return false;
+            return rooms.TryRemove(parsedRoomId, out _);
+        }
+
         /// <summary>
         /// اطلاعات موردنیاز را دریافت می‌کند.
         /// </summary>
         public List<RoomInfo> GetAllRoomInfo()
         {
             return rooms.Values.ToList();
+        }
+
+        /// <summary>تطابق اتاق، جلسه و یگان مهمان را پیش از ورود کنترل می‌کند.</summary>
+        public bool CanJoin(string roomId, string meetId, string guestUnitCode)
+        {
+            if (!int.TryParse(roomId, out var parsedRoomId)) return false;
+            if (!rooms.TryGetValue(parsedRoomId, out var room)) return false;
+            return string.Equals(room.MeetId, meetId, StringComparison.Ordinal)
+                && !string.Equals(room.PersonalCode, guestUnitCode, StringComparison.Ordinal);
         }
     }
 

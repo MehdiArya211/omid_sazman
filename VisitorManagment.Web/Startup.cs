@@ -185,10 +185,9 @@ namespace VisitorManagment.Web
                 endpoints.MapRazorPages();
                 //برای برقراری ارتباط بین فایل جی اس وب ار تی سی و کلاس هاب
                 
-            endpoints.MapHub<Hubs.NezRTCHub>("/NezRTCHub", options =>
-                {
-                    options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
-                });
+                // SignalR در صورت در دسترس نبودن WebSocket به‌صورت خودکار از
+                // Server-Sent Events یا Long Polling استفاده می‌کند.
+                endpoints.MapHub<Hubs.NezRTCHub>("/NezRTCHub");
 
                 endpoints.MapHub<SiteChatHub>("/chathub");
                 endpoints.MapHub<SupportHub>("/supporthub");
