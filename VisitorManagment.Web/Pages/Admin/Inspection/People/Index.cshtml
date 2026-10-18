@@ -20,8 +20,9 @@
         </form>
     </div>
     <div class="inspection-card"><div class="inspection-card-title"><h4>نفرات ثبت‌شده</h4><span>@Model.People.Count نفر</span></div>
-        <div class="table-responsive"><table id="inspectionPeopleTable" class="table table-striped table-hover inspection-table" data-datatable><thead><tr><th>کد پرسنلی</th><th>نام و نام خانوادگی</th><th>درجه</th><th>یگان</th><th>یگان خدمتی</th><th>شغل</th></tr></thead><tbody>
-        @foreach (var person in Model.People) { <tr><td>@person.PersonalCode</td><td>@person.FirstName @person.LastName</td><td>@person.RankTitle</td><td>@person.UnitTitle</td><td>@person.UnitDutyTitle</td><td>@person.JobDescription</td></tr> }
+        <div class="table-responsive"><table id="inspectionPeopleTable" class="table table-striped table-hover inspection-table" data-datatable><thead><tr><th>ردیف</th><th>کد پرسنلی</th><th>نام و نام خانوادگی</th><th>درجه</th><th>یگان</th><th>یگان خدمتی</th><th>شغل</th><th>عملیات</th></tr></thead><tbody>
+        @{ var rowNumber = 0; }
+        @foreach (var person in Model.People) { rowNumber++; <tr><td>@rowNumber</td><td>@person.PersonalCode</td><td>@person.FirstName @person.LastName</td><td>@person.RankTitle</td><td>@person.UnitTitle</td><td>@person.UnitDutyTitle</td><td>@person.JobDescription</td><td><button type="button" class="btn btn-sm btn-outline-danger inspection-delete-person" data-person-id="@person.Id"><i class="ti-trash"></i> حذف</button></td></tr> }
         </tbody></table></div>
     </div>
 </div>
@@ -30,6 +31,9 @@
 (() => {
  const input=document.getElementById('personalCode'), button=document.getElementById('lookupPerson'), result=document.getElementById('personResult'), save=document.getElementById('savePerson'), form=document.getElementById('personForm'), message=document.getElementById('personOperationMessage'), count=document.querySelector('.inspection-card-title span');
  const encode=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+ const token=()=>form.querySelector('input[name="__RequestVerificationToken"]')?.value||'';
+ const table=()=>window.jQuery&&jQuery.fn.DataTable?jQuery('#inspectionPeopleTable').DataTable():null;
+ const refreshTable=people=>{const instance=table();if(!instance)return;instance.clear();instance.rows.add(people.map((person,index)=>[index+1,encode(person.personalCode),encode(person.fullName),encode(person.rankTitle||'-'),encode(person.unitTitle||'-'),encode(person.unitDutyTitle||'-'),encode(person.jobDescription||'-'),`<button type="button" class="btn btn-sm btn-outline-danger inspection-delete-person" data-person-id="${Number(person.id)}"><i class="ti-trash"></i> حذف</button>`]));instance.draw(false);count.textContent=`${people.length} نفر`;};
  button.addEventListener('click', async () => {
    save.disabled=true; result.classList.remove('d-none'); result.innerHTML='<span class="text-muted">در حال دریافت اطلاعات...</span>';
    try { const response=await fetch(`?handler=Lookup&personalCode=${encodeURIComponent(input.value)}`,{headers:{'X-Requested-With':'XMLHttpRequest'}}); const data=await response.json();
@@ -47,12 +51,18 @@
      const response=await fetch('?handler=Register',{method:'POST',body:new FormData(form),headers:{'X-Requested-With':'XMLHttpRequest'}});
      const data=await response.json();
      if(!response.ok||!data.isSuccess){message.innerHTML=`<div class="alert alert-danger">${encode(data.message||'ثبت فرد انجام نشد.')}</div>`;return;}
-     const table=window.jQuery&&jQuery.fn.DataTable?jQuery('#inspectionPeopleTable').DataTable():null;
-     if(table){table.clear();table.rows.add(data.people.map(person=>[encode(person.personalCode),encode(person.fullName),encode(person.rankTitle||'-'),encode(person.unitTitle||'-'),encode(person.unitDutyTitle||'-'),encode(person.jobDescription||'-')]));table.draw(false);}
-     count.textContent=`${data.people.length} نفر`; message.innerHTML=`<div class="alert alert-success">${encode(data.message)}</div>`;
+     refreshTable(data.people); message.innerHTML=`<div class="alert alert-success">${encode(data.message)}</div>`;
      registered=true; input.value=''; result.classList.add('d-none'); result.innerHTML='';
    }catch{message.innerHTML='<div class="alert alert-danger">ارتباط با سرور برقرار نشد؛ دوباره تلاش کنید.</div>';}
    finally{save.disabled=registered;save.innerHTML=original;}
+ });
+ document.getElementById('inspectionPeopleTable').addEventListener('click',async event=>{
+   const deleteButton=event.target.closest('.inspection-delete-person');if(!deleteButton)return;
+   const confirmed=window.Swal?await Swal.fire({title:'حذف فرد؟',text:'سوابق حضور او در جلسات قبلی باقی می‌ماند.',icon:'warning',showCancelButton:true,confirmButtonText:'بله، حذف شود',cancelButtonText:'انصراف'}).then(x=>x.isConfirmed):window.confirm('فرد از فهرست فعال حذف شود؟');
+   if(!confirmed)return;deleteButton.disabled=true;
+   const body=new FormData();body.append('id',deleteButton.dataset.personId);body.append('__RequestVerificationToken',token());
+   try{const response=await fetch('?handler=DeletePerson',{method:'POST',body,headers:{'X-Requested-With':'XMLHttpRequest'}});const data=await response.json();if(!response.ok||!data.isSuccess)throw new Error(data.message||'حذف انجام نشد.');refreshTable(data.people);message.innerHTML=`<div class="alert alert-success">${encode(data.message)}</div>`;}
+   catch(error){deleteButton.disabled=false;message.innerHTML=`<div class="alert alert-danger">${encode(error.message||'ارتباط با سرور برقرار نشد.')}</div>`;}
  });
 })();
 </script> }

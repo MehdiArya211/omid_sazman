@@ -14,6 +14,15 @@
     const remoteVideo = document.getElementById('remoteInspectionVideo');
     const roomList = document.getElementById('roomList');
     const placeholder = document.getElementById('callPlaceholder');
+    const testButton = document.getElementById('testInspectionMedia');
+    const mediaTest = document.getElementById('inspectionMediaTest');
+    const mediaTestVideo = document.getElementById('inspectionMediaTestVideo');
+    const confirmMediaButton = document.getElementById('confirmInspectionMedia');
+    const cancelMediaButton = document.getElementById('cancelInspectionMedia');
+    const audioMeterFill = document.getElementById('inspectionAudioMeterFill');
+    const callMessage = document.getElementById('inspectionCallMessage');
+    const fullscreenButton = document.getElementById('toggleInspectionFullscreen');
+    const videoStage = document.getElementById('inspectionVideoStage');
 
     if (typeof signalR === 'undefined') {
         state.textContent = 'کتابخانه ارتباطی بارگذاری نشد';
@@ -31,11 +40,17 @@
     let isStartingRoom = false;
     let reconnectTimer = null;
     let pendingCandidates = [];
+    let audioContext = null;
+    let audioMeterFrame = null;
 
     const isSignalRConnected = () => connection.state === signalR.HubConnectionState.Connected;
     const notify = (message, level) => {
         if (window.toastr && typeof toastr[level || 'info'] === 'function') toastr[level || 'info'](message);
         else window.alert(message);
+    };
+    const setCallMessage = (message, level) => {
+        callMessage.textContent = message;
+        callMessage.className = `inspection-call-message is-${level || 'info'}`;
     };
 
     function setConnectionState(connected, message) {
@@ -72,17 +87,72 @@
             placeholder.hidden = true;
             micButton.disabled = false;
             cameraButton.disabled = false;
+            setCallMessage('دوربین و میکروفن آماده‌اند.', 'success');
             return true;
         } catch (error) {
             const denied = error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError');
             notify(denied
                 ? 'دسترسی دوربین و میکروفن رد شده است. دسترسی مرورگر را فعال و دوباره تلاش کنید.'
                 : 'دوربین یا میکروفن در دسترس نیست. اتصال دستگاه و استفاده نشدن آن در برنامه دیگر را بررسی کنید.', 'error');
+            setCallMessage(denied ? 'مجوز دوربین و میکروفن داده نشد.' : 'دوربین یا میکروفن در دسترس نیست.', 'danger');
             return false;
         }
     }
 
+    function stopAudioMeter() {
+        if (audioMeterFrame) cancelAnimationFrame(audioMeterFrame);
+        audioMeterFrame = null;
+        if (audioContext) audioContext.close().catch(() => {});
+        audioContext = null;
+        audioMeterFill.style.width = '0%';
+    }
+
+    function startAudioMeter() {
+        stopAudioMeter();
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioTrack = localStream && localStream.getAudioTracks()[0];
+        if (!AudioContext || !audioTrack) return;
+        audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        audioContext.createMediaStreamSource(new MediaStream([audioTrack])).connect(analyser);
+        const values = new Uint8Array(analyser.frequencyBinCount);
+        const draw = () => {
+            analyser.getByteFrequencyData(values);
+            const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+            audioMeterFill.style.width = `${Math.min(100, average * 1.6)}%`;
+            audioMeterFrame = requestAnimationFrame(draw);
+        };
+        draw();
+    }
+
+    async function openMediaTest() {
+        testButton.disabled = true;
+        setCallMessage('در حال دریافت مجوز دوربین و میکروفن...', 'info');
+        try {
+            if (!await ensureMedia()) return;
+            mediaTestVideo.srcObject = localStream;
+            await mediaTestVideo.play().catch(() => {});
+            mediaTest.hidden = false;
+            startAudioMeter();
+        } finally { testButton.disabled = false; }
+    }
+
+    function closeMediaTest(stopTracks) {
+        mediaTest.hidden = true;
+        mediaTestVideo.srcObject = null;
+        stopAudioMeter();
+        if (stopTracks && !roomId) {
+            stopLocalMedia();
+            micButton.disabled = true;
+            cameraButton.disabled = true;
+            placeholder.hidden = false;
+            setCallMessage('تست تجهیزات بسته شد.', 'info');
+        } else if (localStream) setCallMessage('تجهیزات تأیید شدند؛ اکنون وارد جلسه شوید.', 'success');
+    }
+
     function stopLocalMedia() {
+        stopAudioMeter();
         if (localStream) localStream.getTracks().forEach(track => track.stop());
         localStream = null;
         localVideo.srcObject = null;
@@ -97,6 +167,7 @@
         peer.close();
         peer = null;
         remoteVideo.srcObject = null;
+        fullscreenButton.disabled = true;
     }
 
     function resetCallUi() {
@@ -110,6 +181,8 @@
         micButton.classList.remove('is-muted');
         cameraButton.classList.remove('is-muted');
         placeholder.hidden = false;
+        closeMediaTest(false);
+        setCallMessage('تماس پایان یافت. برای ورود مجدد جلسه را انتخاب کنید.', 'info');
         setStartBusy(false);
     }
 
@@ -133,6 +206,8 @@
             if (stream) {
                 remoteVideo.srcObject = stream;
                 remoteVideo.play().catch(() => {});
+                fullscreenButton.disabled = false;
+                setCallMessage('ارتباط تصویری برقرار شد.', 'success');
             }
         };
         peer.onicecandidate = event => {
@@ -204,6 +279,7 @@
             document.querySelectorAll('.inspection-meeting-item').forEach(item => item.classList.remove('active'));
             button.classList.add('active');
             selectedMeetingId = requestedMeetingId;
+            setCallMessage('جلسه انتخاب شد؛ می‌توانید تجهیزات را تست یا وارد جلسه شوید.', 'success');
             setConnectionState(isSignalRConnected());
             await refreshRooms();
         } catch {
@@ -223,17 +299,30 @@
         }
 
         setStartBusy(true);
+        setCallMessage('در حال ایجاد اتاق و ورود به جلسه...', 'info');
         try {
             if (!await ensureMedia()) return;
             isInitiator = true;
             await connection.invoke('CreateInspectionRoom', Number(selectedMeetingId));
-        } catch {
+        } catch (error) {
             resetCallUi();
+            setCallMessage('ایجاد اتاق انجام نشد؛ اتصال سرور و دسترسی جلسه را بررسی کنید.', 'danger');
             notify('ایجاد اتاق جلسه انجام نشد. دوباره تلاش کنید.', 'error');
         } finally {
             if (!roomId) setStartBusy(false);
         }
     });
+
+    testButton.addEventListener('click', openMediaTest);
+    confirmMediaButton.addEventListener('click', () => closeMediaTest(false));
+    cancelMediaButton.addEventListener('click', () => closeMediaTest(true));
+    fullscreenButton.addEventListener('click', async () => {
+        try {
+            if (document.fullscreenElement) await document.exitFullscreen();
+            else await videoStage.requestFullscreen();
+        } catch { notify('نمایش تمام‌صفحه در این مرورگر در دسترس نیست.', 'warning'); }
+    });
+    remoteVideo.addEventListener('dblclick', () => fullscreenButton.click());
 
     leaveButton.addEventListener('click', () => closeCall(true));
     micButton.addEventListener('click', () => {
@@ -255,12 +344,14 @@
         setStartBusy(false);
         startButton.disabled = true;
         leaveButton.disabled = false;
+        setCallMessage('اتاق ایجاد شد؛ در انتظار ورود طرف مقابل...', 'success');
     });
     connection.on('joined', id => {
         roomId = String(id);
         isInitiator = false;
         leaveButton.disabled = false;
         startButton.disabled = true;
+        setCallMessage('وارد اتاق شدید؛ در حال برقراری ارتباط تصویری...', 'success');
     });
     connection.on('ready', async id => {
         if (String(id) !== String(roomId) || !isInitiator) return;

@@ -11,9 +11,12 @@
   </div></aside>
   <main class="inspection-call-panel">
    <div id="callPlaceholder" class="inspection-call-placeholder"><i class="ti-video-camera"></i><h3>جلسه را انتخاب کنید</h3><p>دوربین فقط پس از انتخاب جلسه و تأیید شما فعال می‌شود.</p></div>
-   <div class="inspection-videos"><video id="remoteInspectionVideo" autoplay playsinline></video><video id="localInspectionVideo" autoplay muted playsinline></video></div>
+   <div class="inspection-videos" id="inspectionVideoStage"><video id="remoteInspectionVideo" autoplay playsinline></video><video id="localInspectionVideo" autoplay muted playsinline></video><button type="button" id="toggleInspectionFullscreen" class="btn btn-light inspection-fullscreen" disabled title="نمایش تمام‌صفحه"><i class="ti-fullscreen"></i></button></div>
+   <div id="inspectionMediaTest" class="inspection-media-test" hidden><div class="inspection-media-test-card"><h4>تست صدا و تصویر</h4><p>تصویر خودتان و حرکت نوار صدا را بررسی کنید.</p><video id="inspectionMediaTestVideo" autoplay muted playsinline></video><div class="inspection-audio-meter"><span id="inspectionAudioMeterFill"></span></div><div class="inspection-inline-actions"><button type="button" id="confirmInspectionMedia" class="btn btn-success">تأیید تجهیزات</button><button type="button" id="cancelInspectionMedia" class="btn btn-light">بستن تست</button></div></div></div>
    <div id="roomList" class="inspection-room-list"></div>
+   <div id="inspectionCallMessage" class="inspection-call-message" aria-live="polite">ابتدا جلسه را انتخاب و تجهیزات خود را تست کنید.</div>
    <div class="inspection-call-controls">
+    <button type="button" id="testInspectionMedia" class="btn btn-outline-light inspection-action"><i class="ti-settings"></i> تست صدا و تصویر</button>
     <button type="button" id="startInspectionRoom" class="btn btn-success inspection-action" disabled><i class="ti-video-camera"></i> ایجاد/ورود به جلسه</button>
     <button type="button" id="toggleInspectionMic" class="btn btn-light inspection-round" disabled aria-label="قطع و وصل میکروفن"><i class="ti-microphone"></i></button>
     <button type="button" id="toggleInspectionCamera" class="btn btn-light inspection-round" disabled aria-label="قطع و وصل دوربین"><i class="ti-video-camera"></i></button>
