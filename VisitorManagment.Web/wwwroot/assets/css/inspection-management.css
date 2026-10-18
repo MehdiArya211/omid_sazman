@@ -16,3 +16,6 @@
 .inspection-call-placeholder{inset:18px 18px 114px;pointer-events:none}
 .inspection-call-controls,.inspection-room-list,.inspection-call-message{position:relative;z-index:4;pointer-events:auto}
 .inspection-media-test{pointer-events:auto}
+.inspection-device-selectors{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end;margin:14px 0;text-align:right}.inspection-device-selectors label{display:block;margin-bottom:5px;color:var(--inspection-dark);font-weight:600}.inspection-device-selectors .btn{height:42px;min-width:44px;padding:0!important}
+.inspection-media-test-card{max-height:100%;overflow:auto}
+@media(max-width:600px){.inspection-device-selectors{grid-template-columns:1fr}.inspection-device-selectors .btn{width:100%}}
