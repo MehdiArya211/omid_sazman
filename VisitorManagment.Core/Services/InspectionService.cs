@@ -80,6 +80,17 @@ namespace VisitorManagment.Core.Services
         public IReadOnlyList<InspectionPerson> GetPeople() => _context.InspectionPeople.AsNoTracking()
             .Where(x => !x.IsDeleted).OrderBy(x => x.UnitTitle).ThenBy(x => x.LastName).ToList();
 
+        /// <summary>فرد را بدون حذف سوابق حضور، از فهرست فعال بازرسی خارج می‌کند.</summary>
+        public InspectionOperationResult DeletePerson(int personId)
+        {
+            var person = _context.InspectionPeople.FirstOrDefault(x => x.Id == personId && !x.IsDeleted);
+            if (person == null) return InspectionOperationResult.Failure("فرد موردنظر یافت نشد.");
+            person.IsDeleted = true;
+            person.IsActive = false;
+            _context.SaveChanges();
+            return InspectionOperationResult.Success("فرد از فهرست فعال بازرسی حذف شد؛ سوابق جلسات او محفوظ است.");
+        }
+
         public IReadOnlyList<InspectionUnitViewModel> GetRegisteredUnits() => _context.InspectionPeople.AsNoTracking()
             .Where(x => !x.IsDeleted && x.IsActive && x.UnitCode.HasValue)
             .GroupBy(x => new { UnitCode = x.UnitCode.Value, x.UnitTitle })
@@ -125,6 +136,35 @@ namespace VisitorManagment.Core.Services
 
         public IReadOnlyList<InspectionMeeting> GetMeetings() => _context.InspectionMeetings.AsNoTracking().Include(x => x.Units).Include(x => x.People)
             .Where(x => !x.IsDeleted).OrderByDescending(x => x.Id).ToList();
+
+        /// <summary>اعضای یک جلسه را با حفظ خود جلسه و سوابق سایر جلسات به‌روزرسانی می‌کند.</summary>
+        public InspectionOperationResult UpdateMeetingPeople(int meetingId, IEnumerable<int> personIds, int userId)
+        {
+            var meeting = _context.InspectionMeetings.Include(x => x.Units).Include(x => x.People)
+                .FirstOrDefault(x => x.Id == meetingId && !x.IsDeleted);
+            if (meeting == null) return InspectionOperationResult.Failure("جلسه موردنظر یافت نشد.");
+
+            var selectedIds = (personIds ?? Enumerable.Empty<int>()).Where(id => id > 0).Distinct().ToList();
+            if (!selectedIds.Any()) return InspectionOperationResult.Failure("حداقل یک نفر را برای جلسه انتخاب کنید.");
+            var unitCodes = meeting.Units.Select(x => x.UnitCode).ToHashSet();
+            var selectedPeople = _context.InspectionPeople
+                .Where(x => selectedIds.Contains(x.Id) && x.IsActive && !x.IsDeleted).ToList();
+            if (selectedPeople.Count != selectedIds.Count || selectedPeople.Any(x => !x.UnitCode.HasValue || !unitCodes.Contains(x.UnitCode.Value)))
+                return InspectionOperationResult.Failure("فقط افراد فعال یگان‌های دعوت‌شده قابل انتخاب هستند.");
+
+            var removed = meeting.People.Where(x => !selectedIds.Contains(x.InspectionPersonId)).ToList();
+            if (removed.Any()) _context.InspectionMeetingPeople.RemoveRange(removed);
+            var existingIds = meeting.People.Select(x => x.InspectionPersonId).ToHashSet();
+            _context.InspectionMeetingPeople.AddRange(selectedIds.Where(id => !existingIds.Contains(id)).Select(id => new InspectionMeetingPerson
+            {
+                InspectionMeetingId = meeting.Id,
+                InspectionPersonId = id,
+                RegisteredAt = DateTime.Now,
+                RegisteredByUserId = userId
+            }));
+            _context.SaveChanges();
+            return InspectionOperationResult.Success("نفرات جلسه با موفقیت به‌روزرسانی شدند.");
+        }
 
         public IReadOnlyList<InspectionMeeting> GetAvailableMeetings(int unitCode) => _context.InspectionMeetings.AsNoTracking().Include(x => x.Units)
             .Where(x => !x.IsDeleted && x.IsActive && (x.Status == InspectionMeetingStatus.Published || x.Status == InspectionMeetingStatus.InProgress)
