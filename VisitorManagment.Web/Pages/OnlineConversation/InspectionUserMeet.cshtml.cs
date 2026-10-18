@@ -19,7 +19,7 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
 
         public IActionResult OnGet()
         {
-            if (!int.TryParse(User.FindFirst("UnitCode")?.Value, out var unitCode)) return Forbid();
+            if (!int.TryParse(User.FindFirst("UnitCode")?.Value, out var unitCode) || unitCode <= 0) return Forbid();
             UnitCode = unitCode;
             UnitTitle = User.FindFirst("UnitCodeTitle")?.Value ?? $"یگان {unitCode}";
             Meetings = _inspectionService.GetAvailableMeetings(unitCode);
@@ -28,8 +28,11 @@ namespace VisitorManagment.Web.Pages.OnlineConversation
 
         public JsonResult OnGetValidateMeeting(int meetingId)
         {
-            var validUnit = int.TryParse(User.FindFirst("UnitCode")?.Value, out var unitCode);
-            return new JsonResult(new { isAllowed = validUnit && _inspectionService.CanUnitEnterMeeting(meetingId, unitCode) });
+            var validUnit = int.TryParse(User.FindFirst("UnitCode")?.Value, out var unitCode) && unitCode > 0;
+            return new JsonResult(new
+            {
+                isAllowed = meetingId > 0 && validUnit && _inspectionService.CanUnitEnterMeeting(meetingId, unitCode)
+            });
         }
     }
 }
