@@ -23,6 +23,9 @@
     const callMessage = document.getElementById('inspectionCallMessage');
     const fullscreenButton = document.getElementById('toggleInspectionFullscreen');
     const videoStage = document.getElementById('inspectionVideoStage');
+    const cameraSelect = document.getElementById('inspectionCameraSelect');
+    const microphoneSelect = document.getElementById('inspectionMicrophoneSelect');
+    const refreshDevicesButton = document.getElementById('refreshInspectionDevices');
 
     if (typeof signalR === 'undefined') {
         state.textContent = 'کتابخانه ارتباطی بارگذاری نشد';
@@ -73,17 +76,54 @@
         await connection.invoke('SendMessage', roomId, payload);
     }
 
-    async function ensureMedia() {
-        if (localStream && localStream.active) return true;
+    function selectedDeviceConstraints() {
+        return {
+            video: cameraSelect.value ? { deviceId: { exact: cameraSelect.value } } : true,
+            audio: microphoneSelect.value ? { deviceId: { exact: microphoneSelect.value } } : true
+        };
+    }
+
+    async function loadMediaDevices() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const previousCamera = cameraSelect.value || sessionStorage.getItem('inspection-camera-id') || '';
+        const previousMicrophone = microphoneSelect.value || sessionStorage.getItem('inspection-microphone-id') || '';
+        const fill = (select, items, prefix, selectedId) => {
+            select.innerHTML = '';
+            items.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `${prefix} ${index + 1}`;
+                option.selected = !!selectedId && device.deviceId === selectedId;
+                select.appendChild(option);
+            });
+            if (!items.length) {
+                const option = document.createElement('option');
+                option.textContent = `${prefix} یافت نشد`;
+                option.value = '';
+                select.appendChild(option);
+            }
+        };
+        fill(cameraSelect, devices.filter(device => device.kind === 'videoinput'), 'دوربین', previousCamera);
+        fill(microphoneSelect, devices.filter(device => device.kind === 'audioinput'), 'میکروفن', previousMicrophone);
+    }
+
+    async function ensureMedia(forceNewStream) {
+        if (localStream && localStream.active && !forceNewStream) return true;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             notify('مرورگر یا بستر فعلی امکان دسترسی به دوربین و میکروفن را ندارد. صفحه را با HTTPS باز کنید.', 'error');
             return false;
         }
 
         try {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (!cameraSelect.options.length || !microphoneSelect.options.length) await loadMediaDevices();
+            if (forceNewStream) stopLocalMedia();
+            localStream = await navigator.mediaDevices.getUserMedia(selectedDeviceConstraints());
             localVideo.srcObject = localStream;
             await localVideo.play().catch(() => {});
+            sessionStorage.setItem('inspection-camera-id', cameraSelect.value || '');
+            sessionStorage.setItem('inspection-microphone-id', microphoneSelect.value || '');
+            await loadMediaDevices();
             placeholder.hidden = true;
             micButton.disabled = false;
             cameraButton.disabled = false;
@@ -91,10 +131,12 @@
             return true;
         } catch (error) {
             const denied = error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError');
-            notify(denied
-                ? 'دسترسی دوربین و میکروفن رد شده است. دسترسی مرورگر را فعال و دوباره تلاش کنید.'
-                : 'دوربین یا میکروفن در دسترس نیست. اتصال دستگاه و استفاده نشدن آن در برنامه دیگر را بررسی کنید.', 'error');
-            setCallMessage(denied ? 'مجوز دوربین و میکروفن داده نشد.' : 'دوربین یا میکروفن در دسترس نیست.', 'danger');
+            const busy = error && (error.name === 'NotReadableError' || error.name === 'TrackStartError');
+            const message = denied ? 'دسترسی دوربین و میکروفن رد شده است. مجوز مرورگر را فعال کنید.'
+                : busy ? 'دستگاه انتخاب‌شده در مرورگر دیگری در حال استفاده است؛ دوربین دوم را از فهرست انتخاب کنید.'
+                : 'دوربین یا میکروفن انتخاب‌شده در دسترس نیست.';
+            notify(message, 'error');
+            setCallMessage(message, 'danger');
             return false;
         }
     }
@@ -128,14 +170,26 @@
 
     async function openMediaTest() {
         testButton.disabled = true;
+        mediaTest.hidden = false;
         setCallMessage('در حال دریافت مجوز دوربین و میکروفن...', 'info');
         try {
+            await loadMediaDevices();
             if (!await ensureMedia()) return;
             mediaTestVideo.srcObject = localStream;
             await mediaTestVideo.play().catch(() => {});
-            mediaTest.hidden = false;
             startAudioMeter();
+        } catch {
+            setCallMessage('خواندن فهرست دوربین‌ها و میکروفن‌ها انجام نشد.', 'danger');
         } finally { testButton.disabled = false; }
+    }
+
+    async function switchMediaDevice() {
+        setCallMessage('در حال تغییر دستگاه...', 'info');
+        if (!await ensureMedia(true)) return;
+        mediaTestVideo.srcObject = localStream;
+        await mediaTestVideo.play().catch(() => {});
+        startAudioMeter();
+        setCallMessage('دستگاه جدید آماده است.', 'success');
     }
 
     function closeMediaTest(stopTracks) {
@@ -316,6 +370,13 @@
     testButton.addEventListener('click', openMediaTest);
     confirmMediaButton.addEventListener('click', () => closeMediaTest(false));
     cancelMediaButton.addEventListener('click', () => closeMediaTest(true));
+    cameraSelect.addEventListener('change', switchMediaDevice);
+    microphoneSelect.addEventListener('change', switchMediaDevice);
+    refreshDevicesButton.addEventListener('click', async () => {
+        refreshDevicesButton.disabled = true;
+        try { await loadMediaDevices(); }
+        finally { refreshDevicesButton.disabled = false; }
+    });
     fullscreenButton.addEventListener('click', async () => {
         try {
             if (document.fullscreenElement) await document.exitFullscreen();
