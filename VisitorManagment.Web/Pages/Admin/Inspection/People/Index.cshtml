@@ -5,12 +5,14 @@
 
 <div class="inspection-page" dir="rtl">
     <div class="inspection-hero"><div><span class="inspection-kicker">مدیریت بازرسی</span><h2>افزودن نفرات</h2><p>استعلام مستقیم از سرویس پرسنلی و ثبت فرد در یگان مربوطه</p></div><i class="ti-user"></i></div>
-    @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
-    @if (TempData["ErrorMessage"] != null) { <div class="alert alert-danger">@TempData["ErrorMessage"]</div> }
+    <div id="personOperationMessage" aria-live="polite">
+        @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+        @if (TempData["ErrorMessage"] != null) { <div class="alert alert-danger">@TempData["ErrorMessage"]</div> }
+    </div>
     <div class="inspection-card">
         <form method="post" id="personForm">
-            <div class="inspection-form-row">
-                <div class="form-group inspection-grow"><label asp-for="PersonalCode">کد پرسنلی</label><input asp-for="PersonalCode" id="personalCode" class="form-control" inputmode="numeric" maxlength="10" autocomplete="off" /></div>
+            <div class="inspection-form-row inspection-person-lookup-row">
+                <div class="form-group inspection-person-code-group"><label asp-for="PersonalCode">کد پرسنلی</label><input asp-for="PersonalCode" id="personalCode" class="form-control" inputmode="numeric" maxlength="10" autocomplete="off" /></div>
                 <button type="button" id="lookupPerson" class="btn btn-info inspection-action"><i class="ti-search"></i> استعلام</button>
             </div>
             <div id="personResult" class="inspection-person-result d-none" aria-live="polite"></div>
@@ -26,7 +28,7 @@
 @section Scripts {
 <script>
 (() => {
- const input=document.getElementById('personalCode'), button=document.getElementById('lookupPerson'), result=document.getElementById('personResult'), save=document.getElementById('savePerson');
+ const input=document.getElementById('personalCode'), button=document.getElementById('lookupPerson'), result=document.getElementById('personResult'), save=document.getElementById('savePerson'), form=document.getElementById('personForm'), message=document.getElementById('personOperationMessage'), count=document.querySelector('.inspection-card-title span');
  const encode=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
  button.addEventListener('click', async () => {
    save.disabled=true; result.classList.remove('d-none'); result.innerHTML='<span class="text-muted">در حال دریافت اطلاعات...</span>';
@@ -37,6 +39,20 @@
    } catch { result.innerHTML='<div class="alert alert-danger mb-0">ارتباط با سرویس پرسنلی برقرار نشد.</div>'; }
  });
  input.addEventListener('input',()=>{save.disabled=true; result.classList.add('d-none');});
- document.getElementById('personForm').addEventListener('submit',()=>{save.disabled=true; save.innerHTML='در حال ثبت...';});
+ form.addEventListener('submit',async event=>{
+   event.preventDefault();
+   if(save.disabled)return;
+   const original=save.innerHTML; let registered=false; save.disabled=true; save.innerHTML='<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> در حال ثبت...';
+   try{
+     const response=await fetch('?handler=Register',{method:'POST',body:new FormData(form),headers:{'X-Requested-With':'XMLHttpRequest'}});
+     const data=await response.json();
+     if(!response.ok||!data.isSuccess){message.innerHTML=`<div class="alert alert-danger">${encode(data.message||'ثبت فرد انجام نشد.')}</div>`;return;}
+     const table=window.jQuery&&jQuery.fn.DataTable?jQuery('#inspectionPeopleTable').DataTable():null;
+     if(table){table.clear();table.rows.add(data.people.map(person=>[encode(person.personalCode),encode(person.fullName),encode(person.rankTitle||'-'),encode(person.unitTitle||'-'),encode(person.unitDutyTitle||'-'),encode(person.jobDescription||'-')]));table.draw(false);}
+     count.textContent=`${data.people.length} نفر`; message.innerHTML=`<div class="alert alert-success">${encode(data.message)}</div>`;
+     registered=true; input.value=''; result.classList.add('d-none'); result.innerHTML='';
+   }catch{message.innerHTML='<div class="alert alert-danger">ارتباط با سرور برقرار نشد؛ دوباره تلاش کنید.</div>';}
+   finally{save.disabled=registered;save.innerHTML=original;}
+ });
 })();
 </script> }
