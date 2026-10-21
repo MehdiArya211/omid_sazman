@@ -8,6 +8,7 @@ using VisitorManagment.DataLayer.Entities.SystemChatRoom;
 using VisitorManagment.DataLayer.Entities.NotificationInfo;
 using VisitorManagment.DataLayer.Entities;
 using VisitorManagment.DataLayer.Entities.Inspection;
+using System.Linq;
 
 namespace VisitorManagment.DataLayer.Context
 {
@@ -22,6 +23,7 @@ namespace VisitorManagment.DataLayer.Context
         public DbSet<Users> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<RoleAssignmentHistory> RoleAssignmentHistories { get; set; }
         public DbSet<RoleTypeFinal> RoleTypeFinals { get; set; }
 
         #endregion
@@ -106,6 +108,16 @@ namespace VisitorManagment.DataLayer.Context
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<RoleAssignmentHistory>()
+                .HasIndex(item => item.RoleId)
+                .HasFilter("[EndDate] IS NULL")
+                .IsUnique();
+            modelBuilder.Entity<RoleAssignmentHistory>()
+                .HasIndex(item => item.UserId)
+                .HasFilter("[EndDate] IS NULL")
+                .IsUnique();
+            modelBuilder.Entity<Cartable>()
+                .HasIndex(item => item.RcvrRoleId);
             modelBuilder.Entity<InspectionPerson>()
                 .HasIndex(person => person.PersonalCode)
                 .IsUnique();
@@ -132,6 +144,45 @@ namespace VisitorManagment.DataLayer.Context
                 .HasQueryFilter(u => !u.IsDelete);
             modelBuilder.Entity<Meeting>()
                .HasQueryFilter(u => !u.IsDelete);
+        }
+
+        /// <summary>
+        /// نقش مقصد کارتابل و مشخصات ثابت ثبت‌کننده هامش را به‌صورت مرکزی تکمیل می‌کند.
+        /// به این ترتیب مسیرهای مختلف ثبت درخواست، رفتار یکسانی خواهند داشت.
+        /// </summary>
+        public override int SaveChanges()
+        {
+            CompleteAuditInformation();
+            return base.SaveChanges();
+        }
+
+        private void CompleteAuditInformation()
+        {
+            var addedCartables = ChangeTracker.Entries<Cartable>()
+                .Where(entry => entry.State == EntityState.Added && !entry.Entity.RcvrRoleId.HasValue && entry.Entity.RcvrUserId > 0)
+                .ToList();
+            foreach (var entry in addedCartables)
+            {
+                entry.Entity.RcvrRoleId = UserRoles.AsNoTracking()
+                    .Where(item => item.UserId == entry.Entity.RcvrUserId)
+                    .Select(item => (int?)item.RoleId)
+                    .FirstOrDefault();
+            }
+
+            var addedHameshes = ChangeTracker.Entries<Hamesh>()
+                .Where(entry => entry.State == EntityState.Added)
+                .ToList();
+            foreach (var entry in addedHameshes)
+            {
+                var hamesh = entry.Entity;
+                var user = Users.IgnoreQueryFilters().AsNoTracking().FirstOrDefault(item => item.Id == hamesh.UserId);
+                if (user == null) continue;
+
+                hamesh.ActorFullNameSnapshot = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(value => !string.IsNullOrWhiteSpace(value)));
+                hamesh.ActorPersonalCodeSnapshot = user.UserName;
+                hamesh.ActorRankTitleSnapshot = user.RankTitle;
+                hamesh.ActorUnitTitleSnapshot = string.IsNullOrWhiteSpace(user.UnitDutyTitle) ? user.UnitTitle : user.UnitDutyTitle;
+            }
         }
     }
 }

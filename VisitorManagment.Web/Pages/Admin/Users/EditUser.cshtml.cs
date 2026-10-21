@@ -180,10 +180,20 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
             SessionHelper.SetObjectAsJson(HttpContext.Session, "result", response.Data);
 
+            var existingUser = _userService.GetUserByUserName(personalno.Trim());
+            var existingUserInfo = existingUser == null ? null : _userService.GetUserForShowInEditMode(existingUser.Id);
+
             return new JsonResult(new
             {
                 success = true,
-                data = response.Data
+                data = response.Data,
+                existingUser = existingUserInfo == null ? null : new
+                {
+                    userId = existingUserInfo.UserId,
+                    fullName = (existingUserInfo.RankTitle + " " + existingUserInfo.FirstName + " " + existingUserInfo.LastName).Trim(),
+                    currentRoleId = existingUserInfo.UserRolesId,
+                    currentRoleTitle = existingUserInfo.UserRolesTitle ?? "بدون جایگاه"
+                }
             });
         }
 
@@ -227,13 +237,36 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 ModelState.AddModelError("", "نقش را انتخاب نمایید");
                 return Page();
             }
+            if (!_permissionService.GetRoles(roleTypeId.ToString())
+                .Any(role => role.RoleId == editUserViewModel.UserRolesId))
+            {
+                ModelState.AddModelError("", "شما مجاز به تخصیص این جایگاه نیستید.");
+                return Page();
+            }
 
             editUserViewModel.UserName = editUserViewModel.UserName?.Trim();
             var duplicateUser = _userService.GetUserByUserName(editUserViewModel.UserName);
             if (duplicateUser != null && duplicateUser.Id != userId)
             {
-                ModelState.AddModelError("", "این کد پرسنلی قبلاً برای کاربر دیگری ثبت شده است.");
-                return Page();
+                if (!replaceExistingRoleHolder)
+                {
+                    ModelState.AddModelError("",
+                        "این کد پرسنلی متعلق به کاربر دیگری است. برای جابه‌جایی مسئول جایگاه، خلاصه عملیات را تأیید کنید.");
+                    return Page();
+                }
+
+                var moveResult = _permissionService.ReplaceRoleHolder(
+                    editUserViewModel.UserRolesId, duplicateUser.Id, int.Parse(User.FindFirst("Id").Value));
+                if (!moveResult.Status)
+                {
+                    ModelState.AddModelError("", moveResult.Message);
+                    return Page();
+                }
+
+                TempData["OperationMessage"] = moveResult.Message;
+                TempData["OperationTitle"] = "جابه‌جایی موفق";
+                TempData["OperationIcon"] = "success";
+                return Redirect("/Admin/Users");
             }
 
             var EditUserId = int.Parse(User.FindFirst("Id").Value);
@@ -253,9 +286,10 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 return Page();
             }
 
+            var previousUserInfo = _userService.GetUserForShowInEditMode(userId);
             _userService.EditUserFromAdmin(editUserViewModel, password, EditUserId, userId);
 
-            if (otherRoleHolders.Any())
+            if (otherRoleHolders.Any() || previousUserInfo?.UserRolesId != editUserViewModel.UserRolesId)
             {
                 var replacementResult = _permissionService.ReplaceRoleHolder(
                     editUserViewModel.UserRolesId, userId, EditUserId);

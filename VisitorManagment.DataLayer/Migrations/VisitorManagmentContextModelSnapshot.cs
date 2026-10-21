@@ -565,6 +565,45 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.User.RoleAssignmentHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ChangeReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("ChangedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId")
+                        .IsUnique()
+                        .HasFilter("[EndDate] IS NULL");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[EndDate] IS NULL");
+
+                    b.ToTable("RoleAssignmentHistories");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.User.UserSub", b =>
                 {
                     b.Property<int>("Id")
@@ -1035,6 +1074,9 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.Property<int>("RcvrUserId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RcvrRoleId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("RegDate")
                         .HasColumnType("datetime2");
 
@@ -1047,6 +1089,8 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FileId");
+
+                    b.HasIndex("RcvrRoleId");
 
                     b.ToTable("Cartables");
                 });
@@ -1376,6 +1420,22 @@ namespace VisitorManagment.DataLayer.Migrations
 
                     b.Property<int>("ActionTypeId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ActorFullNameSnapshot")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("ActorPersonalCodeSnapshot")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ActorRankTitleSnapshot")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ActorUnitTitleSnapshot")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<int>("FileId")
                         .HasColumnType("int");

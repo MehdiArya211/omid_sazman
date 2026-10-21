@@ -198,23 +198,17 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 // افزودن نقش یا جایگزینی مسئول فعلی و انتقال کارتابل‌های باز
                 try
                 {
-                    if (existingRoleHolders.Any())
+                    var replacementResult = _permissionService.ReplaceRoleHolder(
+                        roleId, newUserId, int.Parse(userIdClaim));
+                    if (!replacementResult.Status)
                     {
-                        var replacementResult = _permissionService.ReplaceRoleHolder(
-                            roleId, newUserId, int.Parse(userIdClaim));
-                        if (!replacementResult.Status)
-                        {
-                            _userService.DeleteUser(newUserId);
-                            ModelState.AddModelError("", replacementResult.Message);
-                            return Page();
-                        }
-                        TempData["OperationMessage"] = replacementResult.Message;
+                        _userService.DeleteUser(newUserId);
+                        ModelState.AddModelError("", replacementResult.Message);
+                        return Page();
                     }
-                    else
-                    {
-                        _permissionService.AddRolesToUser(roleId, newUserId);
-                        TempData["OperationMessage"] = "کاربر با موفقیت ثبت شد.";
-                    }
+                    TempData["OperationMessage"] = existingRoleHolders.Any()
+                        ? replacementResult.Message
+                        : "کاربر با موفقیت ثبت و کارتابل جایگاه به او تحویل شد.";
                 }
                 catch (Exception ex)
                 {
