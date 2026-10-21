@@ -101,11 +101,13 @@
                     return;
                 }
                 var rows = result.users.map(function (user) {
-                    var details = [user.rankTitle, user.fullName, user.userName, user.unitTitle].filter(Boolean).join(" - ");
-                    return '<div class="role-assignment-user"><span>' + encode(details) + '</span><a href="/Admin/Users/EditUser/' + user.userId + '">ویرایش کاربر</a></div>';
+                    var details = [user.rankTitle, user.fullName, user.userName, user.unitTitle, user.isActive ? "فعال" : "غیرفعال"].filter(Boolean).join(" - ");
+                    return '<div class="role-assignment-user"><span>' + encode(details) + '<small>' + user.openCartableCount + ' درخواست باز</small></span><a href="/Admin/Users/EditUser/' + user.userId + '">ویرایش کاربر</a></div>';
                 }).join("");
                 roleNotice.className = "role-assignment-notice";
-                roleNotice.innerHTML = '<div class="role-assignment-notice__head"><i class="ti-alert"></i> کاربران دیگری نیز این نقش را دارند:</div>' + rows;
+                roleNotice.innerHTML = '<div class="role-assignment-notice__head"><i class="ti-alert"></i> این نقش مسئول فعلی دارد:</div>' + rows +
+                    '<label class="role-replacement-confirm"><input type="checkbox" name="replaceExistingRoleHolder" value="true" required />' +
+                    '<span><strong>جایگزینی مسئول فعلی و انتقال درخواست‌های باز</strong><small>نقش از مسئول قبلی گرفته می‌شود و سوابق هامش‌ها تغییر نمی‌کند.</small></span></label>';
             })
             .fail(function () {
                 roleNotice.className = "role-assignment-notice";
@@ -115,4 +117,27 @@
 
     $(roleSelect).on("change", loadRoleAssignees);
     loadRoleAssignees();
+
+    form.addEventListener("submit", function (event) {
+        var replacement = form.querySelector('[name="replaceExistingRoleHolder"]:checked');
+        if (!replacement || form.dataset.replacementConfirmed) { return; }
+        event.preventDefault();
+        if (window.Swal) {
+            Swal.fire({
+                icon: "warning",
+                title: "جایگزینی مسئول نقش",
+                text: "نقش از مسئول فعلی گرفته و درخواست‌های باز او به این کاربر منتقل می‌شود. ادامه می‌دهید؟",
+                showCancelButton: true,
+                confirmButtonText: "بله، جایگزین شود",
+                cancelButtonText: "انصراف"
+            }).then(function (result) {
+                if (!result.isConfirmed) { return; }
+                form.dataset.replacementConfirmed = "true";
+                form.requestSubmit();
+            });
+        } else if (window.confirm("مسئول فعلی جایگزین و درخواست‌های باز منتقل شود؟")) {
+            form.dataset.replacementConfirmed = "true";
+            form.requestSubmit();
+        }
+    });
 })(window.jQuery);

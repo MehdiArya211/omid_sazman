@@ -200,7 +200,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return new JsonResult(new
             {
                 success = true,
-                users = _userService.GetActiveUsersByRole(roleId, userId)
+                users = _userService.GetUsersByRole(roleId, userId)
             });
         }
 
@@ -208,7 +208,8 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         /// <summary>
         /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
         /// </summary>
-        public IActionResult OnPost(string password, int userId, string fname, string lname, string rankTitle)
+        public IActionResult OnPost(string password, int userId, string fname, string lname, string rankTitle,
+            bool replaceExistingRoleHolder)
         {
             var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
             ViewData["RolesTitle"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
@@ -244,14 +245,35 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 return Page();
             }
 
+            var otherRoleHolders = _userService.GetUsersByRole(editUserViewModel.UserRolesId, userId);
+            if (otherRoleHolders.Any() && !replaceExistingRoleHolder)
+            {
+                ModelState.AddModelError("",
+                    "این نقش مسئول فعال دارد. برای جلوگیری از دو مسئول هم‌زمان، گزینه جایگزینی و انتقال کارتابل را تأیید کنید.");
+                return Page();
+            }
+
             _userService.EditUserFromAdmin(editUserViewModel, password, EditUserId, userId);
 
-            //Add Roles
-            _permissionService.EditRolesToUser(editUserViewModel.UserRolesId, userId);
+            if (otherRoleHolders.Any())
+            {
+                var replacementResult = _permissionService.ReplaceRoleHolder(
+                    editUserViewModel.UserRolesId, userId, EditUserId);
+                if (!replacementResult.Status)
+                {
+                    ModelState.AddModelError("", replacementResult.Message);
+                    return Page();
+                }
+                TempData["OperationMessage"] = replacementResult.Message;
+            }
+            else
+            {
+                _permissionService.EditRolesToUser(editUserViewModel.UserRolesId, userId);
+                TempData["OperationMessage"] = "اطلاعات کاربر با موفقیت ویرایش شد.";
+            }
 
 
             TempData["OperationTitle"] = "ویرایش موفق";
-            TempData["OperationMessage"] = "اطلاعات کاربر با موفقیت ویرایش شد.";
             TempData["OperationIcon"] = "success";
             return Redirect("/Admin/Users");
 

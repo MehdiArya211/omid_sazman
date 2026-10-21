@@ -290,7 +290,7 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <inheritdoc />
-        public List<RoleAssignedUserViewModel> GetActiveUsersByRole(int roleId, int? excludeUserId = null)
+        public List<RoleAssignedUserViewModel> GetUsersByRole(int roleId, int? excludeUserId = null)
         {
             if (roleId <= 0) return new List<RoleAssignedUserViewModel>();
 
@@ -298,7 +298,6 @@ namespace VisitorManagment.Core.Services
                 .AsNoTracking()
                 .Where(userRole =>
                     userRole.RoleId == roleId &&
-                    userRole.User.IsActive &&
                     !userRole.User.IsDelete &&
                     (!excludeUserId.HasValue || userRole.UserId != excludeUserId.Value))
                 .OrderBy(userRole => userRole.User.LastName)
@@ -309,7 +308,10 @@ namespace VisitorManagment.Core.Services
                     UserName = userRole.User.UserName,
                     FullName = (userRole.User.FirstName + " " + userRole.User.LastName).Trim(),
                     RankTitle = userRole.User.RankTitle,
-                    UnitTitle = userRole.User.UnitDutyTitle ?? userRole.User.UnitTitle
+                    UnitTitle = userRole.User.UnitDutyTitle ?? userRole.User.UnitTitle,
+                    IsActive = userRole.User.IsActive,
+                    OpenCartableCount = _context.Cartables.Count(cartable =>
+                        cartable.RcvrUserId == userRole.UserId && !cartable.IsDone)
                 })
                 .ToList();
         }

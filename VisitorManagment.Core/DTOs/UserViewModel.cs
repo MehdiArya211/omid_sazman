@@ -107,6 +107,8 @@ namespace VisitorManagment.Core.DTOs
         public string FullName { get; set; }
         public string RankTitle { get; set; }
         public string UnitTitle { get; set; }
+        public int OpenCartableCount { get; set; }
+        public bool IsActive { get; set; }
     }
 
     public class ListUserViewModel
