@@ -47,20 +47,18 @@
         <section class="user-form-card">
             <div class="user-form-card__header">
                 <span class="user-form-card__number">۲</span>
-                <div><h2>نقش و امنیت</h2><p>نقش سازمانی و رمز عبور امن کاربر را مشخص کنید.</p></div>
+                <div><h2>نقش و امنیت</h2><p>نقش سازمانی را مشخص کنید؛ رمز اولیه به‌صورت خودکار ساخته می‌شود.</p></div>
             </div>
             <div class="user-form-grid user-form-grid--two">
                 <div class="user-field">
                     <label for="roleId">نقش کاربر <span>*</span></label>
                     <div class="user-input-icon"><i class="ti-shield"></i><select id="roleId" name="roleId" asp-items="ViewBag.RolesTitle" class="form-control js-example-basic-single" required><option value="">نقش کاربر را انتخاب کنید</option></select></div>
                     <div class="invalid-feedback">انتخاب نقش کاربر الزامی است.</div>
+                    <div class="role-assignment-notice d-none" data-role-assignment-notice aria-live="polite"></div>
                 </div>
                 <div class="user-field">
-                    <label for="password">رمز عبور <span>*</span></label>
-                    <div class="user-input-icon"><i class="ti-lock"></i><input id="password" asp-for="CreateUserViewModel.Password" name="password" type="password" maxlength="200" autocomplete="new-password" class="form-control" required data-password /><button class="password-toggle" type="button" data-password-toggle aria-label="نمایش رمز عبور"><i class="ti-eye"></i></button></div>
-                    <div class="password-meter" aria-hidden="true"><span data-password-meter></span></div>
-                    <div class="password-status"><span data-password-status>رمز عبور را وارد کنید</span><small>حداقل ۸ کاراکتر، شامل حروف بزرگ، کوچک، عدد و نماد</small></div>
-                    <span asp-validation-for="CreateUserViewModel.Password" class="text-danger"></span>
+                    <label>رمز اولیه</label>
+                    <div class="user-security-note"><i class="ti-lock"></i><div><strong>همان کد پرسنلی کاربر</strong><span>رمز به‌صورت خودکار و بدون نمایش در فرم ثبت می‌شود.</span></div></div>
                 </div>
             </div>
         </section>

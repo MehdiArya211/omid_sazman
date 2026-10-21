@@ -7,6 +7,7 @@
 }
 <link rel="stylesheet" href="/vendors/select2/css/select2.min.css" type="text/css">
 <link rel="stylesheet" href="~/css/users-index.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/user-management-form.css" asp-append-version="true" />
 
 <div class="page-header">
     <div class="container-fluid d-sm-flex justify-content-between">
@@ -46,7 +47,7 @@
     <hr />
     <br />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger text-dark" role="alert"></div>
-    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data">
+    <form class="needs-validation" novalidate="" method="post" enctype="multipart/form-data" data-user-edit-form>
         <input type="hidden" name="userId" asp-for="@Model.editUserViewModel.UserId" />
         <input type="hidden" asp-for="@Model.editUserViewModel.AvatarName" />
         @**@
@@ -66,7 +67,12 @@
 
             <div class="col-md-6 mb-3">
                 <label style="font-size:medium">کد پرسنلی</label>
-                <input type="text" id="personalno" asp-for="@Model.editUserViewModel.UserName" class="form-control">
+                <div class="user-input-icon">
+                    <i class="ti-id-badge"></i>
+                    <input type="text" id="personalno" asp-for="@Model.editUserViewModel.UserName" class="form-control" data-edit-personal-code>
+                    <span id="editPersonnelLoader" class="spinner-border spinner-border-sm d-none" role="status" aria-label="در حال دریافت اطلاعات"></span>
+                </div>
+                <small class="user-field__help" data-edit-personal-help>با خروج از فیلد یا زدن Tab، اطلاعات پرسنلی به‌روزرسانی می‌شود.</small>
             </div>
             <div class="col-md-6 mb-3">
                 <label>نام</label>
@@ -88,14 +94,12 @@
                         asp-items="ViewBag.RolesTitle">
                    @* <option>@Model.editUserViewModel.UserRolesTitle</option>*@
                 </select>
-
-
+                <div class="role-assignment-notice d-none" data-role-assignment-notice aria-live="polite"></div>
             </div>
 
             <div class="col-md-6 mb-3">
-                <label>کلمه عبور </label>
-                <input type="password" name="password" class="form-control">
-                <p class="help-block">در صورت وارد کردن کلمه عبور ، کلمه عبور کاربر تغییر خواهد کرد</p>
+                <label>قاعده رمز عبور</label>
+                <div class="user-security-note"><i class="ti-lock"></i><div><strong>در صورت تغییر کد پرسنلی</strong><span>رمز کاربر به‌صورت خودکار برابر کد پرسنلی جدید می‌شود.</span></div></div>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="d-flex align-items-center p-3 border rounded bg-light" for="dashboardAccess">
@@ -154,72 +158,7 @@
         });
     </script>
 
-    <script>
-        $('#personalno').on('keydown', function (e) {
-            if (e.key == 'Tab') {
-                getinformation();
-            }
-        });
-
-
-        function getinformation0() {
-            var PersonalCodeNo = $("#personalno").val();
-            $("#fname").empty();
-            $("#lname").empty();
-            $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
-
-                if (data.message == "پرسنلی با این مشخصات یافت نشد" || data.message == "این شخص جزء پرسنل یگان شما نمیباشد") {
-                    alert(data.message);
-
-                }
-
-                if (data.message == "سرویس با خطا مواجه شد .دقایقی دیگر مجددا امتحان کنید") {
-
-                    alert(data.message);
-                }
-
-                else {
-                    //var name = $("#fname").val(data.firstName);
-                    //alert(name);
-                    $("#fname").val(data.firstName);
-                    $("#lname").val(data.lastName);
-                    //$("#codemeli").val(data.melliCode);
-                    //$("#darjeh").val(data.rankTitle);
-                }
-            });
-        };
-
-        function getinformation() {
-            var personalCodeNo = $("#personalno").val();
-
-            $("#fname").val('');
-            $("#lname").val('');
-
-            $.getJSON(`?handler=GetPersonalId&personalno=${personalCodeNo}`, function (res) {
-
-                if (!res.success) {
-                    alert(res.message || "پرسنلی با این مشخصات یافت نشد");
-                    return;
-                }
-
-                var data = res.data;
-
-                $("#fname").val(data.firstName || "");
-                $("#lname").val(data.lastName || "");
-                $("#rankTitle").val(data.rankTitle || "");
-            });
-        }
-
-        //function getinformation() {
-        //    var PersonalCodeNo = $("#personalno").val();
-        //    $("#fname").empty();
-        //    $("#lname").empty();
-        //    $.getJSON(`?handler=GetPersonalId&personalno=${PersonalCodeNo}`, (data) => {
-        //        $("#fname").val(data.firstName);
-        //        $("#lname").val(data.lastName);
-        //    });
-        //};
-    </script>
+    <script src="~/js/user-management-edit.js" asp-append-version="true"></script>
 
     <script>
         $('.select2-example').select2({

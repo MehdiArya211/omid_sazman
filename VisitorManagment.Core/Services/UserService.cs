@@ -164,14 +164,18 @@ namespace VisitorManagment.Core.Services
         public int AddUserFromAdmin(CreateUserViewModel user)
         {
 
+            if (user == null || string.IsNullOrWhiteSpace(user.PersonalCode))
+                throw new ArgumentException("کد پرسنلی کاربر معتبر نیست.", nameof(user));
+
             Users addUser = new Users();
-            addUser.Password = PasswordHelper.EncodePasswordMd5(user.Password);
+            // رمز اولیه طبق قاعده مدیریت کاربران، همان کد پرسنلی/نام کاربری است.
+            addUser.Password = PasswordHelper.EncodePasswordMd5(user.PersonalCode.Trim());
             addUser.ActiveCode = NameGenerator.GenerateUniqCode();
             addUser.FirstName = user.FirstName;
             addUser.LastName = user.LastName;
             addUser.IsActive = true;
             addUser.RegDate = DateTime.Now;
-            addUser.UserName = user.PersonalCode;
+            addUser.UserName = user.PersonalCode.Trim();
             addUser.RegUserId = user.AddUserId;
             addUser.UnitDutyCode = user.UnitDutyCode;
             addUser.UnitDutyTitle = user.UnitDutyTitle;
@@ -218,7 +222,22 @@ namespace VisitorManagment.Core.Services
         {
             var editUser = GetUserByUserId(userId);
 
-            if (!string.IsNullOrEmpty(password))
+            if (editUser == null)
+                throw new InvalidOperationException("کاربر موردنظر یافت نشد.");
+
+            var newUserName = editUserViewModel.UserName?.Trim();
+            if (string.IsNullOrWhiteSpace(newUserName))
+                throw new InvalidOperationException("کد پرسنلی/نام کاربری معتبر نیست.");
+
+            var userNameChanged = !string.Equals(editUser.UserName, newUserName, StringComparison.OrdinalIgnoreCase);
+            if (userNameChanged)
+            {
+                // با تغییر نام کاربری، رمز نیز مطابق قاعده سامانه به نام کاربری جدید بازنشانی می‌شود.
+                editUser.Password = PasswordHelper.EncodePasswordMd5(newUserName);
+                editUser.ActiveCode = PasswordChangeRequiredMarker;
+            }
+
+            else if (!string.IsNullOrEmpty(password))
                 editUser.Password = PasswordHelper.EncodePasswordMd5(password);
 
             editUser.FirstName = editUserViewModel.FirstName;
@@ -237,7 +256,7 @@ namespace VisitorManagment.Core.Services
             editUser.IsActive = true;
             editUser.HasDashboardAccess = editUserViewModel.HasDashboardAccess;
             editUser.EditDate = DateTime.Now;
-            editUser.UserName = editUserViewModel.UserName;
+            editUser.UserName = newUserName;
             editUser.EditUserId = EditUserId;
 
 
@@ -268,6 +287,31 @@ namespace VisitorManagment.Core.Services
             #endregion
 
             UpdateUser(editUser);
+        }
+
+        /// <inheritdoc />
+        public List<RoleAssignedUserViewModel> GetActiveUsersByRole(int roleId, int? excludeUserId = null)
+        {
+            if (roleId <= 0) return new List<RoleAssignedUserViewModel>();
+
+            return _context.UserRoles
+                .AsNoTracking()
+                .Where(userRole =>
+                    userRole.RoleId == roleId &&
+                    userRole.User.IsActive &&
+                    !userRole.User.IsDelete &&
+                    (!excludeUserId.HasValue || userRole.UserId != excludeUserId.Value))
+                .OrderBy(userRole => userRole.User.LastName)
+                .ThenBy(userRole => userRole.User.FirstName)
+                .Select(userRole => new RoleAssignedUserViewModel
+                {
+                    UserId = userRole.UserId,
+                    UserName = userRole.User.UserName,
+                    FullName = (userRole.User.FirstName + " " + userRole.User.LastName).Trim(),
+                    RankTitle = userRole.User.RankTitle,
+                    UnitTitle = userRole.User.UnitDutyTitle ?? userRole.User.UnitTitle
+                })
+                .ToList();
         }
 
         /// <summary>

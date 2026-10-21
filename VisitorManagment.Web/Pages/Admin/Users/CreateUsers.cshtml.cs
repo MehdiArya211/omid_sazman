@@ -95,11 +95,28 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return new JsonResult(response.Data);
         }
 
+        /// <summary>
+        /// دارندگان فعال نقش انتخابی را برای نمایش هشدار و لینک ویرایش برمی‌گرداند.
+        /// </summary>
+        public JsonResult OnGetRoleAssignees(int roleId)
+        {
+            var roleTypeId = User.FindFirst("RoleTypeId")?.Value;
+            var roleIsAssignable = _permissionService.GetRoles(roleTypeId ?? string.Empty)
+                .Any(role => role.RoleId == roleId);
+            if (!roleIsAssignable) return new JsonResult(new { success = false, message = "نقش انتخابی معتبر نیست." });
+
+            return new JsonResult(new
+            {
+                success = true,
+                users = _userService.GetActiveUsersByRole(roleId)
+            });
+        }
+
 
         /// <summary>
         /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
         /// </summary>
-        public IActionResult OnPost(int roleId, string password, IFormFile userAvatar)
+        public IActionResult OnPost(int roleId, IFormFile userAvatar)
         {
             try
             {
@@ -127,23 +144,6 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     ModelState.AddModelError("", "انتخاب نقش کاربر الزامی است.");
                     return Page();
                 }
-                if (string.IsNullOrWhiteSpace(password))
-                {
-                    ModelState.AddModelError("", "رمز عبور الزامی است.");
-                    return Page();
-                }
-                if (password.Length > 200)
-                {
-                    ModelState.AddModelError("", "رمز عبور نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد.");
-                    return Page();
-                }
-                if (password.Length < 8 || !password.Any(char.IsLower) || !password.Any(char.IsUpper) ||
-                    !password.Any(char.IsDigit) || !password.Any(character => !char.IsLetterOrDigit(character)))
-                {
-                    ModelState.AddModelError("", "رمز عبور باید حداقل ۸ کاراکتر و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.");
-                    return Page();
-                }
-
                 // بازیابی اطلاعات کاربر از سشن
                 var user = HttpContext.Session.GetObjectFromJson<CreateUserViewModel>("result");
                 if (user == null)
@@ -153,7 +153,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 }
 
                 // تنظیم اطلاعات کاربر
-                user.Password = password;
+                user.Password = user.PersonalCode;
                 user.AddUserId = int.Parse(userIdClaim);
                 user.UserAvatar = userAvatar;
 

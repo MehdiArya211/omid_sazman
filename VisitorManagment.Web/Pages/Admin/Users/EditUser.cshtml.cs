@@ -71,18 +71,17 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             var result = new FactPersonalViewModel();
 
 
-            var user = _webApiService.GetPersonalByPersonalNo(personalno).Data;
+            var response = _webApiService.GetPersonalByPersonalNo(personalno);
+            var user = response?.Data;
+            if (user == null)
+            {
+                return new JsonResult(new { message = "پرسنلی با این مشخصات یافت نشد" });
+            }
             //اگه سرویس با خطا مواجه شد خطا نشون بده
             if (user.Respond == "ERROR Service")
             {
                 return new JsonResult(new { message = "سرویس با خطا مواجه شد .دقایقی دیگر مجددا امتحان کنید" });
             }
-
-            if (user == null)
-            {
-                return new JsonResult(new { message = "پرسنلی با این مشخصات یافت نشد" });
-            }
-
 
             SessionHelper.SetObjectAsJson(HttpContext.Session, "result", user);
             return new JsonResult(user);
@@ -188,6 +187,23 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             });
         }
 
+        /// <summary>
+        /// دارندگان دیگر نقش را برمی‌گرداند تا مدیر پیش از تخصیص، وضعیت نقش را ببیند.
+        /// </summary>
+        public JsonResult OnGetRoleAssignees(int roleId, int userId)
+        {
+            var roleTypeId = User.FindFirst("RoleTypeId")?.Value;
+            var roleIsAssignable = _permissionService.GetRoles(roleTypeId ?? string.Empty)
+                .Any(role => role.RoleId == roleId);
+            if (!roleIsAssignable) return new JsonResult(new { success = false, message = "نقش انتخابی معتبر نیست." });
+
+            return new JsonResult(new
+            {
+                success = true,
+                users = _userService.GetActiveUsersByRole(roleId, userId)
+            });
+        }
+
 
         /// <summary>
         /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
@@ -208,6 +224,14 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             {
                 //return Redirect("/Admin/Users/EditUser/" + userId);
                 ModelState.AddModelError("", "نقش را انتخاب نمایید");
+                return Page();
+            }
+
+            editUserViewModel.UserName = editUserViewModel.UserName?.Trim();
+            var duplicateUser = _userService.GetUserByUserName(editUserViewModel.UserName);
+            if (duplicateUser != null && duplicateUser.Id != userId)
+            {
+                ModelState.AddModelError("", "این کد پرسنلی قبلاً برای کاربر دیگری ثبت شده است.");
                 return Page();
             }
 

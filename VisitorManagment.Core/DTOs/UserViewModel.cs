@@ -96,6 +96,19 @@ namespace VisitorManagment.Core.DTOs
 
     }
 
+    /// <summary>
+    /// اطلاعات خلاصه کاربری که در حال حاضر یک نقش را در اختیار دارد.
+    /// این مدل فقط برای هشدار هنگام تخصیص نقش و دسترسی سریع به ویرایش کاربر استفاده می‌شود.
+    /// </summary>
+    public class RoleAssignedUserViewModel
+    {
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public string FullName { get; set; }
+        public string RankTitle { get; set; }
+        public string UnitTitle { get; set; }
+    }
+
     public class ListUserViewModel
     {
         public int Id { get; set; }
