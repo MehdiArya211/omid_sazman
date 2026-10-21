@@ -39,6 +39,25 @@ namespace VisitorManagment.DataLayer.Entities.VisitorManagment
         public string RoleTypeFinalTitle { get; set; }
         public DateTime RegDate { get; set; }
 
+        #region تصویر ثابت مشخصات اقدام‌کننده
+
+        /// <summary>
+        /// مشخصات اقدام‌کننده در لحظه ثبت هامش؛ تغییرات بعدی پروفایل این مقادیر را عوض نمی‌کند.
+        /// </summary>
+        [MaxLength(250)]
+        public string ActorFullNameSnapshot { get; set; }
+
+        [MaxLength(50)]
+        public string ActorPersonalCodeSnapshot { get; set; }
+
+        [MaxLength(100)]
+        public string ActorRankTitleSnapshot { get; set; }
+
+        [MaxLength(250)]
+        public string ActorUnitTitleSnapshot { get; set; }
+
+        #endregion
+
         /// <summary>
         /// مبلغ وام درخواستی 
         /// </summary>

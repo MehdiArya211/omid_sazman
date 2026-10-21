@@ -107,33 +107,63 @@ namespace VisitorManagment.Core.Services
             {
                 try
                 {
+                    var changeDate = DateTime.Now;
                     var formerAssignments = _context.UserRoles
                         .Where(item => item.RoleId == roleId && item.UserId != newUserId)
                         .ToList();
                     var formerUserIds = formerAssignments.Select(item => item.UserId).Distinct().ToList();
 
+                    // نقش‌های قبلی نفر جدید باید خالی شوند؛ کارتابل آن جایگاه‌ها نباید به جایگاه مقصد منتقل شود.
+                    var previousAssignments = _context.UserRoles
+                        .Where(item => item.UserId == newUserId && item.RoleId != roleId)
+                        .ToList();
+                    var previousRoleIds = previousAssignments.Select(item => item.RoleId).Distinct().ToList();
+
+                    BackfillOpenCartableRoles(formerUserIds.Concat(new[] { newUserId }).Distinct().ToList());
+
                     var openRows = _context.Cartables
-                        .Where(item => formerUserIds.Contains(item.RcvrUserId) && !item.IsDone)
+                        .Where(item => !item.IsDone &&
+                            (item.RcvrRoleId == roleId ||
+                             (!item.RcvrRoleId.HasValue && formerUserIds.Contains(item.RcvrUserId))))
                         .OrderBy(item => item.RegDate).ThenBy(item => item.Id)
                         .ToList();
                     var fileIds = openRows.Select(item => item.FileId).Distinct().ToList();
 
                     foreach (var row in openRows) row.IsDone = true;
 
-                    var alreadyInNewCartable = _context.Cartables
-                        .Where(item => fileIds.Contains(item.FileId) && item.RcvrUserId == newUserId && !item.IsDone)
-                        .Select(item => item.FileId).Distinct().ToList();
-                    foreach (var fileId in fileIds.Except(alreadyInNewCartable))
+                    foreach (var fileId in fileIds)
                     {
                         _context.Cartables.Add(new Cartable
                         {
                             FileId = fileId,
                             SndrUserId = administratorUserId,
                             RcvrUserId = newUserId,
+                            RcvrRoleId = roleId,
                             StateCd = 0,
                             IsView = false,
                             IsDone = false,
                             RegDate = DateTime.Now
+                        });
+                    }
+
+                    // درخواست‌های نقش قبلی احمدی در همان جایگاه باقی می‌مانند، ولی تا تعیین مسئول جدید بدون کاربر هستند.
+                    var previousPositionRows = _context.Cartables
+                        .Where(item => !item.IsDone && item.RcvrUserId == newUserId &&
+                            item.RcvrRoleId.HasValue && previousRoleIds.Contains(item.RcvrRoleId.Value))
+                        .ToList();
+                    foreach (var row in previousPositionRows)
+                    {
+                        row.IsDone = true;
+                        _context.Cartables.Add(new Cartable
+                        {
+                            FileId = row.FileId,
+                            SndrUserId = administratorUserId,
+                            RcvrUserId = 0,
+                            RcvrRoleId = row.RcvrRoleId,
+                            StateCd = row.StateCd,
+                            IsView = false,
+                            IsDone = false,
+                            RegDate = changeDate
                         });
                     }
 
@@ -156,25 +186,104 @@ namespace VisitorManagment.Core.Services
                             RoleTypeTitle = adminRole == null ? "مدیر سامانه" : adminRole.Title,
                             RoleTypeFinalId = adminRole == null ? 0 : adminRole.RoleTypeFinalId,
                             RoleTypeFinalTitle = adminRole == null ? "مدیر سامانه" : adminRole.Title,
-                            RegDate = DateTime.Now
+                            RegDate = changeDate
                         });
                     }
 
+                    EnsureAssignmentHistory(formerAssignments.Concat(previousAssignments)
+                        .Concat(_context.UserRoles.Where(item => item.UserId == newUserId && item.RoleId == roleId).ToList())
+                        .ToList(), administratorUserId, changeDate);
+                    CloseActiveRoleHistory(formerUserIds.Concat(new[] { newUserId }).Distinct().ToList(),
+                        previousRoleIds.Concat(new[] { roleId }).Distinct().ToList(), changeDate);
+                    _context.RoleAssignmentHistories.Add(new RoleAssignmentHistory
+                    {
+                        RoleId = roleId,
+                        UserId = newUserId,
+                        StartDate = changeDate,
+                        ChangedByUserId = administratorUserId,
+                        ChangeReason = "تغییر مسئول جایگاه از طریق مدیریت کاربران"
+                    });
+
                     _context.UserRoles.RemoveRange(formerAssignments);
-                    var newUserAssignments = _context.UserRoles.Where(item => item.UserId == newUserId).ToList();
-                    _context.UserRoles.RemoveRange(newUserAssignments);
+                    _context.UserRoles.RemoveRange(previousAssignments);
+                    var duplicateDestinationAssignments = _context.UserRoles
+                        .Where(item => item.UserId == newUserId && item.RoleId == roleId).ToList();
+                    _context.UserRoles.RemoveRange(duplicateDestinationAssignments);
                     _context.UserRoles.Add(new UserRole { RoleId = roleId, UserId = newUserId });
 
                     _context.SaveChanges();
                     transaction.Commit();
                     return new BaseResult(true,
-                        $"مسئول نقش جایگزین و {fileIds.Count} درخواست باز به کارتابل جدید منتقل شد.");
+                        $"مسئول جایگاه تغییر کرد؛ {fileIds.Count} درخواست جایگاه مقصد منتقل و " +
+                        $"{previousPositionRows.Count} درخواست جایگاه قبلی در کارتابل خالی آن جایگاه محفوظ ماند.");
                 }
                 catch (Exception)
                 {
                     transaction.Rollback();
                     return new BaseResult(false, "جایگزینی انجام نشد؛ نقش و کارتابل قبلی بدون تغییر باقی ماند.");
                 }
+            }
+        }
+
+        /// <summary>
+        /// برای داده‌های قدیمی، نقش مقصد کارتابل را از نقش فعلی گیرنده تکمیل می‌کند.
+        /// این کار قبل از جابه‌جایی انجام می‌شود تا درخواست‌های دو جایگاه با هم مخلوط نشوند.
+        /// </summary>
+        private void BackfillOpenCartableRoles(List<int> userIds)
+        {
+            if (userIds == null || userIds.Count == 0) return;
+
+            var roleByUser = _context.UserRoles.AsNoTracking()
+                .Where(item => userIds.Contains(item.UserId))
+                .OrderBy(item => item.UR_Id)
+                .ToList()
+                .GroupBy(item => item.UserId)
+                .ToDictionary(group => group.Key, group => group.Select(item => item.RoleId).FirstOrDefault());
+            var rows = _context.Cartables
+                .Where(item => !item.IsDone && !item.RcvrRoleId.HasValue && userIds.Contains(item.RcvrUserId))
+                .ToList();
+            foreach (var row in rows)
+            {
+                if (roleByUser.TryGetValue(row.RcvrUserId, out var assignedRoleId))
+                    row.RcvrRoleId = assignedRoleId;
+            }
+        }
+
+        /// <summary>
+        /// تصدی‌های فعال قبلی را خاتمه می‌دهد؛ رکوردها حذف نمی‌شوند تا سابقه مدیریتی قابل گزارش باشد.
+        /// </summary>
+        private void CloseActiveRoleHistory(List<int> userIds, List<int> roleIds, DateTime endDate)
+        {
+            var histories = _context.RoleAssignmentHistories
+                .Where(item => !item.EndDate.HasValue &&
+                    (userIds.Contains(item.UserId) || roleIds.Contains(item.RoleId)))
+                .ToList();
+            foreach (var history in histories) history.EndDate = endDate;
+        }
+
+        /// <summary>
+        /// برای نقش‌های موجود پیش از راه‌اندازی تاریخچه، یک رکورد پایه می‌سازد تا نام متصدی قبلی از دست نرود.
+        /// زمان شروع این رکوردها قابل بازیابی نیست و علت آن صریحاً ثبت می‌شود.
+        /// </summary>
+        private void EnsureAssignmentHistory(List<UserRole> assignments, int administratorUserId, DateTime endDate)
+        {
+            foreach (var assignment in assignments
+                .GroupBy(item => new { item.RoleId, item.UserId })
+                .Select(group => group.First()))
+            {
+                var exists = _context.RoleAssignmentHistories.Any(item =>
+                    item.RoleId == assignment.RoleId && item.UserId == assignment.UserId);
+                if (exists) continue;
+
+                _context.RoleAssignmentHistories.Add(new RoleAssignmentHistory
+                {
+                    RoleId = assignment.RoleId,
+                    UserId = assignment.UserId,
+                    StartDate = endDate,
+                    EndDate = endDate,
+                    ChangedByUserId = administratorUserId,
+                    ChangeReason = "ثبت سابقه اولیه هنگام نخستین جابه‌جایی؛ تاریخ شروع قدیمی در دسترس نیست"
+                });
             }
         }
 

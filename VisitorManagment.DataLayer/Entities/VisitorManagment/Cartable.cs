@@ -10,6 +10,11 @@ namespace VisitorManagment.DataLayer.Entities.VisitorManagment
         [Key]
         public int Id { get; set; }
         public int RcvrUserId { get; set; }
+        /// <summary>
+        /// جایگاهی که درخواست به آن ارجاع شده است. در صورت خالی بودن جایگاه،
+        /// RcvrUserId صفر می‌شود ولی درخواست با این شناسه نقش محفوظ می‌ماند.
+        /// </summary>
+        public int? RcvrRoleId { get; set; }
         public int SndrUserId { get; set; }
         public int FileId { get; set; }
         public int StateCd { get; set; }

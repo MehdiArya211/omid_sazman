@@ -9,8 +9,10 @@
     var loader = document.getElementById("editPersonnelLoader");
     var roleSelect = document.getElementById("listRoles");
     var roleNotice = form.querySelector("[data-role-assignment-notice]");
+    var personnelMoveNotice = form.querySelector("[data-personnel-move-notice]");
     var userId = form.querySelector('[name="userId"]').value;
     var lastLoadedCode = personalCode.value.trim();
+    var loadedExistingUser = null;
 
     function encode(value) {
         var element = document.createElement("div");
@@ -48,6 +50,24 @@
         setValue("editUserViewModel_CodGha", data.codGha);
     }
 
+    function showPersonnelMove(existingUser) {
+        loadedExistingUser = existingUser || null;
+        personnelMoveNotice.className = "role-assignment-notice d-none";
+        personnelMoveNotice.innerHTML = "";
+        if (!existingUser || String(existingUser.userId) === String(userId)) { return; }
+
+        var targetRole = roleSelect.options[roleSelect.selectedIndex];
+        var targetRoleTitle = targetRole ? targetRole.text.trim() : "جایگاه انتخابی";
+        personnelMoveNotice.className = "role-assignment-notice";
+        personnelMoveNotice.innerHTML =
+            '<div class="role-assignment-notice__head"><i class="ti-exchange-vertical"></i> جابه‌جایی مسئول جایگاه</div>' +
+            '<p><strong>' + encode(existingUser.fullName) + '</strong> از جایگاه «' +
+            encode(existingUser.currentRoleTitle) + '» به جایگاه «' + encode(targetRoleTitle) + '» منتقل می‌شود.</p>' +
+            '<p class="mb-2">جایگاه قبلی او خالی می‌ماند و درخواست‌های باز آن جایگاه محفوظ خواهد ماند. مسئول فعلی جایگاه مقصد نیز خارج می‌شود.</p>' +
+            '<label class="role-replacement-confirm"><input type="checkbox" name="replaceExistingRoleHolder" value="true" required data-personnel-move-confirm />' +
+            '<span><strong>خلاصه جابه‌جایی را خواندم و تأیید می‌کنم</strong><small>هویت کاربران و سوابق هامش‌های قبلی تغییر نمی‌کند.</small></span></label>';
+    }
+
     personalCode.addEventListener("blur", function () {
         var code = personalCode.value.trim();
         if (!code || code === lastLoadedCode) { return; }
@@ -66,6 +86,7 @@
                     return;
                 }
                 applyPersonnel(response.data);
+                showPersonnelMove(response.existingUser);
                 lastLoadedCode = code;
                 personalHelp.classList.add("is-success");
                 personalHelp.textContent = "اطلاعات پرسنلی با موفقیت به‌روزرسانی شد.";
@@ -116,6 +137,7 @@
     }
 
     $(roleSelect).on("change", loadRoleAssignees);
+    $(roleSelect).on("change", function () { showPersonnelMove(loadedExistingUser); });
     loadRoleAssignees();
 
     form.addEventListener("submit", function (event) {
@@ -125,8 +147,8 @@
         if (window.Swal) {
             Swal.fire({
                 icon: "warning",
-                title: "جایگزینی مسئول نقش",
-                text: "نقش از مسئول فعلی گرفته و درخواست‌های باز او به این کاربر منتقل می‌شود. ادامه می‌دهید؟",
+                title: "تأیید جابه‌جایی مسئول",
+                text: "مسئول جایگاه تغییر می‌کند؛ کارتابل مقصد منتقل و جایگاه قبلی نفر جدید خالی می‌شود. ادامه می‌دهید؟",
                 showCancelButton: true,
                 confirmButtonText: "بله، جایگزین شود",
                 cancelButtonText: "انصراف"

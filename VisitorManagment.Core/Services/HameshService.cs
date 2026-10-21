@@ -388,9 +388,9 @@ namespace VisitorManagment.Core.Services
             list.hameshes = result.Select(t => new HameshInfoViewModel()
             {
                 Id = t.Id,
-                FirstName = t.User.FirstName,
-                LastName = t.User.LastName,
-                RankTitle = t.File.Personal.RankTitle,
+                FirstName = t.ActorFullNameSnapshot ?? (t.User.FirstName + " " + t.User.LastName),
+                LastName = "",
+                RankTitle = t.ActorRankTitleSnapshot ?? t.User.RankTitle,
                 ActionTypeTitle = t.ActionType.Title,
                 UserDesc = t.UserDesc,
                 RegDate = t.RegDate,
@@ -398,7 +398,8 @@ namespace VisitorManagment.Core.Services
                 LastNamePersonel = t.File.Personal.LastName,
                 RankTitlePersonal = t.File.Personal.RankTitle,
                 FarmandehPersonalName = t.File.FarmandehPersonalName,
-                RcvrUserName = t.User.FirstName + " " + t.User.LastName + "**" + t.User.UserName,
+                RcvrUserName = (t.ActorFullNameSnapshot ?? (t.User.FirstName + " " + t.User.LastName)) + "**" +
+                    (t.ActorPersonalCodeSnapshot ?? t.User.UserName),
 
             }).Skip(skip).Take(take).ToList();
             return list;
@@ -458,9 +459,9 @@ namespace VisitorManagment.Core.Services
                     hameshes = fileDetails.Hameshes.Select(t => new HameshInfoViewModel
                     {
                         Id = t.Id,
-                        FirstName = t.User?.FirstName ?? "نام کاربر موجود نیست.", // کنترل null و پیام مناسب
-                        LastName = t.User?.LastName ?? "نام خانوادگی کاربر موجود نیست.", // کنترل null و پیام مناسب
-                        RankTitle = t.File?.Personal?.RankTitle ?? "رتبه موجود نیست.", // کنترل null و پیام مناسب
+                        FirstName = t.ActorFullNameSnapshot ?? (t.User == null ? "نام کاربر موجود نیست." : (t.User.FirstName + " " + t.User.LastName)),
+                        LastName = "",
+                        RankTitle = t.ActorRankTitleSnapshot ?? t.User?.RankTitle ?? "درجه موجود نیست.",
                         ActionTypeTitle = t.ActionType?.Title ?? "نوع عمل موجود نیست.", // کنترل null و پیام مناسب
                         UserDesc = t.UserDesc ?? "توضیحات کاربر موجود نیست.", // کنترل null و پیام مناسب
                         RegDate = t.RegDate,
@@ -468,7 +469,8 @@ namespace VisitorManagment.Core.Services
                         LastNamePersonel = t.File?.Personal?.LastName ?? "نام خانوادگی پرسنل موجود نیست.", // کنترل null و پیام مناسب
                         RankTitlePersonal = t.File?.Personal?.RankTitle ?? "رتبه پرسنل موجود نیست.", // کنترل null و پیام مناسب
                         FarmandehPersonalName = t.File?.FarmandehPersonalName ?? "نام فرمانده موجود نیست.", // کنترل null و پیام مناسب
-                        RcvrUserName = t.User != null ? $"{t.User.FirstName} {t.User.LastName}**{t.User.UserName}" : "نام کاربری موجود نیست." // کنترل null و پیام مناسب
+                        RcvrUserName = (t.ActorFullNameSnapshot ?? (t.User == null ? "نام کاربر موجود نیست." : $"{t.User.FirstName} {t.User.LastName}")) +
+                            "**" + (t.ActorPersonalCodeSnapshot ?? t.User?.UserName ?? "نام کاربری موجود نیست.")
 
 
                     })
@@ -565,7 +567,7 @@ namespace VisitorManagment.Core.Services
                 .ThenInclude(x => x.UserRoles).ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
                 .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.UnitCommanderLegacy)
                 .OrderBy(x => x.RegDate)
-                .Select(x => x.UserDesc + "\n" + x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName + "\n" + x.RegDate.ToShamsi())
+                .Select(x => x.UserDesc + "\n" + (x.ActorFullNameSnapshot ?? (x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName)) + "\n" + x.RegDate.ToShamsi())
                 .LastOrDefault();
 
             if (string.IsNullOrEmpty(res))
@@ -585,7 +587,7 @@ namespace VisitorManagment.Core.Services
                 .ThenInclude(x => x.Role).ThenInclude(x => x.RoleTypeFinal)
                 .Where(x => x.FileId == fileId && x.RoleTypeId == SystemRoleTypes.GharargahCommanderLegacy && x.UserDesc != null && x.UserDesc.Trim() != "")
                 .OrderBy(x => x.RegDate)
-                .Select(x => x.UserDesc + "\n" + x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName + "\n" + x.RegDate.ToShamsi()).LastOrDefault();
+                .Select(x => x.UserDesc + "\n" + (x.ActorFullNameSnapshot ?? (x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName)) + "\n" + x.RegDate.ToShamsi()).LastOrDefault();
             if (string.IsNullOrEmpty(res))
             {
                 return res = "! این پرونده در ستاد نیروی زمینی میباشد";
@@ -628,7 +630,7 @@ namespace VisitorManagment.Core.Services
                 .Where(x => x.FileId == fileId && !excludedRoleTypes.Contains(x.RoleTypeId) && x.UserDesc != null && x.UserDesc.Trim() != "")
                 .Select(x => new HameshInfoViewModel
                 {
-                    FirstName = x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName,
+                    FirstName = x.ActorFullNameSnapshot ?? (x.User.RankTitle + " " + x.User.FirstName + " " + x.User.LastName),
                     PhoneSelseleMaratebYeganNafar = x.File.Phone,
                     UserDesc = x.UserDesc,
                     RoleTypeTitle = x.RoleTypeTitle,
