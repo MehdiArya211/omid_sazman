@@ -9,9 +9,8 @@
     var firstName = document.getElementById("fname");
     var lastName = document.getElementById("lname");
     var loader = document.getElementById("loader");
-    var password = form.querySelector("[data-password]");
-    var meter = form.querySelector("[data-password-meter]");
-    var passwordStatus = form.querySelector("[data-password-status]");
+    var roleSelect = document.getElementById("roleId");
+    var roleNotice = form.querySelector("[data-role-assignment-notice]");
     var avatarInput = form.querySelector("[data-avatar-input]");
     var avatarError = form.querySelector("[data-avatar-error]");
     var avatarRemove = form.querySelector("[data-avatar-remove]");
@@ -28,38 +27,17 @@
         window.alert(message);
     }
 
-    function passwordScore(value) {
-        var score = 0;
-        if (value.length >= 8) { score++; }
-        if (/[a-z]/.test(value)) { score++; }
-        if (/[A-Z]/.test(value)) { score++; }
-        if (/\d/.test(value)) { score++; }
-        if (/[^A-Za-z0-9]/.test(value)) { score++; }
-        return score;
+    function encode(value) {
+        var element = document.createElement("div");
+        element.textContent = value || "";
+        return element.innerHTML;
     }
-
-    password.addEventListener("input", function () {
-        var score = passwordScore(password.value);
-        var states = ["رمز عبور را وارد کنید", "ضعیف", "متوسط", "خوب", "قوی", "بسیار قوی"];
-        var colors = ["#c84a5a", "#c84a5a", "#e3912d", "#3157d5", "#148760", "#148760"];
-        meter.style.width = (score * 20) + "%";
-        meter.style.backgroundColor = colors[score];
-        passwordStatus.textContent = states[score];
-        passwordStatus.style.color = colors[score];
-        password.setCustomValidity(password.value && score < 4 ? "رمز عبور باید قوی باشد." : "");
-    });
-
-    form.querySelector("[data-password-toggle]").addEventListener("click", function () {
-        var isHidden = password.type === "password";
-        password.type = isHidden ? "text" : "password";
-        this.innerHTML = isHidden ? '<i class="ti-close"></i>' : '<i class="ti-eye"></i>';
-        this.setAttribute("aria-label", isHidden ? "پنهان کردن رمز عبور" : "نمایش رمز عبور");
-    });
 
     personalCode.addEventListener("blur", function () {
         var code = personalCode.value.trim();
         if (!code) { return; }
         loader.classList.remove("d-none");
+        personalCode.setAttribute("aria-busy", "true");
         firstName.value = "";
         lastName.value = "";
         personalHelp.className = "user-field__help";
@@ -86,7 +64,44 @@
                 personalHelp.textContent = "ارتباط با سرویس پرسنلی برقرار نشد.";
                 showToast("error", personalHelp.textContent);
             })
-            .always(function () { loader.classList.add("d-none"); });
+            .always(function () {
+                loader.classList.add("d-none");
+                personalCode.removeAttribute("aria-busy");
+            });
+    });
+
+    $(roleSelect).on("change", function () {
+        var roleId = parseInt(roleSelect.value, 10);
+        roleNotice.classList.add("d-none");
+        roleNotice.innerHTML = "";
+        if (!roleId) { return; }
+
+        roleNotice.className = "role-assignment-notice role-assignment-loading";
+        roleNotice.innerHTML = '<i class="ti-reload"></i> در حال بررسی دارندگان فعلی نقش...';
+        $.get("?handler=RoleAssignees", { roleId: roleId })
+            .done(function (result) {
+                if (!result || !result.success) {
+                    roleNotice.className = "role-assignment-notice";
+                    roleNotice.textContent = (result && result.message) || "بررسی نقش انجام نشد.";
+                    return;
+                }
+                if (!result.users || !result.users.length) {
+                    roleNotice.classList.add("d-none");
+                    return;
+                }
+                var rows = result.users.map(function (user) {
+                    var details = [user.rankTitle, user.fullName, user.userName, user.unitTitle, user.isActive ? "فعال" : "غیرفعال"].filter(Boolean).join(" - ");
+                    return '<div class="role-assignment-user"><span>' + encode(details) + '<small>' + user.openCartableCount + ' درخواست باز</small></span><a href="/Admin/Users/EditUser/' + user.userId + '">ویرایش کاربر</a></div>';
+                }).join("");
+                roleNotice.className = "role-assignment-notice";
+                roleNotice.innerHTML = '<div class="role-assignment-notice__head"><i class="ti-alert"></i> این نقش هم‌اکنون مسئول دارد:</div>' + rows +
+                    '<label class="role-replacement-confirm"><input type="checkbox" name="replaceExistingRoleHolder" value="true" required />' +
+                    '<span><strong>جایگزینی مسئول فعلی و انتقال درخواست‌های باز</strong><small>نقش از مسئول قبلی گرفته می‌شود و سوابق هامش‌ها تغییر نمی‌کند.</small></span></label>';
+            })
+            .fail(function () {
+                roleNotice.className = "role-assignment-notice";
+                roleNotice.textContent = "ارتباط با سرور برای بررسی نقش برقرار نشد.";
+            });
     });
 
     avatarInput.addEventListener("change", function () {
@@ -117,6 +132,29 @@
             event.preventDefault();
             event.stopPropagation();
             showToast("warning", "لطفاً فیلدهای الزامی را کامل و صحیح وارد کنید.");
+            form.classList.add("was-validated");
+            return;
+        }
+        var replacement = form.querySelector('[name="replaceExistingRoleHolder"]:checked');
+        if (replacement && !form.dataset.replacementConfirmed) {
+            event.preventDefault();
+            if (window.Swal) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "جایگزینی مسئول نقش",
+                    text: "نقش از مسئول فعلی گرفته و درخواست‌های باز او به کاربر جدید منتقل می‌شود. ادامه می‌دهید؟",
+                    showCancelButton: true,
+                    confirmButtonText: "بله، جایگزین شود",
+                    cancelButtonText: "انصراف"
+                }).then(function (result) {
+                    if (!result.isConfirmed) { return; }
+                    form.dataset.replacementConfirmed = "true";
+                    form.requestSubmit();
+                });
+            } else if (window.confirm("مسئول فعلی جایگزین و درخواست‌های باز منتقل شود؟")) {
+                form.dataset.replacementConfirmed = "true";
+                form.requestSubmit();
+            }
         }
         form.classList.add("was-validated");
     });

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using VisitorManagment.Core.DTOs;
+using VisitorManagment.Core.DTOs.Base;
 
 namespace VisitorManagment.Core.Services.Interfaces
 {
@@ -25,6 +26,10 @@ namespace VisitorManagment.Core.Services.Interfaces
         bool IsRoleInUse(int roleId);
         void AddRolesToUser(int roleId, int userId);
         void EditRolesToUser(int roleId, int userId);
+        /// <summary>
+        /// متصدی فعلی نقش را با کاربر جدید جایگزین و کارتابل‌های باز را در یک تراکنش منتقل می‌کند.
+        /// </summary>
+        BaseResult ReplaceRoleHolder(int roleId, int newUserId, int administratorUserId);
         #endregion
         #region province&&City
         List<Permission> GetPermissionsForUser(int userId);

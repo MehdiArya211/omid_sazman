@@ -7,6 +7,9 @@ using System.Linq;
 using VisitorManagment.Core.DTOs;
 using Microsoft.EntityFrameworkCore;
 using VisitorManagment.Core.Constants;
+using VisitorManagment.Core.DTOs.Base;
+using VisitorManagment.DataLayer.Entities.VisitorManagment;
+using System;
 
 namespace VisitorManagment.Core.Services
 {
@@ -83,6 +86,96 @@ namespace VisitorManagment.Core.Services
             _context.UserRoles.Where(u => u.UserId == userId).ToList().ForEach(r => _context.UserRoles.Remove(r));
 
             AddRolesToUser(roleId, userId);
+        }
+
+        /// <inheritdoc />
+        public BaseResult ReplaceRoleHolder(int roleId, int newUserId, int administratorUserId)
+        {
+            if (roleId <= 0 || newUserId <= 0 || administratorUserId <= 0)
+                return new BaseResult(false, "اطلاعات جایگزینی نقش کامل نیست.");
+
+            var role = _context.Roles.FirstOrDefault(item => item.RoleId == roleId && !item.IsDelete);
+            var newUser = _context.Users.FirstOrDefault(item => item.Id == newUserId && item.IsActive && !item.IsDelete);
+            var administrator = _context.Users.Include(item => item.UserRoles).ThenInclude(item => item.Role)
+                .FirstOrDefault(item => item.Id == administratorUserId && item.IsActive && !item.IsDelete);
+            if (role == null) return new BaseResult(false, "نقش انتخابی معتبر نیست.");
+            if (newUser == null) return new BaseResult(false, "کاربر جدید فعال و معتبر نیست.");
+            if (administrator == null) return new BaseResult(false, "هویت مدیر انجام‌دهنده معتبر نیست.");
+
+            // سطح Serializable مانع می‌شود دو مدیر هم‌زمان دو متصدی متفاوت برای یک نقش ثبت کنند.
+            using (var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable))
+            {
+                try
+                {
+                    var formerAssignments = _context.UserRoles
+                        .Where(item => item.RoleId == roleId && item.UserId != newUserId)
+                        .ToList();
+                    var formerUserIds = formerAssignments.Select(item => item.UserId).Distinct().ToList();
+
+                    var openRows = _context.Cartables
+                        .Where(item => formerUserIds.Contains(item.RcvrUserId) && !item.IsDone)
+                        .OrderBy(item => item.RegDate).ThenBy(item => item.Id)
+                        .ToList();
+                    var fileIds = openRows.Select(item => item.FileId).Distinct().ToList();
+
+                    foreach (var row in openRows) row.IsDone = true;
+
+                    var alreadyInNewCartable = _context.Cartables
+                        .Where(item => fileIds.Contains(item.FileId) && item.RcvrUserId == newUserId && !item.IsDone)
+                        .Select(item => item.FileId).Distinct().ToList();
+                    foreach (var fileId in fileIds.Except(alreadyInNewCartable))
+                    {
+                        _context.Cartables.Add(new Cartable
+                        {
+                            FileId = fileId,
+                            SndrUserId = administratorUserId,
+                            RcvrUserId = newUserId,
+                            StateCd = 0,
+                            IsView = false,
+                            IsDone = false,
+                            RegDate = DateTime.Now
+                        });
+                    }
+
+                    var adminRole = administrator.UserRoles.Select(item => item.Role).FirstOrDefault();
+                    var newHolderTitle = (newUser.RankTitle + " " + newUser.FirstName + " " + newUser.LastName).Trim();
+                    foreach (var fileId in fileIds)
+                    {
+                        var parentId = _context.Hameshes
+                            .Where(item => item.FileId == fileId && item.UserDesc != null && item.UserDesc.Trim() != "")
+                            .OrderByDescending(item => item.RegDate).ThenByDescending(item => item.Id)
+                            .Select(item => (int?)item.Id).FirstOrDefault();
+                        _context.Hameshes.Add(new Hamesh
+                        {
+                            FileId = fileId,
+                            UserId = administratorUserId,
+                            ParentId = parentId,
+                            ActionTypeId = 1002,
+                            UserDesc = "جایگزینی مسئول نقش «" + role.Title + "» و انتقال کارتابل باز به " + newHolderTitle + ".",
+                            RoleTypeId = adminRole == null ? 0 : adminRole.RoleType,
+                            RoleTypeTitle = adminRole == null ? "مدیر سامانه" : adminRole.Title,
+                            RoleTypeFinalId = adminRole == null ? 0 : adminRole.RoleTypeFinalId,
+                            RoleTypeFinalTitle = adminRole == null ? "مدیر سامانه" : adminRole.Title,
+                            RegDate = DateTime.Now
+                        });
+                    }
+
+                    _context.UserRoles.RemoveRange(formerAssignments);
+                    var newUserAssignments = _context.UserRoles.Where(item => item.UserId == newUserId).ToList();
+                    _context.UserRoles.RemoveRange(newUserAssignments);
+                    _context.UserRoles.Add(new UserRole { RoleId = roleId, UserId = newUserId });
+
+                    _context.SaveChanges();
+                    transaction.Commit();
+                    return new BaseResult(true,
+                        $"مسئول نقش جایگزین و {fileIds.Count} درخواست باز به کارتابل جدید منتقل شد.");
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    return new BaseResult(false, "جایگزینی انجام نشد؛ نقش و کارتابل قبلی بدون تغییر باقی ماند.");
+                }
+            }
         }
 
         /// <summary>

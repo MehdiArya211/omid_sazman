@@ -95,11 +95,28 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return new JsonResult(response.Data);
         }
 
+        /// <summary>
+        /// دارندگان فعال نقش انتخابی را برای نمایش هشدار و لینک ویرایش برمی‌گرداند.
+        /// </summary>
+        public JsonResult OnGetRoleAssignees(int roleId)
+        {
+            var roleTypeId = User.FindFirst("RoleTypeId")?.Value;
+            var roleIsAssignable = _permissionService.GetRoles(roleTypeId ?? string.Empty)
+                .Any(role => role.RoleId == roleId);
+            if (!roleIsAssignable) return new JsonResult(new { success = false, message = "نقش انتخابی معتبر نیست." });
+
+            return new JsonResult(new
+            {
+                success = true,
+                users = _userService.GetUsersByRole(roleId)
+            });
+        }
+
 
         /// <summary>
         /// اطلاعات ارسال‌شده فرم را بررسی و پردازش می‌کند.
         /// </summary>
-        public IActionResult OnPost(int roleId, string password, IFormFile userAvatar)
+        public IActionResult OnPost(int roleId, IFormFile userAvatar, bool replaceExistingRoleHolder)
         {
             try
             {
@@ -127,23 +144,13 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     ModelState.AddModelError("", "انتخاب نقش کاربر الزامی است.");
                     return Page();
                 }
-                if (string.IsNullOrWhiteSpace(password))
+                var existingRoleHolders = _userService.GetUsersByRole(roleId);
+                if (existingRoleHolders.Any() && !replaceExistingRoleHolder)
                 {
-                    ModelState.AddModelError("", "رمز عبور الزامی است.");
+                    ModelState.AddModelError("",
+                        "این نقش مسئول فعال دارد. برای جلوگیری از دو مسئول هم‌زمان، گزینه جایگزینی و انتقال کارتابل را تأیید کنید.");
                     return Page();
                 }
-                if (password.Length > 200)
-                {
-                    ModelState.AddModelError("", "رمز عبور نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد.");
-                    return Page();
-                }
-                if (password.Length < 8 || !password.Any(char.IsLower) || !password.Any(char.IsUpper) ||
-                    !password.Any(char.IsDigit) || !password.Any(character => !char.IsLetterOrDigit(character)))
-                {
-                    ModelState.AddModelError("", "رمز عبور باید حداقل ۸ کاراکتر و شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد.");
-                    return Page();
-                }
-
                 // بازیابی اطلاعات کاربر از سشن
                 var user = HttpContext.Session.GetObjectFromJson<CreateUserViewModel>("result");
                 if (user == null)
@@ -153,7 +160,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 }
 
                 // تنظیم اطلاعات کاربر
-                user.Password = password;
+                user.Password = user.PersonalCode;
                 user.AddUserId = int.Parse(userIdClaim);
                 user.UserAvatar = userAvatar;
 
@@ -188,10 +195,26 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     return Page();
                 }
 
-                // افزودن نقش‌ها به کاربر
+                // افزودن نقش یا جایگزینی مسئول فعلی و انتقال کارتابل‌های باز
                 try
                 {
-                    _permissionService.AddRolesToUser(roleId, newUserId);
+                    if (existingRoleHolders.Any())
+                    {
+                        var replacementResult = _permissionService.ReplaceRoleHolder(
+                            roleId, newUserId, int.Parse(userIdClaim));
+                        if (!replacementResult.Status)
+                        {
+                            _userService.DeleteUser(newUserId);
+                            ModelState.AddModelError("", replacementResult.Message);
+                            return Page();
+                        }
+                        TempData["OperationMessage"] = replacementResult.Message;
+                    }
+                    else
+                    {
+                        _permissionService.AddRolesToUser(roleId, newUserId);
+                        TempData["OperationMessage"] = "کاربر با موفقیت ثبت شد.";
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -201,7 +224,6 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
                 // هدایت به صفحه اصلی
                 TempData["OperationTitle"] = "ثبت موفق";
-                TempData["OperationMessage"] = "کاربر با موفقیت ثبت شد.";
                 TempData["OperationIcon"] = "success";
                 return RedirectToPage("Index");
             }

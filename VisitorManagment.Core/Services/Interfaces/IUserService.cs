@@ -29,6 +29,10 @@ namespace VisitorManagment.Core.Services.Interfaces
         int AddUserFromAdmin(CreateUserViewModel user);
         EditUserViewModel GetUserForShowInEditMode(int userId);
         void EditUserFromAdmin(EditUserViewModel editUserViewModel , string password ,int EditUserId , int userId);
+        /// <summary>
+        /// دارندگان حذف‌نشده نقش مشخص را برمی‌گرداند؛ در ویرایش می‌توان کاربر جاری را از نتیجه حذف کرد.
+        /// </summary>
+        List<RoleAssignedUserViewModel> GetUsersByRole(int roleId, int? excludeUserId = null);
         #endregion
 
         #region User
