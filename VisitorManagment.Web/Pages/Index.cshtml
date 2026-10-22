@@ -81,13 +81,19 @@
                 <footer class="omid-footer">سازمان فناوری اطلاعات م فاوا نزاجا</footer>
             </div>
             <aside class="omid-login-slider" aria-label="تصاویر معرفی سامانه">
-                <div class="omid-slide is-active"><img src="~/assets/media/image/photo2.jpg" alt="محیط کاری دیجیتال" /><div class="omid-slide-caption"><strong>دسترسی سریع و یکپارچه</strong><span>ثبت و پیگیری درخواست‌ها در یک محیط سازمانی</span></div></div>
-                <div class="omid-slide"><img src="~/assets/media/image/photo3.jpg" alt="کار با سامانه سازمانی" /><div class="omid-slide-caption"><strong>پیگیری شفاف درخواست‌ها</strong><span>مشاهده وضعیت و گردش درخواست در هر مرحله</span></div></div>
-                <div class="omid-slide"><img src="~/assets/media/image/photo1.jpg" alt="سامانه هوشمند مدیریتی" /><div class="omid-slide-caption"><strong>مدیریت ساده‌تر</strong><span>دسترسی به کارتابل و خدمات موردنیاز کارکنان</span></div></div>
+                @for (var index = 0; index < Model.LoginSlides.Count; index++)
+                {
+                    var slide = Model.LoginSlides[index];
+                    <div class="omid-slide @(index == 0 ? "is-active" : string.Empty)">
+                        <img src="@slide.ImagePath" alt="@(slide.AltText ?? slide.Title)" />
+                        <div class="omid-slide-caption"><strong>@slide.Title</strong><span>@slide.Description</span></div>
+                    </div>
+                }
                 <div class="omid-slider-dots" role="group" aria-label="انتخاب تصویر">
-                    <button class="omid-slider-dot is-active" type="button" aria-label="تصویر اول"></button>
-                    <button class="omid-slider-dot" type="button" aria-label="تصویر دوم"></button>
-                    <button class="omid-slider-dot" type="button" aria-label="تصویر سوم"></button>
+                    @for (var index = 0; index < Model.LoginSlides.Count; index++)
+                    {
+                        <button class="omid-slider-dot @(index == 0 ? "is-active" : string.Empty)" type="button" aria-label="تصویر @(index + 1)"></button>
+                    }
                 </div>
             </aside>
         </section>
@@ -108,12 +114,14 @@
             var sliderTimer;
 
             function showSlide(index) {
+                if (!slides.length) return;
                 activeSlide = index;
                 slides.forEach(function (slide, i) { slide.classList.toggle("is-active", i === index); });
                 dots.forEach(function (dot, i) { dot.classList.toggle("is-active", i === index); });
             }
 
             function startSlider() {
+                if (slides.length < 2) return;
                 sliderTimer = window.setInterval(function () {
                     showSlide((activeSlide + 1) % slides.length);
                 }, 5000);
@@ -126,7 +134,7 @@
                     startSlider();
                 });
             });
-            if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) startSlider();
+            if (slides.length > 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) startSlider();
 
             toggle.addEventListener("click", function () {
                 var visible = password.type === "text";
