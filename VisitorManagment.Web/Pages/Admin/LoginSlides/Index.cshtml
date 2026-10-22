@@ -1,0 +1,75 @@
+@page
+@model VisitorManagment.Web.Pages.Admin.LoginSlides.IndexModel
+@{
+    ViewData["Title"] = "مدیریت تصاویر صفحه ورود";
+}
+<link rel="stylesheet" href="~/css/login-slide-management.css" asp-append-version="true" />
+
+<main class="slide-manager" data-slide-manager>
+    <header class="slide-manager__hero">
+        <div><span>تنظیمات صفحه ورود</span><h1>مدیریت تصاویر لاگین</h1><p>تصاویر را با اندازه استاندارد قاب ورود، کراپ و مرتب کنید.</p></div>
+        <button type="button" class="slide-primary" data-open-create><i class="ti-plus"></i> افزودن تصویر</button>
+    </header>
+
+    <section class="slide-guide">
+        <i class="ti-info-alt"></i>
+        <div><strong>اندازه خروجی استاندارد: ۹۰۰ × ۹۸۰ پیکسل</strong><span>تصویر هنگام ثبت با نسبت قاب لاگین خروجی گرفته می‌شود؛ بنابراین قالب در دسکتاپ و موبایل به‌هم نمی‌ریزد.</span></div>
+    </section>
+
+    <section class="slide-grid">
+        @if (!Model.Slides.Any())
+        {
+            <div class="slide-empty"><i class="ti-image"></i><strong>هنوز تصویری ثبت نشده است</strong><span>برای شروع روی «افزودن تصویر» بزنید.</span></div>
+        }
+        @foreach (var slide in Model.Slides)
+        {
+            <article class="slide-card @(slide.IsActive ? "" : "is-disabled")">
+                <div class="slide-card__image"><img src="@slide.ImagePath" alt="@slide.AltText" /><span>@(slide.IsActive ? "فعال" : "غیرفعال")</span></div>
+                <div class="slide-card__body"><small>ترتیب @slide.SortOrder</small><h2>@slide.Title</h2><p>@(slide.Description ?? "بدون توضیح")</p></div>
+                <div class="slide-card__actions">
+                    <button type="button" class="slide-action slide-action--edit" data-edit-slide
+                            data-id="@slide.Id" data-image="@slide.ImagePath" data-title="@slide.Title"
+                            data-description="@slide.Description" data-alt="@slide.AltText"
+                            data-order="@slide.SortOrder" data-active="@slide.IsActive.ToString().ToLower()"><i class="ti-pencil"></i> ویرایش و کراپ</button>
+                    <form method="post" asp-page-handler="Toggle"><input type="hidden" name="id" value="@slide.Id"/><button class="slide-action" type="submit"><i class="ti-control-pause"></i> @(slide.IsActive ? "غیرفعال" : "فعال")</button></form>
+                    <form method="post" asp-page-handler="Delete"><input type="hidden" name="id" value="@slide.Id"/><button class="slide-action slide-action--delete" type="submit" data-confirm="تصویر «@slide.Title» حذف شود؟" data-confirm-title="تأیید حذف تصویر" data-confirm-button="بله، حذف شود"><i class="ti-trash"></i> حذف</button></form>
+                </div>
+            </article>
+        }
+    </section>
+</main>
+
+<div class="slide-modal" data-slide-modal hidden>
+    <div class="slide-modal__backdrop" data-close-modal></div>
+    <section class="slide-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="slideModalTitle">
+        <form method="post" data-slide-form>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" data-field="id" />
+            <input type="hidden" name="croppedImageData" data-cropped-data />
+            <header><div><small>قاب استاندارد صفحه ورود</small><h2 id="slideModalTitle" data-modal-title>افزودن تصویر</h2></div><button type="button" data-close-modal aria-label="بستن">&times;</button></header>
+            <div class="slide-modal__content">
+                <div class="crop-panel">
+                    <div class="crop-stage" data-crop-stage><img data-crop-image alt="پیش‌نمایش کراپ"/><div data-crop-placeholder><i class="ti-image"></i><span>تصویر را انتخاب کنید</span></div></div>
+                    <label class="crop-file"><i class="ti-upload"></i><span>انتخاب یا جایگزینی تصویر</span><input type="file" accept="image/jpeg,image/png,image/webp" data-image-input /></label>
+                    <div class="crop-controls">
+                        <label><span>بزرگ‌نمایی</span><input type="range" min="100" max="240" value="100" data-crop-zoom /></label>
+                        <label><span>جابجایی افقی</span><input type="range" min="-100" max="100" value="0" data-crop-x /></label>
+                        <label><span>جابجایی عمودی</span><input type="range" min="-100" max="100" value="0" data-crop-y /></label>
+                    </div>
+                </div>
+                <div class="slide-fields">
+                    <label><span>عنوان تصویر *</span><input name="title" maxlength="150" required data-field="title" /></label>
+                    <label><span>توضیح کوتاه</span><textarea name="description" maxlength="300" rows="3" data-field="description"></textarea></label>
+                    <label><span>متن جایگزین تصویر</span><input name="altText" maxlength="150" data-field="alt" /></label>
+                    <label><span>ترتیب نمایش</span><input name="sortOrder" type="number" min="0" value="1" required data-field="order" /></label>
+                    <label class="slide-switch"><input name="isActive" type="checkbox" value="true" checked data-field="active" /><span>نمایش در صفحه ورود</span></label>
+                </div>
+            </div>
+            <footer><button type="button" class="slide-secondary" data-close-modal>انصراف</button><button type="submit" class="slide-primary" data-save-slide><i class="ti-check"></i><span>ذخیره تصویر</span></button></footer>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/login-slide-management.js" asp-append-version="true"></script>
+}

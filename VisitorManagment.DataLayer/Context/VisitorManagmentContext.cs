@@ -52,6 +52,7 @@ namespace VisitorManagment.DataLayer.Context
         public DbSet<Vam> Vams { get; set; }
         public DbSet<VamCode> VamCodes { get; set; }
         public DbSet<UserLoginHistory> UserLoginHistories { get; set; }
+        public DbSet<LoginSlide> LoginSlides { get; set; }
 
         #region Meeting
         public DbSet<Meeting> Meetings { get; set; }
@@ -108,6 +109,8 @@ namespace VisitorManagment.DataLayer.Context
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<LoginSlide>()
+                .HasIndex(slide => slide.SortOrder);
             modelBuilder.Entity<RoleAssignmentHistory>()
                 .HasIndex(item => item.RoleId)
                 .HasFilter("[EndDate] IS NULL")

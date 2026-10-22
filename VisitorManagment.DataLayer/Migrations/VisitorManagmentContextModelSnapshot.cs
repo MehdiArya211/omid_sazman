@@ -21,6 +21,27 @@ namespace VisitorManagment.DataLayer.Migrations
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.LoginSlide", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AltText").HasMaxLength(150).HasColumnType("nvarchar(150)");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("datetime2");
+                    b.Property<string>("Description").HasMaxLength(300).HasColumnType("nvarchar(300)");
+                    b.Property<string>("ImagePath").IsRequired().HasMaxLength(500).HasColumnType("nvarchar(500)");
+                    b.Property<bool>("IsActive").HasColumnType("bit");
+                    b.Property<int>("SortOrder").HasColumnType("int");
+                    b.Property<string>("Title").IsRequired().HasMaxLength(150).HasColumnType("nvarchar(150)");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+                    b.HasIndex("SortOrder");
+                    b.ToTable("LoginSlides");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.NotificationAttachment", b =>
                 {
                     b.Property<int>("Id")

@@ -19,6 +19,7 @@ using System.Net;
 using System;
 using System.Threading.Tasks;
 using VisitorManagment.DataLayer.Entities.User;
+using VisitorManagment.DataLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
@@ -65,6 +66,7 @@ namespace VisitorManagment.Web.Pages
         [BindProperty]
         public LoginViewModel LoginViewModel { get; set; }
         public ItoLogInfoViewModel itoLogInfoViewModel { get; set; }
+        public List<LoginSlide> LoginSlides { get; private set; } = new List<LoginSlide>();
 
         /// <summary>
         /// در محیط توسعه، نقص تنظیمات ورود آزمایشی را بدون نمایش مقدار رمز اعلام می‌کند.
@@ -94,6 +96,7 @@ namespace VisitorManagment.Web.Pages
         /// </summary>
         public void OnGet()
         {
+            LoadLoginSlides();
         }
 
         /// <summary>
@@ -102,6 +105,7 @@ namespace VisitorManagment.Web.Pages
         /// </summary>
         public async Task<IActionResult> OnPost()
         {
+            LoadLoginSlides();
             if (!ModelState.IsValid)
             {
                 return Page();
@@ -225,6 +229,32 @@ namespace VisitorManagment.Web.Pages
             return _userService.IsPasswordChangeRequired(user.Id)
                 ? RedirectToPage("/ChangePasswordRequired")
                 : RedirectToPage("/Visitor/Index");
+        }
+
+        #endregion
+
+        #region Login slide
+
+        /// <summary>
+        /// تصاویر فعال صفحه ورود را با ترتیب تعیین‌شده در پنل مدیریت آماده می‌کند.
+        /// در صورت خالی بودن جدول، تصاویر قدیمی قالب به‌عنوان پشتیبان نمایش داده می‌شوند.
+        /// </summary>
+        private void LoadLoginSlides()
+        {
+            LoginSlides = _context.LoginSlides.AsNoTracking()
+                .Where(item => item.IsActive)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.Id)
+                .ToList();
+
+            if (LoginSlides.Count > 0) return;
+
+            LoginSlides = new List<LoginSlide>
+            {
+                new LoginSlide { ImagePath = "/assets/media/image/photo2.jpg", Title = "دسترسی سریع و یکپارچه", Description = "ثبت و پیگیری درخواست‌ها در یک محیط سازمانی", AltText = "محیط کاری دیجیتال" },
+                new LoginSlide { ImagePath = "/assets/media/image/photo3.jpg", Title = "پیگیری شفاف درخواست‌ها", Description = "مشاهده وضعیت و گردش درخواست در هر مرحله", AltText = "کار با سامانه سازمانی" },
+                new LoginSlide { ImagePath = "/assets/media/image/photo1.jpg", Title = "مدیریت ساده‌تر", Description = "دسترسی به کارتابل و خدمات موردنیاز کارکنان", AltText = "سامانه هوشمند مدیریتی" }
+            };
         }
 
         #endregion
