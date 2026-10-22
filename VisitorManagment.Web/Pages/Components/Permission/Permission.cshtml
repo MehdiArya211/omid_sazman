@@ -1,23 +1,42 @@
 ﻿
 @model IEnumerable<VisitorManagment.DataLayer.Entities.Permissions.Permission>
 
+@functions {
+    private static string NormalizePath(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value == "#") return string.Empty;
+        var path = value.Split('?')[0].Trim().TrimEnd('/');
+        return string.IsNullOrEmpty(path) ? "/" : path.ToLowerInvariant();
+    }
+
+    private static bool IsCurrentPath(string currentPath, string menuPath)
+    {
+        var target = NormalizePath(menuPath);
+        return !string.IsNullOrEmpty(target) &&
+               (currentPath == target || currentPath.StartsWith(target + "/"));
+    }
+}
+
 @{
-    var CController = Context.Request.Path.Value;
+    var currentPath = NormalizePath(Context.Request.Path.Value);
 }
 
 <li><a style="color:red" href="/Visitor/Index">صفحه اصلی</a></li>
 
 @foreach (var item in Model.Where(p => p.ParentID == null && p.IsActive==true))
 {
-    <li class="@(CController.Contains(@item.ParentUrl)? "open" : "")">
+    var children = Model.Where(p => p.ParentID == item.PermissionId && p.IsActive).OrderBy(p => p.Order).ToList();
+    var parentIsOpen = children.Any(child => IsCurrentPath(currentPath, child.MenuUrl ?? child.SubUrl)) ||
+                       (children.Count == 0 && IsCurrentPath(currentPath, item.ParentUrl));
+    <li class="@(parentIsOpen ? "open" : "")">
 
-        <a href="#" style="color:dodgerblue"> @item.PermissionTitle</a>
+        <a href="#" style="color:dodgerblue" class="@(parentIsOpen ? "active" : "")" aria-expanded="@parentIsOpen.ToString().ToLowerInvariant()"> @item.PermissionTitle</a>
         <ul>
-            @foreach (var sub in Model.Where(p => p.ParentID == item.PermissionId && p.IsActive==true))
+            @foreach (var sub in children)
             {
-
+                var childIsActive = IsCurrentPath(currentPath, sub.MenuUrl ?? sub.SubUrl);
                 <li>
-                    <a  href="@sub.SubUrl" class="@(CController.Contains(@sub.MenuUrl) ? "active" : "")">@sub.PermissionTitle</a>
+                    <a href="@sub.SubUrl" class="@(childIsActive ? "active" : "")" aria-current="@(childIsActive ? "page" : null)">@sub.PermissionTitle</a>
                 </li>
             }
         </ul>

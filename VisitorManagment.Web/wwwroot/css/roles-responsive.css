@@ -1,0 +1,12 @@
+.structure-page{width:100%;min-width:0;overflow:hidden}
+.structure-card--table{min-width:0;overflow:hidden}
+.structure-table-host{width:100%;max-width:100%;overflow-x:auto}
+.structure-card--table .dataTables_wrapper,.structure-card--table .unified-datatable{width:100%;max-width:100%;min-width:0}
+.roles-data-table{width:100%!important;max-width:100%;margin:0!important}
+.structure-row-actions{display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.structure-row-actions form{margin:0}
+.structure-row-actions .structure-btn{min-height:36px;height:36px;padding:0 11px;border:0;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.structure-btn--edit{color:#087a8c;background:#e8f8fa}
+.structure-btn--danger{color:#bd3e4e;background:#fff0f2}
+.structure-btn--icon{width:36px;padding:0!important}
+@media(max-width:600px){.structure-card--table{padding:15px}.structure-row-actions{white-space:normal;flex-wrap:wrap}}
