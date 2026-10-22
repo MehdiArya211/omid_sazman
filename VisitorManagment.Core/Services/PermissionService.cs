@@ -335,11 +335,28 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<Permission> GetPermissionsForUser(int userId)
         {
+            // مدیر سامانه باید بتواند همه منوهای فعال را مدیریت کند؛ نمایش منوی مدیریتی
+            // او نباید به وجود یک رکورد تکراری در RolePermission وابسته باشد.
+            var isSystemAdministrator = _context.UserRoles
+                .Any(userRole => userRole.UserId == userId &&
+                                 !userRole.Role.IsDelete &&
+                                 userRole.Role.RoleType == SystemRoleTypes.SystemAdministrator);
+
+            if (isSystemAdministrator)
+            {
+                return _context.Permission
+                    .AsNoTracking()
+                    .Where(permission => permission.IsActive)
+                    .OrderBy(permission => permission.Order)
+                    .ThenBy(permission => permission.PermissionTitle)
+                    .ToList();
+            }
+
             var query = from p in _context.Permission
                         join rp in _context.RolePermission on p.PermissionId equals rp.PermissionId
                         join r in _context.Roles on rp.RoleId equals r.RoleId
                         join ur in _context.UserRoles on r.RoleId equals ur.RoleId
-                        where ur.UserId == userId
+                        where ur.UserId == userId && p.IsActive && !r.IsDelete
                         select p;
 
             return query.Distinct().OrderBy(p => p.Order).ToList();
