@@ -4,17 +4,17 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Tesseract;
 using VisitorManagment.Core.DTOs;
 using UglyToad.PdfPig;
 
 namespace VisitorManagment.Web.Pages.Admin.Users
 {
     /// <summary>
-    /// جدول کاربران را از فایل‌های Excel، Word و PDF متنی استخراج می‌کند.
+    /// جدول کاربران را از فایل‌های Excel، Word و PDF متنی یا اسکن‌شده استخراج می‌کند.
     /// خروجی این کلاس همیشه پیش‌نمایش است و تا تأیید مدیر در بانک ثبت نمی‌شود.
     /// </summary>
     internal static class BulkUserImportParser
@@ -41,7 +41,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
             if (!rows.Any())
                 throw new InvalidDataException(extension == ".pdf"
-                    ? "متنی از PDF استخراج نشد. اگر فایل اسکن‌شده است، ابتدا آن را OCR یا به Excel تبدیل کنید."
+                    ? "OCR فایل انجام شد، اما هیچ کد پرسنلی قابل اطمینانی در PDF پیدا نشد. کیفیت اسکن و خوانایی ستون شماره کارگزینی را بررسی کنید."
                     : "هیچ ردیف قابل تشخیصی در فایل پیدا نشد.");
 
             return rows.Take(MaximumRows).Select((row, index) =>
@@ -102,48 +102,125 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         {
             var result = new List<BulkUserImportRowViewModel>();
             using var document = PdfDocument.Open(stream);
+            var pages = document.GetPages().ToList();
 
-            foreach (var page in document.GetPages())
+            foreach (var page in pages)
             {
-                var lines = Regex.Split(page.Text ?? string.Empty, "[\\r\\n]+").Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
-                foreach (var line in lines)
-                {
-                    var normalized = NormalizeDigits(line);
-                    var personalCode = Regex.Matches(normalized, @"(?<!\d)\d{6,10}(?!\d)")
-                        .Cast<Match>().Select(match => match.Value).FirstOrDefault(value => !IsMobile(value));
-                    if (string.IsNullOrEmpty(personalCode)) continue;
-
-                    var mobile = Regex.Matches(normalized, @"(?<!\d)(?:\+?98|0)?9\d{9}(?!\d)")
-                        .Cast<Match>().Select(match => match.Value).FirstOrDefault();
-                    result.Add(new BulkUserImportRowViewModel
-                    {
-                        PersonalCode = personalCode,
-                        Mobile = mobile,
-                        Status = "نیازمند استعلام و بازبینی",
-                        ErrorMessage = "اطلاعات این ردیف از PDF استخراج شده و باید پیش از ثبت کنترل شود."
-                    });
-                }
+                AddRowsFromRecognizedText(result, page.Text,
+                    "اطلاعات این ردیف از متن PDF استخراج شده و باید پیش از ثبت کنترل شود.");
             }
 
-            // بعضی PDFها کل جدول را بدون خط جدید تحویل می‌دهند؛ در این حالت حداقل کدهای پرسنلی بازیابی می‌شوند.
+            // PDF اسکن‌شده لایه متنی ندارد؛ تصویر اصلی هر صفحه با OCR فارسی/انگلیسی خوانده می‌شود.
             if (!result.Any())
             {
-                var text = string.Join(" ", document.GetPages().Select(page => page.Text));
-                result.AddRange(Regex.Matches(NormalizeDigits(text), @"(?<!\d)\d{6,10}(?!\d)")
-                    .Cast<Match>()
-                    .Select(match => match.Value)
-                    .Where(value => !IsMobile(value))
-                    .Distinct()
-                    .Select(code => new BulkUserImportRowViewModel
-                    {
-                        PersonalCode = code,
-                        Status = "نیازمند استعلام و بازبینی",
-                        ErrorMessage = "چیدمان جدول PDF قابل تشخیص نبود؛ سایر اطلاعات را کنترل کنید."
-                    }));
+                var recognizedText = ReadScannedPdfWithOcr(pages);
+                AddRowsFromRecognizedText(result, recognizedText,
+                    "این ردیف با OCR فارسی از PDF اسکن‌شده خوانده شده است؛ کد پرسنلی را پیش از ثبت کنترل کنید.");
             }
 
             return result.GroupBy(row => row.PersonalCode).Select(group => group.First()).ToList();
         }
+
+        /// <summary>
+        /// تصویرهای بزرگ هر صفحه را OCR می‌کند. تصویرهای کوچک مانند مهر و لوگو کنار گذاشته می‌شوند.
+        /// </summary>
+        private static string ReadScannedPdfWithOcr(IEnumerable<UglyToad.PdfPig.Content.Page> pages)
+        {
+            var tessdataPath = Path.Combine(AppContext.BaseDirectory, "tessdata");
+            if (!File.Exists(Path.Combine(tessdataPath, "fas.traineddata")))
+                throw new InvalidDataException("فایل زبان فارسی OCR در خروجی برنامه وجود ندارد. پروژه را دوباره Build/Publish کنید.");
+
+            try
+            {
+                using var engine = new TesseractEngine(tessdataPath, "fas+eng", EngineMode.LstmOnly);
+                var recognizedPages = new List<string>();
+
+                foreach (var page in pages)
+                {
+                    var images = page.GetImages()
+                        .Where(image => image.WidthInSamples >= 300 && image.HeightInSamples >= 300)
+                        .OrderByDescending(image => (long)image.WidthInSamples * image.HeightInSamples)
+                        .Take(3)
+                        .ToList();
+
+                    foreach (var image in images)
+                    {
+                        try
+                        {
+                            var bytes = image.TryGetPng(out var pngBytes)
+                                ? pngBytes
+                                : image.RawBytes.ToArray();
+                            if (bytes == null || bytes.Length == 0) continue;
+
+                            using var pix = Pix.LoadFromMemory(bytes);
+                            using var ocrPage = engine.Process(pix, PageSegMode.Auto);
+                            var text = ocrPage.GetText();
+                            if (!string.IsNullOrWhiteSpace(text)) recognizedPages.Add(text);
+                        }
+                        catch
+                        {
+                            // ممکن است یک تصویر فرعی PDF فرمت نامتعارف داشته باشد؛ سایر تصاویر ادامه پیدا می‌کنند.
+                        }
+                    }
+                }
+
+                return string.Join(Environment.NewLine, recognizedPages);
+            }
+            catch (InvalidDataException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidDataException("موتور OCR روی سرور اجرا نشد. Visual C++ 2019 Runtime را نصب و دوباره تلاش کنید.", exception);
+            }
+        }
+
+        private static void AddRowsFromRecognizedText(ICollection<BulkUserImportRowViewModel> rows,
+            string text, string reviewMessage)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            var lines = Regex.Split(text, "[\\r\\n]+").Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
+            foreach (var line in lines)
+            {
+                var candidates = ExtractNumericCandidates(line);
+                var personalCode = candidates.FirstOrDefault(IsPersonnelCode);
+                if (string.IsNullOrEmpty(personalCode)) continue;
+
+                rows.Add(new BulkUserImportRowViewModel
+                {
+                    PersonalCode = personalCode,
+                    Mobile = candidates.FirstOrDefault(IsMobile),
+                    Status = "نیازمند استعلام و بازبینی",
+                    ErrorMessage = reviewMessage
+                });
+            }
+
+            // بعضی موتورهای PDF یا OCR شکست سطر را حفظ نمی‌کنند؛ کدها از کل متن نیز بازیابی می‌شوند.
+            if (!rows.Any())
+            {
+                foreach (var code in ExtractNumericCandidates(text).Where(IsPersonnelCode).Distinct())
+                {
+                    rows.Add(new BulkUserImportRowViewModel
+                    {
+                        PersonalCode = code,
+                        Status = "نیازمند استعلام و بازبینی",
+                        ErrorMessage = reviewMessage
+                    });
+                }
+            }
+        }
+
+        private static List<string> ExtractNumericCandidates(string value) =>
+            Regex.Matches(NormalizeNumerals(value), @"(?<!\d)(?:\+?\d[\s\-]*){6,13}(?!\d)")
+                .Cast<Match>()
+                .Select(match => NormalizeDigits(match.Value))
+                .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+                .ToList();
+
+        private static bool IsPersonnelCode(string value) =>
+            !IsMobile(value) && Regex.IsMatch(value ?? string.Empty, @"^\d{6,10}$");
 
         private static Dictionary<string, int> BuildHeaderMap(IReadOnlyList<string> headers)
         {
@@ -204,12 +281,18 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         internal static string NormalizeDigits(string value)
         {
             if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+            return NormalizeNumerals(value).Replace(" ", string.Empty).Replace("-", string.Empty);
+        }
+
+        private static string NormalizeNumerals(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
             var result = value.Trim();
             const string persian = "۰۱۲۳۴۵۶۷۸۹";
             const string arabic = "٠١٢٣٤٥٦٧٨٩";
             for (var index = 0; index < 10; index++)
                 result = result.Replace(persian[index], (char)('0' + index)).Replace(arabic[index], (char)('0' + index));
-            return result.Replace(" ", string.Empty).Replace("-", string.Empty);
+            return result;
         }
     }
 }
