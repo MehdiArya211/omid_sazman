@@ -1,6 +1,7 @@
 @page
 @model VisitorManagment.Web.Pages.Admin.Users.BulkImportModel
 @using Newtonsoft.Json
+@using System.Collections.Generic
 @{
     ViewData["Title"] = "ورود گروهی کاربران";
     var roles = ViewData["Roles"] as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
@@ -9,6 +10,11 @@
         title = unit.Title,
         code = unit.UnitCode > 0 ? unit.UnitCode : unit.Id
     }));
+    var previewRows = Model.Rows ?? new List<VisitorManagment.Core.DTOs.BulkUserImportRowViewModel>();
+    var readyCount = previewRows.Count(row => string.IsNullOrWhiteSpace(row.ErrorMessage) && !row.Imported);
+    var duplicateCount = previewRows.Count(row => row.Status == "تکراری");
+    var unknownUnitCount = previewRows.Count(row => row.Status == "یگان نامشخص");
+    var needsReviewCount = previewRows.Count(row => !row.Imported && !string.IsNullOrWhiteSpace(row.ErrorMessage) && row.Status != "تکراری" && row.Status != "یگان نامشخص");
 }
 
 <link rel="stylesheet" href="~/AdminUsers/bulk-user-import.css" asp-append-version="true" />
@@ -23,29 +29,79 @@
         <a asp-page="Index" class="btn btn-light"><i class="ti-arrow-right"></i> بازگشت به کاربران</a>
     </header>
 
-    <div asp-validation-summary="All" class="alert alert-danger validation-summary-valid"></div>
+    @if (!string.IsNullOrWhiteSpace(Model.PreviewError))
+    {
+        <div class="bulk-import-alert bulk-import-alert--danger" role="alert">
+            <div class="bulk-import-alert__icon"><i class="ti-alert"></i></div>
+            <div>
+                <strong>فایل تحلیل نشد</strong>
+                <p>@Model.PreviewError</p>
+                <small>اگر PDF اسکن‌شده است، آن را به Excel تبدیل کنید یا نسخه‌ای که متن قابل انتخاب دارد بارگذاری کنید.</small>
+            </div>
+        </div>
+    }
 
     <section class="bulk-import-card">
         <div class="bulk-import-card__title">
             <i class="ti-upload"></i>
             <div><h2>۱. انتخاب فایل و نقش پیش‌فرض</h2><small>حداکثر حجم فایل ۱۰ مگابایت و حداکثر ۱۰۰۰ ردیف است.</small></div>
         </div>
-        <form method="post" enctype="multipart/form-data" asp-page-handler="Preview" class="bulk-import-upload" data-ui-skip>
-            <div class="form-group">
-                <label for="importFile">فایل کاربران</label>
-                <input id="importFile" name="importFile" type="file" class="form-control-file" accept=".xlsx,.docx,.pdf" required />
-                <small>قالب‌های قابل قبول: Excel (.xlsx)، Word (.docx) و PDF متنی</small>
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Preview" class="bulk-import-upload" id="previewImportForm" data-ui-skip>
+            <div class="bulk-import-field bulk-import-field--file">
+                <label for="importFile">فایل کاربران <span>*</span></label>
+                <label class="bulk-file-picker" for="importFile">
+                    <span class="bulk-file-picker__icon"><i class="ti-file"></i></span>
+                    <span class="bulk-file-picker__text"><strong id="selectedFileName">انتخاب فایل کاربران</strong><small>Excel، Word یا PDF — حداکثر ۱۰ مگابایت</small></span>
+                    <span class="bulk-file-picker__button">انتخاب فایل</span>
+                </label>
+                <input id="importFile" name="importFile" type="file" class="bulk-file-input" accept=".xlsx,.docx,.pdf" required />
             </div>
-            <div class="form-group">
-                <label asp-for="DefaultRoleId">نقش پیش‌فرض</label>
+            <div class="bulk-import-field">
+                <label asp-for="DefaultRoleId">نقش پیش‌فرض کاربران</label>
                 <select asp-for="DefaultRoleId" asp-items="roles" class="form-control select2">
                     <option value="0">برای هر ردیف جداگانه انتخاب می‌کنم</option>
                 </select>
+                <small>بعد از تحلیل، نقش هر ردیف قابل تغییر است.</small>
             </div>
-            <button type="submit" class="btn btn-primary bulk-import-primary"><i class="ti-search"></i> تحلیل و نمایش پیش‌نویس</button>
+            <div class="bulk-import-action">
+                <button type="submit" class="btn btn-primary bulk-import-primary" id="previewSubmitButton">
+                    <i class="ti-search"></i><span>تحلیل و نمایش پیش‌نمایش</span>
+                </button>
+                <small>در این مرحله هیچ کاربری ثبت نمی‌شود.</small>
+            </div>
         </form>
         <div class="bulk-import-note"><i class="ti-info-alt"></i> فایل مستقیماً ثبت نمی‌شود. ابتدا نتیجه استعلام، یگان‌های نامشخص و ردیف‌های تکراری نمایش داده می‌شوند.</div>
     </section>
+
+    @if (Model.PreviewAttempted && previewRows.Any() && Model.Result == null)
+    {
+        <section class="bulk-analysis-panel" aria-label="نتیجه تحلیل فایل">
+            <div class="bulk-analysis-head">
+                <div class="bulk-analysis-icon"><i class="ti-check"></i></div>
+                <div>
+                    <span>تحلیل فایل با موفقیت انجام شد</span>
+                    <h2>@(string.IsNullOrWhiteSpace(Model.PreviewFileName) ? "پیش‌نمایش کاربران" : Model.PreviewFileName)</h2>
+                    <p>اطلاعات زیر هنوز ثبت نشده‌اند؛ موارد زرد را اصلاح و سپس ثبت نهایی کنید.</p>
+                </div>
+            </div>
+            <div class="bulk-analysis-stats">
+                <div><i class="ti-list"></i><strong>@previewRows.Count</strong><span>کل ردیف‌ها</span></div>
+                <div class="is-ready"><i class="ti-check-box"></i><strong>@readyCount</strong><span>آماده ثبت</span></div>
+                <div class="is-warning"><i class="ti-location-pin"></i><strong>@unknownUnitCount</strong><span>یگان نامشخص</span></div>
+                <div class="is-duplicate"><i class="ti-layers"></i><strong>@duplicateCount</strong><span>کاربر تکراری</span></div>
+                <div class="is-review"><i class="ti-pencil"></i><strong>@needsReviewCount</strong><span>نیازمند اصلاح</span></div>
+            </div>
+        </section>
+    }
+
+    @if (Model.PreviewAttempted && !previewRows.Any() && string.IsNullOrWhiteSpace(Model.PreviewError))
+    {
+        <section class="bulk-import-empty">
+            <i class="ti-search"></i>
+            <h3>ردیفی برای نمایش پیدا نشد</h3>
+            <p>ساختار فایل را کنترل و دوباره بارگذاری کنید.</p>
+        </section>
+    }
 
     @if (Model.Result != null)
     {
