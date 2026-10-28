@@ -33,25 +33,57 @@
         });
     }
 
+    function closeLoginModal(modal) {
+        if (!modal) return;
+        modal.hidden = true;
+        document.body.classList.remove("notification-modal-open");
+    }
+
     var loginModal = document.querySelector("[data-login-notification]");
     if (loginModal) {
-        window.setTimeout(function () {
-            loginModal.hidden = false;
-            document.body.classList.add("notification-modal-open");
-        }, 450);
+        var isNotificationPage = window.location.pathname.toLowerCase().indexOf("/notifications") === 0;
+        if (!isNotificationPage) {
+            window.setTimeout(function () {
+                loginModal.hidden = false;
+                document.body.classList.add("notification-modal-open");
+            }, 450);
+        }
+
         loginModal.querySelectorAll("[data-notification-dismiss]").forEach(function (button) {
-            button.addEventListener("click", function () { loginModal.hidden = true; document.body.classList.remove("notification-modal-open"); });
+            button.addEventListener("click", function () { closeLoginModal(loginModal); });
         });
+
         var modalReadButton = loginModal.querySelector("[data-modal-mark-read]");
         modalReadButton.addEventListener("click", function () {
             modalReadButton.disabled = true;
             markRead(loginModal.dataset.notificationId, loginModal).then(function () {
-                loginModal.hidden = true;
-                document.body.classList.remove("notification-modal-open");
+                closeLoginModal(loginModal);
             }).catch(function (error) {
                 modalReadButton.disabled = false;
                 window.alert(error.message);
             });
+        });
+
+        var viewAllLink = loginModal.querySelector("[data-view-all-notifications]");
+        if (viewAllLink) {
+            viewAllLink.addEventListener("click", function (event) {
+                event.preventDefault();
+                if (viewAllLink.getAttribute("aria-disabled") === "true") return;
+                viewAllLink.setAttribute("aria-disabled", "true");
+                viewAllLink.classList.add("is-loading");
+                markRead(loginModal.dataset.notificationId, loginModal).then(function () {
+                    closeLoginModal(loginModal);
+                    window.location.assign(viewAllLink.href);
+                }).catch(function (error) {
+                    viewAllLink.setAttribute("aria-disabled", "false");
+                    viewAllLink.classList.remove("is-loading");
+                    window.alert(error.message);
+                });
+            });
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !loginModal.hidden) closeLoginModal(loginModal);
         });
     }
 
@@ -60,9 +92,17 @@
             button.disabled = true;
             markRead(button.dataset.markNotification, document).then(function () {
                 var row = document.querySelector('[data-notification-row="' + button.dataset.markNotification + '"]');
-                if (row) { row.classList.remove("is-unread"); row.classList.add("is-read"); var status = row.querySelector(".user-notification__meta span"); if (status) status.textContent = "مشاهده‌شده"; }
+                if (row) {
+                    row.classList.remove("is-unread");
+                    row.classList.add("is-read");
+                    var status = row.querySelector(".user-notification__meta span");
+                    if (status) status.textContent = "مشاهده‌شده";
+                }
                 button.remove();
-            }).catch(function (error) { button.disabled = false; window.alert(error.message); });
+            }).catch(function (error) {
+                button.disabled = false;
+                window.alert(error.message);
+            });
         });
     });
 })();
