@@ -40,6 +40,7 @@
                 </div>
             </div>
             <ul class="navbar-nav omid-topbar__actions">
+                <li class="nav-item"><a href="/AccountPassword" class="nav-link" title="تغییر رمز عبور"><i class="ti-lock"></i><span class="sr-only">تغییر رمز عبور</span></a></li>
                 @if (User.Identity?.IsAuthenticated == true && int.TryParse(User.FindFirst("Id")?.Value, out var notificationUserId))
                 {
                     @await Component.InvokeAsync("NotificationCenter", notificationUserId)
