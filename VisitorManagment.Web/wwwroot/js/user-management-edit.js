@@ -126,7 +126,7 @@
                     return '<div class="role-assignment-user"><span>' + encode(details) + '<small>' + user.openCartableCount + ' درخواست باز</small></span><a href="/Admin/Users/EditUser/' + user.userId + '">ویرایش کاربر</a></div>';
                 }).join("");
                 roleNotice.className = "role-assignment-notice";
-                roleNotice.innerHTML = '<div class="role-assignment-notice__head"><i class="ti-alert"></i> این نقش مسئول فعلی دارد:</div>' + rows +
+                roleNotice.innerHTML = '<details class="role-assignment-details"><summary style="cursor:pointer;padding:10px"><i class="ti-user"></i> کاربران دارای این نقش (' + result.users.length + ' نفر) — مشاهده جزئیات</summary><div style="max-height:240px;overflow:auto;padding:10px">' + rows + '</div></details>' +
                     '<label class="role-replacement-confirm"><input type="checkbox" name="replaceExistingRoleHolder" value="true" required />' +
                     '<span><strong>جایگزینی مسئول فعلی و انتقال درخواست‌های باز</strong><small>نقش از مسئول قبلی گرفته می‌شود و سوابق هامش‌ها تغییر نمی‌کند.</small></span></label>';
             })
