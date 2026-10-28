@@ -38,6 +38,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
         public BulkUserImportResultViewModel Result { get; set; }
         public List<OrganViewModelDto> Units { get; private set; } = new List<OrganViewModelDto>();
+        public bool PreviewAttempted { get; private set; }
+        public string PreviewError { get; private set; }
+        public string PreviewFileName { get; private set; }
 
         public IActionResult OnGet()
         {
@@ -52,15 +55,21 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         {
             if (!TryPrepareLookups()) return Forbid();
 
+            PreviewAttempted = true;
+            PreviewFileName = importFile?.FileName;
+
             try
             {
                 Rows = BulkUserImportParser.Parse(importFile);
                 EnrichAndValidatePreview(Rows);
                 foreach (var row in Rows.Where(row => row.RoleId <= 0)) row.RoleId = DefaultRoleId;
+
+                if (!Rows.Any())
+                    PreviewError = "هیچ ردیف قابل استفاده‌ای در فایل شناسایی نشد.";
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                PreviewError = GetSafeErrorMessage(exception);
                 Rows = new List<BulkUserImportRowViewModel>();
             }
 
@@ -74,6 +83,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         {
             if (!TryPrepareLookups()) return Forbid();
 
+            PreviewAttempted = true;
             Result = new BulkUserImportResultViewModel();
             var allowedRoleIds = GetAllowedRoles().Select(role => role.RoleId).ToHashSet();
             var duplicateCodes = Rows.Where(row => row.Selected)
