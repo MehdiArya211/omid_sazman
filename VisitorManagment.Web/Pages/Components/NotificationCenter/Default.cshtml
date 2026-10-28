@@ -8,11 +8,29 @@
         <div class="login-notification-modal" data-login-notification data-notification-id="@Model.FirstUnread.Id" role="dialog" aria-modal="true" aria-labelledby="loginNotificationTitle" hidden>
             <div class="login-notification-modal__backdrop" data-notification-dismiss></div>
             <section class="login-notification-modal__dialog">
-                <header><span><i class="ti-announcement"></i></span><div><small>اعلان جدید سامانه</small><h2 id="loginNotificationTitle">@Model.FirstUnread.Title</h2></div></header>
-                <div class="login-notification-modal__content"><p>@Model.FirstUnread.Content</p>
-                    @if (Model.FirstUnread.Attachments.Any()) { <div class="notification-files"><strong>فایل‌های پیوست</strong>@foreach(var file in Model.FirstUnread.Attachments){<a href="@file.FilePath" target="_blank" rel="noopener" download><i class="ti-clip"></i>@file.FileName</a>}</div> }
+                <header>
+                    <span class="login-notification-modal__icon"><i class="ti-announcement"></i></span>
+                    <div><small>اعلان جدید سامانه</small><h2 id="loginNotificationTitle">@Model.FirstUnread.Title</h2></div>
+                    <button type="button" class="login-notification-modal__close" data-notification-dismiss aria-label="بستن">&times;</button>
+                </header>
+                <div class="login-notification-modal__content">
+                    <p>@Model.FirstUnread.Content</p>
+                    @if (Model.FirstUnread.Attachments.Any())
+                    {
+                        <div class="notification-files notification-files--modal">
+                            <strong><i class="ti-clip"></i> فایل‌های پیوست</strong>
+                            @foreach(var file in Model.FirstUnread.Attachments)
+                            {
+                                <a href="@file.FilePath" target="_blank" rel="noopener" download><span class="notification-file-icon"><i class="ti-file"></i></span><span>@file.FileName</span><i class="ti-download"></i></a>
+                            }
+                        </div>
+                    }
                 </div>
-                <footer><button type="button" class="notification-secondary" data-notification-dismiss>بعداً</button><a href="/Notifications" class="notification-secondary">مشاهده همه اعلان‌ها</a><button type="button" class="notification-primary" data-modal-mark-read><i class="ti-check"></i><span>مشاهده کردم</span></button></footer>
+                <footer>
+                    <button type="button" class="notification-secondary" data-notification-dismiss>بعداً</button>
+                    <a href="/Notifications" class="notification-secondary" data-view-all-notifications><i class="ti-list"></i> مشاهده همه اعلان‌ها</a>
+                    <button type="button" class="notification-primary" data-modal-mark-read><i class="ti-check"></i><span>مشاهده کردم</span></button>
+                </footer>
                 <form data-notification-token>@Html.AntiForgeryToken()</form>
             </section>
         </div>
