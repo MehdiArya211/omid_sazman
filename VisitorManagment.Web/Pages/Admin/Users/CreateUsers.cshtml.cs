@@ -139,7 +139,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
                 ViewData["RolesTitle"] = new SelectList(roles, "RoleId", "Title");
 
-                if (roleId <= 0)
+                if (roleId <= 0 || !roles.Any(role => role.RoleId == roleId))
                 {
                     ModelState.AddModelError("", "انتخاب نقش کاربر الزامی است.");
                     return Page();
@@ -160,6 +160,12 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 }
 
                 // تنظیم اطلاعات کاربر
+                user.RankTitle = CreateUserViewModel?.RankTitle?.Trim();
+                if (string.IsNullOrWhiteSpace(user.RankTitle) || user.RankTitle.Length > 50)
+                {
+                    ModelState.AddModelError("", "درجه الزامی است و حداکثر ۵۰ کاراکتر دارد.");
+                    return Page();
+                }
                 user.Password = user.PersonalCode;
                 user.AddUserId = int.Parse(userIdClaim);
                 user.UserAvatar = userAvatar;
