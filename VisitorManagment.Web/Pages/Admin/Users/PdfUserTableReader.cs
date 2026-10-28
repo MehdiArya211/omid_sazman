@@ -57,7 +57,8 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                         if (bounds.Width < 1 || bounds.Height < 1) { cells.Add(""); continue; }
                         using var crop = bitmap.Clone(bounds, bitmap.PixelFormat);
                         using var png = new MemoryStream();
-                        crop.Save(png, ImageFormat.Png);
+                        //crop.Save(png, ImageFormat.Png);
+                        crop.Save(png, System.Drawing.Imaging.ImageFormat.Png);
                         using var pix = Pix.LoadFromMemory(png.ToArray());
                         using var recognized = engine.Process(pix, PageSegMode.SingleBlock);
                         cells.Add(BulkUserImportParser.NormalizeText(recognized.GetText()));
