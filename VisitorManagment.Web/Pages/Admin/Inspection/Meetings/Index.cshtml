@@ -3,6 +3,7 @@
 @using VisitorManagment.DataLayer.Entities.Inspection
 @{ ViewData["Title"] = "ثبت جلسه بازرسی"; }
 <link rel="stylesheet" href="~/assets/css/inspection-management.css" />
+<link rel="stylesheet" href="~/assets/css/inspection-invite-picker.css" asp-append-version="true" />
 <div class="inspection-page" dir="rtl">
  <div class="inspection-hero"><div><span class="inspection-kicker">مدیریت بازرسی</span><h2>ثبت جلسه</h2><p>زمان‌بندی جلسه و مدیریت نفرات یگان‌های دعوت‌شده</p></div><i class="ti-calendar"></i></div>
  <div id="meetingOperationMessage" aria-live="polite"></div>
@@ -29,6 +30,7 @@
 
 @section Scripts{
 <partial name="_ValidationScriptsPartial" />
+<script src="~/js/inspection-invite-picker.js" asp-append-version="true"></script>
 <script>
 (()=>{
  const form=document.getElementById('meetingForm'),dateInput=document.getElementById('inspectionMeetingDate'),saveButton=document.getElementById('saveMeeting'),message=document.getElementById('meetingOperationMessage'),count=document.getElementById('meetingCount');
@@ -38,12 +40,8 @@
  const meetingState=new Map();let activeMeetingId=null;
  const token=()=>form.querySelector('input[name="__RequestVerificationToken"]')?.value||'';
  if(window.jQuery&&jQuery.fn.persianDatepicker)jQuery(dateInput).persianDatepicker({format:'YYYY/MM/DD',initialValue:false,persianDigit:false,autoClose:true,observer:true,calendar:{persian:{locale:'fa',leapYearMode:'algorithmic'}},navigator:{scroll:{enabled:false}},toolbox:{calendarSwitch:{enabled:false}}});
- function refreshPeople(){const selected=new Set(units.filter(x=>x.checked).map(x=>x.value));people.forEach(label=>{const allowed=selected.has(label.dataset.unitCode);label.hidden=!allowed;if(!allowed)label.querySelector('input').checked=false;});}
  function setAllVisible(list,checked){list.filter(label=>!label.hidden).forEach(label=>label.querySelector('input').checked=checked);}
- units.forEach(x=>x.addEventListener('change',refreshPeople));
- document.getElementById('selectAllPeople').addEventListener('click',()=>setAllVisible(people,true));document.getElementById('clearAllPeople').addEventListener('click',()=>setAllVisible(people,false));
- document.getElementById('unitSearch').addEventListener('input',e=>document.querySelectorAll('#unitList .inspection-unit').forEach(x=>x.hidden=!x.textContent.includes(e.target.value.trim())));
- document.getElementById('personSearch').addEventListener('input',e=>{const q=e.target.value.trim(),selected=new Set(units.filter(x=>x.checked).map(x=>x.value));people.forEach(x=>x.hidden=!selected.has(x.dataset.unitCode)||!x.textContent.includes(q));});
+ const refreshPeople=window.initializeInspectionInvitePicker(units,people);
  function renderMeetings(meetings){const table=window.jQuery&&jQuery.fn.DataTable?jQuery('#inspectionMeetingsTable').DataTable():null;if(!table)return;meetingState.clear();meetings.forEach(item=>meetingState.set(Number(item.id),item));table.clear();table.rows.add(meetings.map((item,index)=>[index+1,encode(item.title),encode(item.meetingDate),encode(item.startTime),`<span class="inspection-unit-names">${encode(item.unitNames||'-')}</span>`,`<button type="button" class="btn btn-sm btn-outline-info inspection-manage-people" data-meeting-id="${Number(item.id)}"><i class="ti-user"></i> ${Number(item.peopleCount)} نفر</button>`,`<span class="inspection-status">${encode(item.statusTitle)}</span>`]));table.draw(false);count.textContent=`${meetings.length} جلسه`;}
  form.addEventListener('submit',async event=>{event.preventDefault();dateInput.value=normalizeDigits(dateInput.value);if(window.jQuery&&jQuery.validator&&!jQuery(form).valid())return;if(!form.checkValidity()){form.reportValidity();return;}const original=saveButton.innerHTML;saveButton.disabled=true;saveButton.innerHTML='<span class="spinner-border spinner-border-sm"></span> در حال ثبت...';try{const response=await fetch('?handler=Create',{method:'POST',body:new FormData(form),headers:{'X-Requested-With':'XMLHttpRequest'}}),data=await response.json();if(!response.ok||!data.isSuccess)throw new Error(data.message||'ثبت جلسه انجام نشد.');renderMeetings(data.meetings);message.innerHTML=`<div class="alert alert-success">${encode(data.message)}</div>`;form.reset();dateInput.value='';people.forEach(x=>x.querySelector('input').checked=false);refreshPeople();}catch(error){message.innerHTML=`<div class="alert alert-danger">${encode(error.message||'ارتباط با سرور برقرار نشد.')}</div>`;}finally{saveButton.disabled=false;saveButton.innerHTML=original;}});
  document.getElementById('inspectionMeetingsTable').addEventListener('click',event=>{const button=event.target.closest('.inspection-manage-people');if(!button)return;activeMeetingId=Number(button.dataset.meetingId);const item=meetingState.get(activeMeetingId);if(!item){message.innerHTML='<div class="alert alert-warning">برای مدیریت این جلسه یک‌بار صفحه را تازه‌سازی کنید.</div>';return;}const allowed=new Set((item.unitCodes||[]).map(String)),selected=new Set((item.personIds||[]).map(Number));modalPeople.forEach(label=>{label.hidden=!allowed.has(label.dataset.unitCode);label.querySelector('input').checked=selected.has(Number(label.dataset.personId));});document.getElementById('meetingPeopleTitle').textContent=`نفرات جلسه «${item.title}»`;jQuery('#meetingPeopleModal').modal('show');});
