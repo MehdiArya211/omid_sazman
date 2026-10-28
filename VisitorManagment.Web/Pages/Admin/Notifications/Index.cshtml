@@ -3,17 +3,47 @@
 @using VisitorManagment.Core.Convertors
 @{ ViewData["Title"] = "مدیریت اعلان‌های سامانه"; }
 <main class="notification-page" dir="rtl">
-    <header class="notification-hero"><div><span>مدیریت سیستم</span><h1>مدیریت اعلان‌های سامانه</h1><p>دستورالعمل‌ها و فایل‌های موردنیاز را برای تمام کاربران منتشر کنید.</p></div><i class="ti-bell"></i></header>
-    <section class="notification-card">
-        <h2>ثبت اعلان جدید</h2>
-        <form method="post" asp-page-handler="Create" enctype="multipart/form-data" class="notification-form">
-            <label><span>عنوان اعلان *</span><input name="title" maxlength="100" required /></label>
-            <label class="notification-form__content"><span>متن و دستورالعمل *</span><textarea name="content" rows="5" required></textarea></label>
-            <label class="notification-form__files"><span>فایل‌های پیوست</span><input name="attachments" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"/><small>حداکثر حجم هر فایل ۱۰ مگابایت</small></label>
-            <label class="notification-check"><input name="isActive" type="checkbox" value="true" checked/><span>اعلان فعال و قابل نمایش باشد</span></label>
-            <button class="notification-primary" type="submit"><i class="ti-plus"></i><span>انتشار اعلان</span></button>
+    <header class="notification-hero">
+        <div><span>مدیریت سیستم</span><h1>مدیریت اعلان‌های سامانه</h1><p>دستورالعمل‌ها و فایل‌های موردنیاز را برای تمام کاربران منتشر کنید.</p></div>
+        <i class="ti-bell"></i>
+    </header>
+
+    <section class="notification-card notification-compose-card">
+        <div class="notification-section-title">
+            <span class="notification-section-title__icon"><i class="ti-pencil-alt"></i></span>
+            <div><h2>ثبت اعلان جدید</h2><p>عنوان، متن دستورالعمل و فایل‌های موردنیاز کاربران را وارد کنید.</p></div>
+        </div>
+        <form method="post" asp-page-handler="Create" enctype="multipart/form-data" class="notification-form notification-compose-form">
+            <label class="notification-form__field notification-form__field--wide">
+                <span>عنوان اعلان <b>*</b></span>
+                <input name="title" maxlength="100" required placeholder="مثلاً: دستورالعمل جدید ثبت و پیگیری درخواست‌ها" />
+            </label>
+            <label class="notification-form__field notification-form__field--wide">
+                <span>متن و دستورالعمل <b>*</b></span>
+                <textarea name="content" rows="6" maxlength="10000" required placeholder="توضیحات کامل و خوانای اعلان را اینجا بنویسید..."></textarea>
+                <small>متن اعلان پس از ورود به‌صورت خوانا برای کاربران نمایش داده می‌شود.</small>
+            </label>
+            <div class="notification-compose-grid">
+                <div class="notification-upload-section">
+                    <span class="notification-field-title">فایل‌های پیوست</span>
+                    <label class="notification-upload-zone">
+                        <input name="attachments" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" data-notification-files />
+                        <span class="notification-upload-zone__icon"><i class="ti-cloud-up"></i></span>
+                        <span class="notification-upload-zone__text"><strong>انتخاب فایل‌ها</strong><small>فایل را انتخاب کنید؛ امکان انتخاب هم‌زمان چند فایل وجود دارد.</small></span>
+                        <span class="notification-upload-zone__button">انتخاب</span>
+                    </label>
+                    <div class="notification-upload-help"><span><i class="ti-info-alt"></i> PDF، Word، Excel، تصویر و ZIP</span><span>حداکثر ۱۰ مگابایت برای هر فایل</span></div>
+                    <div class="notification-file-preview" data-file-preview aria-live="polite"></div>
+                </div>
+                <aside class="notification-publish-panel">
+                    <div><strong>تنظیم انتشار</strong><small>پس از انتشار، اعلان در زنگوله و صفحه اعلان‌های کاربران نمایش داده می‌شود.</small></div>
+                    <label class="notification-check"><input name="isActive" type="checkbox" value="true" checked/><span><b>اعلان فعال باشد</b><small>نمایش فوری برای کاربران سامانه</small></span></label>
+                    <button class="notification-primary notification-publish-button" type="submit"><i class="ti-announcement"></i><span>انتشار اعلان</span></button>
+                </aside>
+            </div>
         </form>
     </section>
+
     <section class="notification-card notification-card--table">
         <div class="notification-heading"><div><h2>اعلان‌های ثبت‌شده</h2><small>@Model.Notifications.Count اعلان</small></div></div>
         <div class="table-responsive"><table id="adminNotificationsTable" class="table table-hover" data-datatable><thead><tr><th>عنوان</th><th>تاریخ انتشار</th><th>پیوست</th><th>مشاهده</th><th>وضعیت</th><th data-no-export>عملیات</th></tr></thead><tbody>
@@ -28,7 +58,34 @@
     </section>
 </main>
 
-<div class="modal fade notification-edit-modal" id="notificationEditModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content"><form method="post" asp-page-handler="Edit" enctype="multipart/form-data"><div class="modal-header"><h5 class="modal-title">ویرایش اعلان</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div><div class="modal-body notification-form"><input type="hidden" name="id"/><label><span>عنوان</span><input name="title" maxlength="100" required/></label><label class="notification-form__content"><span>متن</span><textarea name="content" rows="6" required></textarea></label><label class="notification-form__files"><span>افزودن پیوست جدید</span><input name="attachments" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"/></label><label class="notification-check"><input name="isActive" type="checkbox" value="true"/><span>فعال باشد</span></label><div class="notification-existing-files" data-existing-files></div></div><div class="modal-footer"><button type="button" class="notification-secondary" data-dismiss="modal">انصراف</button><button type="submit" class="notification-primary"><i class="ti-check"></i><span>ذخیره تغییرات</span></button></div></form></div></div></div>
+<div class="modal fade notification-edit-modal" id="notificationEditModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+        <form method="post" asp-page-handler="Edit" enctype="multipart/form-data">
+            <div class="modal-header notification-modal-header">
+                <div class="notification-modal-heading"><span><i class="ti-pencil"></i></span><div><small>مدیریت اعلان</small><h5 class="modal-title">ویرایش اعلان</h5></div></div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="بستن">&times;</button>
+            </div>
+            <div class="modal-body notification-form notification-edit-form">
+                <input type="hidden" name="id"/>
+                <label class="notification-form__field notification-form__field--wide"><span>عنوان اعلان</span><input name="title" maxlength="100" required/></label>
+                <label class="notification-form__field notification-form__field--wide"><span>متن و دستورالعمل</span><textarea name="content" rows="6" maxlength="10000" required></textarea></label>
+                <div class="notification-upload-section notification-form__field--wide">
+                    <span class="notification-field-title">افزودن پیوست جدید</span>
+                    <label class="notification-upload-zone notification-upload-zone--compact">
+                        <input name="attachments" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" data-notification-files />
+                        <span class="notification-upload-zone__icon"><i class="ti-cloud-up"></i></span>
+                        <span class="notification-upload-zone__text"><strong>انتخاب فایل جدید</strong><small>فایل‌های جدید به پیوست‌های فعلی اضافه می‌شوند.</small></span>
+                        <span class="notification-upload-zone__button">انتخاب</span>
+                    </label>
+                    <div class="notification-file-preview" data-file-preview></div>
+                </div>
+                <label class="notification-check notification-check--edit"><input name="isActive" type="checkbox" value="true"/><span><b>اعلان فعال باشد</b><small>برای کاربران قابل مشاهده باشد</small></span></label>
+                <div class="notification-existing-files" data-existing-files></div>
+            </div>
+            <div class="modal-footer"><button type="button" class="notification-secondary" data-dismiss="modal">انصراف</button><button type="submit" class="notification-primary"><i class="ti-check"></i><span>ذخیره تغییرات</span></button></div>
+        </form>
+    </div></div>
+</div>
 <form method="post" asp-page-handler="DeleteAttachment" id="deleteNotificationAttachmentForm" hidden><input type="hidden" name="attachmentId"/></form>
 
 @section Scripts { <script src="~/js/notification-management.js" asp-append-version="true"></script> }
