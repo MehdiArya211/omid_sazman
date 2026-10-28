@@ -55,6 +55,7 @@
                 personalCode.setCustomValidity("");
                 firstName.value = data.firstName || "";
                 lastName.value = data.lastName || "";
+                document.getElementById("rankTitle").value = data.rankTitle || "";
                 personalHelp.classList.add("is-success");
                 personalHelp.textContent = "اطلاعات پرسنلی با موفقیت دریافت شد.";
             })
