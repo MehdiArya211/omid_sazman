@@ -122,7 +122,19 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Stimulsoft.Reports.Web.NetCore" Version="2019.2.1" />
+    <PackageReference Include="Tesseract" Version="5.2.0" />
     <PackageReference Include="PdfPig" Version="0.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="tessdata\fas.traineddata">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="tessdata\eng.traineddata">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
