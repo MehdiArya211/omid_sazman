@@ -41,6 +41,11 @@
                     <label for="lname">نام خانوادگی</label>
                     <div class="user-input-icon is-readonly"><i class="ti-user"></i><input id="lname" asp-for="CreateUserViewModel.LastName" class="form-control" readonly tabindex="-1" placeholder="پس از استعلام نمایش داده می‌شود" /></div>
                 </div>
+                <div class="user-field">
+                    <label for="rankTitle">درجه <span>*</span></label>
+                    <div class="user-input-icon"><i class="ti-medall"></i><input id="rankTitle" asp-for="CreateUserViewModel.RankTitle" class="form-control" maxlength="50" required placeholder="پس از استعلام؛ قابل ویرایش" /></div>
+                    <span asp-validation-for="CreateUserViewModel.RankTitle" class="text-danger"></span>
+                </div>
             </div>
         </section>
 
@@ -91,5 +96,5 @@
 @section Scripts
 {
     <script src="/vendors/select2/js/select2.min.js"></script>
-    <script src="~/js/user-management-form.js"></script>
+    <script src="~/js/user-management-form.js" asp-append-version="true"></script>
 }

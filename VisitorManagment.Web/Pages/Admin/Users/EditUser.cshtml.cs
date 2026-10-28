@@ -52,7 +52,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             //}
 
 
-            ViewData["RolesTitle"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
+            ViewData["RolesTitle"] = new SelectList(AssignableRoles(), "RoleId", "Title");
 
             editUserViewModel = _userService.GetUserForShowInEditMode(id);
             if (editUserViewModel == null)
@@ -60,6 +60,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 return NotFound();
             }
 
+            ViewData["RolesTitle"] = new SelectList(AssignableRoles(), "RoleId", "Title", editUserViewModel.UserRolesId);
             return Page();
         }
 
@@ -203,7 +204,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         public JsonResult OnGetRoleAssignees(int roleId, int userId)
         {
             var roleTypeId = User.FindFirst("RoleTypeId")?.Value;
-            var roleIsAssignable = _permissionService.GetRoles(roleTypeId ?? string.Empty)
+            var roleIsAssignable = AssignableRoles()
                 .Any(role => role.RoleId == roleId);
             if (!roleIsAssignable) return new JsonResult(new { success = false, message = "نقش انتخابی معتبر نیست." });
 
@@ -222,7 +223,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             bool replaceExistingRoleHolder)
         {
             var roleTypeId = int.Parse(User.FindFirst("RoleTypeId").Value);
-            ViewData["RolesTitle"] = new SelectList(_permissionService.GetRoles(roleTypeId.ToString()), "RoleId", "Title");
+            ViewData["RolesTitle"] = new SelectList(AssignableRoles(), "RoleId", "Title");
 
             if (editUserViewModel == null || userId <= 0)
             {
@@ -237,7 +238,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 ModelState.AddModelError("", "نقش را انتخاب نمایید");
                 return Page();
             }
-            if (!_permissionService.GetRoles(roleTypeId.ToString())
+            if (!AssignableRoles()
                 .Any(role => role.RoleId == editUserViewModel.UserRolesId))
             {
                 ModelState.AddModelError("", "شما مجاز به تخصیص این جایگاه نیستید.");
@@ -312,6 +313,13 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return Redirect("/Admin/Users");
 
         }
+
+        /// <summary>مدیر سامانه همه نقش‌های فعال را می‌بیند؛ سایر مدیران در محدوده مجوز خود باقی می‌مانند.</summary>
+        private List<VisitorManagment.DataLayer.Entities.User.Role> AssignableRoles() =>
+            (User.IsSystemAdministrator()
+                ? _permissionService.GetAllRoles().Where(role => !role.IsDelete).ToList()
+                : _permissionService.GetRoles(User.FindFirst("RoleTypeId")?.Value ?? string.Empty))
+            .OrderBy(role => role.SortNum).ThenBy(role => role.Title).ToList();
 
         #endregion
     }

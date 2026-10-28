@@ -72,7 +72,7 @@ namespace VisitorManagment.Web.Pages
 
         private int GetCurrentUserId()
         {
-            return int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : 0;
+            return int.TryParse((User.FindFirst("Id")?.Value ?? User.FindFirstValue(ClaimTypes.NameIdentifier)), out var userId) ? userId : 0;
         }
 
         #endregion
