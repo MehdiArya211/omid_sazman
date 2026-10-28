@@ -100,25 +100,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
 
         private static List<BulkUserImportRowViewModel> ParsePdf(Stream stream)
         {
-            var result = new List<BulkUserImportRowViewModel>();
-            using var document = PdfDocument.Open(stream);
-            var pages = document.GetPages().ToList();
-
-            foreach (var page in pages)
-            {
-                AddRowsFromRecognizedText(result, page.Text,
-                    "اطلاعات این ردیف از متن PDF استخراج شده و باید پیش از ثبت کنترل شود.");
-            }
-
-            // PDF اسکن‌شده لایه متنی ندارد؛ تصویر اصلی هر صفحه با OCR فارسی/انگلیسی خوانده می‌شود.
-            if (!result.Any())
-            {
-                var recognizedText = ReadScannedPdfWithOcr(pages);
-                AddRowsFromRecognizedText(result, recognizedText,
-                    "این ردیف با OCR فارسی از PDF اسکن‌شده خوانده شده است؛ کد پرسنلی را پیش از ثبت کنترل کنید.");
-            }
-
-            return result.GroupBy(row => row.PersonalCode).Select(group => group.First()).ToList();
+            return PdfUserTableReader.Read(stream);
         }
 
         /// <summary>
