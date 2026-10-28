@@ -1,0 +1,25 @@
+@page
+@model VisitorManagment.Web.Pages.Notifications.IndexModel
+@using VisitorManagment.Core.Convertors
+@{ ViewData["Title"] = "اعلان‌های من"; }
+<main class="notification-page" dir="rtl">
+    <header class="notification-hero notification-hero--user"><div><span>مرکز اطلاع‌رسانی</span><h1>اعلان‌های من</h1><p>دستورالعمل‌ها، اطلاعیه‌ها و فایل‌های منتشرشده سامانه را مشاهده کنید.</p></div><i class="ti-announcement"></i></header>
+    <form data-notification-token>@Html.AntiForgeryToken()</form>
+    <section class="user-notification-list">
+        @if (!Model.Notifications.Any())
+        {
+            <div class="notification-empty"><i class="ti-bell"></i><strong>اعلانی برای نمایش وجود ندارد</strong></div>
+        }
+        @foreach (var item in Model.Notifications)
+        {
+            var isRead = Model.ReadNotificationIds.Contains(item.Id);
+            <article class="user-notification @(isRead ? "is-read" : "is-unread")" data-notification-row="@item.Id">
+                <div class="user-notification__icon"><i class="ti-bell"></i></div>
+                <div class="user-notification__body"><div class="user-notification__meta"><span>@(isRead ? "مشاهده‌شده" : "جدید")</span><time>@item.PublishDate.ToShamsi()</time></div><h2>@item.Title</h2><p>@item.Content</p>
+                    @if (item.Attachments.Any()) { <div class="notification-files">@foreach(var file in item.Attachments){<a href="@file.FilePath" target="_blank" rel="noopener" download><i class="ti-clip"></i>@file.FileName</a>}</div> }
+                </div>
+                @if (!isRead) { <button type="button" class="notification-mark-read" data-mark-notification="@item.Id"><i class="ti-check"></i> مشاهده کردم</button> }
+            </article>
+        }
+    </section>
+</main>

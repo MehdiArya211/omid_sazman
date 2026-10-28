@@ -8,6 +8,7 @@
     <partial name="_Styles" />
     <link rel="stylesheet" href="~/css/development-impersonation.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/application-topbar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/notification-center.css" asp-append-version="true" />
 </head>
 <body>
     <partial name="_OperationNotification" />
@@ -39,6 +40,10 @@
                 </div>
             </div>
             <ul class="navbar-nav omid-topbar__actions">
+                @if (User.Identity?.IsAuthenticated == true && int.TryParse(User.FindFirst("Id")?.Value, out var notificationUserId))
+                {
+                    @await Component.InvokeAsync("NotificationCenter", notificationUserId)
+                }
                 @if (User.Identity?.IsAuthenticated == true && User.FindFirst("PersonalCode")?.Value == "95003599")
                 {
                     <li class="nav-item">
@@ -216,6 +221,7 @@
     <script src="~/js/operation-feedback.js" asp-append-version="true"></script>
     <script src="~/js/ui-preferences.js" asp-append-version="true"></script>
     <script src="~/js/application-topbar.js" asp-append-version="true"></script>
+    <script src="~/js/notification-center.js" asp-append-version="true"></script>
     @if (User.Identity?.IsAuthenticated == true)
     {
         <script src="~/js/online-presence.js" asp-append-version="true"></script>

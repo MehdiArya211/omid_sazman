@@ -111,6 +111,9 @@ namespace VisitorManagment.DataLayer.Context
         {
             modelBuilder.Entity<LoginSlide>()
                 .HasIndex(slide => slide.SortOrder);
+            modelBuilder.Entity<NotificationUser>()
+                .HasIndex(item => new { item.NotificationId, item.UserId })
+                .IsUnique();
             modelBuilder.Entity<RoleAssignmentHistory>()
                 .HasIndex(item => item.RoleId)
                 .HasFilter("[EndDate] IS NULL")

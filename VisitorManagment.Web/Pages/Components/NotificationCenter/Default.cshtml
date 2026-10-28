@@ -1,0 +1,20 @@
+@model VisitorManagment.Web.ViewComponents.NotificationCenterViewModel
+<li class="nav-item system-notification-item">
+    <a href="/Notifications" class="nav-link system-notification-link" title="اعلان‌های سامانه" aria-label="@Model.UnreadCount اعلان خوانده‌نشده">
+        <i data-feather="bell"></i><span class="system-notification-badge" data-notification-badge @(Model.UnreadCount == 0 ? "hidden" : null)>@Model.UnreadCount</span>
+    </a>
+    @if (Model.FirstUnread != null)
+    {
+        <div class="login-notification-modal" data-login-notification data-notification-id="@Model.FirstUnread.Id" role="dialog" aria-modal="true" aria-labelledby="loginNotificationTitle" hidden>
+            <div class="login-notification-modal__backdrop" data-notification-dismiss></div>
+            <section class="login-notification-modal__dialog">
+                <header><span><i class="ti-announcement"></i></span><div><small>اعلان جدید سامانه</small><h2 id="loginNotificationTitle">@Model.FirstUnread.Title</h2></div></header>
+                <div class="login-notification-modal__content"><p>@Model.FirstUnread.Content</p>
+                    @if (Model.FirstUnread.Attachments.Any()) { <div class="notification-files"><strong>فایل‌های پیوست</strong>@foreach(var file in Model.FirstUnread.Attachments){<a href="@file.FilePath" target="_blank" rel="noopener" download><i class="ti-clip"></i>@file.FileName</a>}</div> }
+                </div>
+                <footer><button type="button" class="notification-secondary" data-notification-dismiss>بعداً</button><a href="/Notifications" class="notification-secondary">مشاهده همه اعلان‌ها</a><button type="button" class="notification-primary" data-modal-mark-read><i class="ti-check"></i><span>مشاهده کردم</span></button></footer>
+                <form data-notification-token>@Html.AntiForgeryToken()</form>
+            </section>
+        </div>
+    }
+</li>

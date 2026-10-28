@@ -359,7 +359,9 @@ namespace VisitorManagment.Core.Services
                         where ur.UserId == userId && p.IsActive && !r.IsDelete
                         select p;
 
-            return query.Distinct().OrderBy(p => p.Order).ToList();
+            var rolePermissions = query.Distinct();
+            var publicPermissions = _context.Permission.Where(permission => permission.IsActive && permission.ShowAll);
+            return rolePermissions.Concat(publicPermissions).Distinct().OrderBy(p => p.Order).ToList();
         }
         /// <summary>
         /// تمام نقش های موجود در سیستم

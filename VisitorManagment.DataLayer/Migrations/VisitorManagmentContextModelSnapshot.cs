@@ -89,7 +89,8 @@ namespace VisitorManagment.DataLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NotificationId");
+                    b.HasIndex("NotificationId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("NotificationUsers");
                 });
