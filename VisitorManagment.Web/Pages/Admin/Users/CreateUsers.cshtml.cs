@@ -74,6 +74,17 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                 return new JsonResult(new { message = "شماره پرسنلی معتبر نیست" });
             }
 
+            // از نگه‌داشتن نتیجه استعلام قبلی در صورت ورود کد جدید جلوگیری می‌شود.
+            personalno = personalno.Trim();
+            HttpContext.Session.Remove("result");
+            var existingUser = _userService.GetUserByUserName(personalno);
+            if (existingUser != null)
+                return new JsonResult(new {
+                    message = "این کد پرسنلی قبلاً در سامانه تعریف شده است: " + existingUser.FirstName + " " + existingUser.LastName,
+                    alreadyExists = true,
+                    userId = existingUser.Id
+                });
+
             // درخواست اطلاعات پرسنلی
             var response = _webApiService.GetPersonalByPersonalNo(personalno);
 
@@ -159,6 +170,11 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     return Page();
                 }
 
+                if (user.PersonalCode?.Trim() != CreateUserViewModel?.PersonalCode?.Trim())
+                {
+                    ModelState.AddModelError("", "کد پرسنلی تغییر کرده است؛ دوباره استعلام بگیرید.");
+                    return Page();
+                }
                 // تنظیم اطلاعات کاربر
                 user.RankTitle = CreateUserViewModel?.RankTitle?.Trim();
                 if (string.IsNullOrWhiteSpace(user.RankTitle) || user.RankTitle.Length > 50)

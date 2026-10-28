@@ -33,7 +33,16 @@
         return element.innerHTML;
     }
 
+    var personnelRequest = 0;
+    personalCode.addEventListener("input", function () {
+        personnelRequest++;
+        personalCode.setCustomValidity("کد پرسنلی جدید را استعلام بگیرید.");
+        personalHelp.textContent = "برای بررسی اطلاعات از فیلد خارج شوید یا Tab بزنید.";
+        form.dataset.replacementConfirmed = "";
+    });
+
     personalCode.addEventListener("blur", function () {
+        var requestId = ++personnelRequest;
         var code = personalCode.value.trim();
         if (!code) { return; }
         loader.classList.remove("d-none");
@@ -45,11 +54,17 @@
 
         $.get("?handler=GetPersonalId", { personalno: code })
             .done(function (data) {
+                if (requestId !== personnelRequest) return;
                 if (!data || data.message) {
                     personalCode.setCustomValidity((data && data.message) || "اطلاعات پرسنلی یافت نشد.");
                     personalHelp.classList.add("is-error");
                     personalHelp.textContent = (data && data.message) || "اطلاعات پرسنلی یافت نشد.";
-                    showToast("error", personalHelp.textContent);
+                    if (data && data.alreadyExists && data.userId) {
+                        var editLink = document.createElement("a");
+                        editLink.href = "/Admin/Users/EditUser/" + Number(data.userId);
+                        editLink.textContent = " — ویرایش کاربر موجود";
+                        personalHelp.appendChild(editLink);
+                    }
                     return;
                 }
                 personalCode.setCustomValidity("");
@@ -60,6 +75,7 @@
                 personalHelp.textContent = "اطلاعات پرسنلی با موفقیت دریافت شد.";
             })
             .fail(function () {
+                if (requestId !== personnelRequest) return;
                 personalCode.setCustomValidity("دریافت اطلاعات پرسنلی با خطا مواجه شد.");
                 personalHelp.classList.add("is-error");
                 personalHelp.textContent = "ارتباط با سرویس پرسنلی برقرار نشد.";
@@ -72,6 +88,7 @@
     });
 
     $(roleSelect).on("change", function () {
+        form.dataset.replacementConfirmed = "";
         var roleId = parseInt(roleSelect.value, 10);
         roleNotice.classList.add("d-none");
         roleNotice.innerHTML = "";
@@ -95,7 +112,7 @@
                     return '<div class="role-assignment-user"><span>' + encode(details) + '<small>' + user.openCartableCount + ' درخواست باز</small></span><a href="/Admin/Users/EditUser/' + user.userId + '">ویرایش کاربر</a></div>';
                 }).join("");
                 roleNotice.className = "role-assignment-notice";
-                roleNotice.innerHTML = '<div class="role-assignment-notice__head"><i class="ti-alert"></i> این نقش هم‌اکنون مسئول دارد:</div>' + rows +
+                roleNotice.innerHTML = '<details class="role-assignment-details"><summary style="cursor:pointer;padding:10px"><i class="ti-user"></i> کاربران دارای این نقش (' + result.users.length + ' نفر) — مشاهده جزئیات</summary><div style="max-height:240px;overflow:auto;padding:10px">' + rows + '</div></details>' +
                     '<label class="role-replacement-confirm"><input type="checkbox" name="replaceExistingRoleHolder" value="true" required />' +
                     '<span><strong>جایگزینی مسئول فعلی و انتقال درخواست‌های باز</strong><small>نقش از مسئول قبلی گرفته می‌شود و سوابق هامش‌ها تغییر نمی‌کند.</small></span></label>';
             })
@@ -132,7 +149,12 @@
         if (!form.checkValidity()) {
             event.preventDefault();
             event.stopPropagation();
-            showToast("warning", "لطفاً فیلدهای الزامی را کامل و صحیح وارد کنید.");
+            var invalid = Array.prototype.find.call(form.elements, function (field) { return field.willValidate && !field.validity.valid; });
+            var validationMessage = invalid && invalid.name === "replaceExistingRoleHolder"
+                ? "این نقش مسئول دارد. برای ادامه، جایگزینی مسئول فعلی و انتقال درخواست‌های باز را تأیید کنید؛ یا نقش دیگری انتخاب کنید."
+                : (invalid && invalid.validationMessage) || "لطفاً فیلدهای الزامی را کامل کنید.";
+            if (invalid && invalid.focus) invalid.focus();
+            showToast("warning", validationMessage);
             form.classList.add("was-validated");
             return;
         }
