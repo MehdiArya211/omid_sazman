@@ -119,7 +119,13 @@ namespace VisitorManagment.Web.Pages.Admin.Notifications
         {
             Notifications = _context.Notifications.AsNoTracking().Include(item => item.Attachments)
                 .OrderByDescending(item => item.PublishDate).ThenByDescending(item => item.Id).ToList();
-            ViewCounts = _context.NotificationUsers.AsNoTracking().GroupBy(item => item.NotificationId)
+            // EF Core 5 این الگوی GroupBy را مستقیماً به SQL ترجمه نمی‌کند.
+            // فقط شناسه‌ها از دیتابیس خوانده می‌شوند و تجمیع سبک در حافظه انجام می‌شود.
+            var viewedNotificationIds = _context.NotificationUsers.AsNoTracking()
+                .Select(item => item.NotificationId)
+                .ToList();
+            ViewCounts = viewedNotificationIds
+                .GroupBy(notificationId => notificationId)
                 .ToDictionary(group => group.Key, group => group.Count());
         }
 
