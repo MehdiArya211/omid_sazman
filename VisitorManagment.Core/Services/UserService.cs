@@ -170,7 +170,7 @@ namespace VisitorManagment.Core.Services
             Users addUser = new Users();
             // رمز اولیه طبق قاعده مدیریت کاربران، همان کد پرسنلی/نام کاربری است.
             addUser.Password = PasswordHelper.EncodePasswordMd5(user.PersonalCode.Trim());
-            addUser.ActiveCode = NameGenerator.GenerateUniqCode();
+            addUser.ActiveCode = PasswordChangeRequiredMarker;
             addUser.FirstName = user.FirstName;
             addUser.LastName = user.LastName;
             addUser.IsActive = true;
