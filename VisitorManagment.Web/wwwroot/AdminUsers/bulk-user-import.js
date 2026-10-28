@@ -1,6 +1,28 @@
 (function () {
     'use strict';
 
+    var fileInput = document.getElementById('importFile');
+    var fileName = document.getElementById('selectedFileName');
+    var previewForm = document.getElementById('previewImportForm');
+    var previewButton = document.getElementById('previewSubmitButton');
+
+    if (fileInput && fileName) {
+        fileInput.addEventListener('change', function () {
+            fileName.textContent = fileInput.files && fileInput.files.length
+                ? fileInput.files[0].name
+                : 'انتخاب فایل کاربران';
+        });
+    }
+
+    if (previewForm && previewButton) {
+        previewForm.addEventListener('submit', function () {
+            previewButton.classList.add('is-loading');
+            previewButton.disabled = true;
+            previewButton.querySelector('i').className = 'ti-reload';
+            previewButton.querySelector('span').textContent = 'در حال تحلیل فایل...';
+        });
+    }
+
     var table = document.getElementById('bulkImportTable');
     if (!table) return;
 
