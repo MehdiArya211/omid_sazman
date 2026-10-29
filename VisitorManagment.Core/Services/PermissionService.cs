@@ -120,7 +120,8 @@ namespace VisitorManagment.Core.Services
             }
 
             // سطح Serializable مانع می‌شود دو مدیر هم‌زمان دو متصدی متفاوت برای یک نقش ثبت کنند.
-            using (var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable))
+            using (var transaction = _context.Database.CurrentTransaction == null
+                ? _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable) : null)
             {
                 try
                 {
@@ -229,14 +230,14 @@ namespace VisitorManagment.Core.Services
                     _context.UserRoles.Add(new UserRole { RoleId = roleId, UserId = newUserId });
 
                     _context.SaveChanges();
-                    transaction.Commit();
+                    transaction?.Commit();
                     return new BaseResult(true,
                         $"مسئول جایگاه تغییر کرد؛ {fileIds.Count} درخواست جایگاه مقصد منتقل و " +
                         $"{previousPositionRows.Count} درخواست جایگاه قبلی در کارتابل خالی آن جایگاه محفوظ ماند.");
                 }
                 catch (Exception)
                 {
-                    transaction.Rollback();
+                    transaction?.Rollback();
                     return new BaseResult(false, "جایگزینی انجام نشد؛ نقش و کارتابل قبلی بدون تغییر باقی ماند.");
                 }
             }
