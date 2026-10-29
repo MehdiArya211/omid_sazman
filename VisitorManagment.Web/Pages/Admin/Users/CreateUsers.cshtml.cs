@@ -1,4 +1,5 @@
 using VisitorManagment.Core.Constants;
+using VisitorManagment.DataLayer.Context;
 using System;
 using System.Linq;
 using ITOWebApiClient;
@@ -17,6 +18,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
     [Authorize]
     public class CreateUsersModel : PageModel
     {
+        private readonly VisitorManagmentContext _context;
         private IUserService _userService;
         private IPermissionService _permissionService;
         private readonly ApiTokenCacheClient _apiTokenClient;
@@ -24,8 +26,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
         private readonly IHameshService _hameshService;
 
 
-        public CreateUsersModel(IUserService userService, IPermissionService permissionService, ApiTokenCacheClient apiTokenCacheClient, IWebApiService webApiService , IHameshService hameshService)
+        public CreateUsersModel(IUserService userService, IPermissionService permissionService, ApiTokenCacheClient apiTokenCacheClient, IWebApiService webApiService , IHameshService hameshService, VisitorManagmentContext context)
         {
+            _context = context;
             _userService = userService;
             _permissionService = permissionService;
             _apiTokenClient = apiTokenCacheClient;
@@ -207,6 +210,9 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     return Page();
                 }
 
+                // ایجاد حساب و تخصیص نقش یک عملیات اتمی است؛ هر بازگشت ناموفق، حساب جدید را نیز rollback می‌کند.
+                using var creationTransaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
                 // افزودن کاربر جدید
                 int newUserId;
                 try
@@ -239,6 +245,8 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     ModelState.AddModelError("", "خطا در افزودن نقش‌ها به کاربر: " + ex.Message);
                     return Page();
                 }
+
+                creationTransaction.Commit();
 
                 // هدایت به صفحه اصلی
                 TempData["OperationTitle"] = "ثبت موفق";
