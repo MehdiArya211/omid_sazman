@@ -12,6 +12,7 @@ using VisitorManagment.Core.Classes;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.Web.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace VisitorManagment.Web.Pages.Admin.Users
 {
