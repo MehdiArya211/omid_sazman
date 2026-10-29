@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using VisitorManagment.Core.Constants;
+using System.Collections.Generic;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -211,6 +212,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return new JsonResult(new
             {
                 success = true,
+                isShared = InspectionRolePolicy.IsShared(_permissionService.GetRoleById(roleId)),
                 users = _userService.GetUsersByRole(roleId, userId)
             });
         }
@@ -280,7 +282,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             }
 
             var otherRoleHolders = _userService.GetUsersByRole(editUserViewModel.UserRolesId, userId);
-            if (otherRoleHolders.Any() && !replaceExistingRoleHolder)
+            if (!InspectionRolePolicy.IsShared(_permissionService.GetRoleById(editUserViewModel.UserRolesId)) && otherRoleHolders.Any() && !replaceExistingRoleHolder)
             {
                 ModelState.AddModelError("",
                     "این نقش مسئول فعال دارد. برای جلوگیری از دو مسئول هم‌زمان، گزینه جایگزینی و انتقال کارتابل را تأیید کنید.");
@@ -290,7 +292,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             var previousUserInfo = _userService.GetUserForShowInEditMode(userId);
             _userService.EditUserFromAdmin(editUserViewModel, password, EditUserId, userId);
 
-            if (otherRoleHolders.Any() || previousUserInfo?.UserRolesId != editUserViewModel.UserRolesId)
+            if (InspectionRolePolicy.IsShared(_permissionService.GetRoleById(editUserViewModel.UserRolesId)) || otherRoleHolders.Any() || previousUserInfo?.UserRolesId != editUserViewModel.UserRolesId)
             {
                 var replacementResult = _permissionService.ReplaceRoleHolder(
                     editUserViewModel.UserRolesId, userId, EditUserId);
