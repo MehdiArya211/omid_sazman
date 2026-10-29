@@ -1,4 +1,5 @@
-﻿using System;
+using VisitorManagment.Core.Constants;
+using System;
 using System.Linq;
 using ITOWebApiClient;
 using Microsoft.AspNetCore.Authorization;
@@ -119,6 +120,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             return new JsonResult(new
             {
                 success = true,
+                isShared = InspectionRolePolicy.IsShared(_permissionService.GetRoleById(roleId)),
                 users = _userService.GetUsersByRole(roleId)
             });
         }
@@ -156,7 +158,7 @@ namespace VisitorManagment.Web.Pages.Admin.Users
                     return Page();
                 }
                 var existingRoleHolders = _userService.GetUsersByRole(roleId);
-                if (existingRoleHolders.Any() && !replaceExistingRoleHolder)
+                if (!InspectionRolePolicy.IsShared(_permissionService.GetRoleById(roleId)) && existingRoleHolders.Any() && !replaceExistingRoleHolder)
                 {
                     ModelState.AddModelError("",
                         "این نقش مسئول فعال دارد. برای جلوگیری از دو مسئول هم‌زمان، گزینه جایگزینی و انتقال کارتابل را تأیید کنید.");
