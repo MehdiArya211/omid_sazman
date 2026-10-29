@@ -115,11 +115,11 @@ namespace VisitorManagment.DataLayer.Context
                 .HasIndex(item => new { item.NotificationId, item.UserId })
                 .IsUnique();
             modelBuilder.Entity<RoleAssignmentHistory>()
-                .HasIndex(item => item.RoleId)
-                .HasFilter("[EndDate] IS NULL")
-                .IsUnique();
+                .HasIndex(item => item.RoleId);
             modelBuilder.Entity<RoleAssignmentHistory>()
-                .HasIndex(item => item.UserId)
+                .HasIndex(item => item.UserId);
+            modelBuilder.Entity<RoleAssignmentHistory>()
+                .HasIndex(item => new { item.RoleId, item.UserId })
                 .HasFilter("[EndDate] IS NULL")
                 .IsUnique();
             modelBuilder.Entity<Cartable>()
