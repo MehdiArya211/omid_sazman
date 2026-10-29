@@ -102,6 +102,23 @@ namespace VisitorManagment.Core.Services
             if (newUser == null) return new BaseResult(false, "کاربر جدید فعال و معتبر نیست.");
             if (administrator == null) return new BaseResult(false, "هویت مدیر انجام‌دهنده معتبر نیست.");
 
+            // نقش مشترک بازرسی: فقط عضویت اضافه می‌شود؛ هیچ مسئول یا کارتابلی جابه‌جا نمی‌شود.
+            if (InspectionRolePolicy.IsShared(role))
+            {
+                if (!_context.UserRoles.Any(item => item.UserId == newUserId && item.RoleId == roleId))
+                {
+                    _context.UserRoles.Add(new UserRole { RoleId = roleId, UserId = newUserId });
+                    _context.RoleAssignmentHistories.Add(new RoleAssignmentHistory
+                    {
+                        RoleId = roleId, UserId = newUserId, StartDate = DateTime.Now,
+                        ChangedByUserId = administratorUserId,
+                        ChangeReason = "افزودن عضو به نقش مشترک بازرسی؛ بدون انتقال کارتابل"
+                    });
+                    _context.SaveChanges();
+                }
+                return new BaseResult(true, "کاربر به نقش مشترک بازرسی اضافه شد؛ نقش و کارتابل سایر کاربران بدون تغییر باقی ماند.");
+            }
+
             // سطح Serializable مانع می‌شود دو مدیر هم‌زمان دو متصدی متفاوت برای یک نقش ثبت کنند.
             using (var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable))
             {
