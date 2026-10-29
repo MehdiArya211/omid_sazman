@@ -1,3 +1,4 @@
+using VisitorManagment.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -253,6 +254,8 @@ namespace VisitorManagment.Web.Pages.Admin.Users
             if (string.IsNullOrWhiteSpace(row.FirstName) || string.IsNullOrWhiteSpace(row.LastName)) return "نام و نام خانوادگی الزامی است.";
             if (!row.UnitCode.HasValue || row.UnitCode <= 0 || string.IsNullOrWhiteSpace(row.UnitTitle)) return "یگان تشخیص داده نشده است.";
             if (!allowedRoleIds.Contains(row.RoleId)) return "نقش انتخاب‌شده معتبر یا قابل تخصیص نیست.";
+
+            if (InspectionRolePolicy.IsShared(_permissionService.GetRoleById(row.RoleId))) return null;
 
             var currentHolder = _context.UserRoles.AsNoTracking()
                 .Where(item => item.RoleId == row.RoleId && !item.User.IsDelete && item.User.IsActive)
