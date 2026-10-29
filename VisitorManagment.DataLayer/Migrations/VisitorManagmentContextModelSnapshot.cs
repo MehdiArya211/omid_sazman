@@ -615,11 +615,10 @@ namespace VisitorManagment.DataLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId")
-                        .IsUnique()
-                        .HasFilter("[EndDate] IS NULL");
+                    b.HasIndex("RoleId");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("UserId");
+                    b.HasIndex("RoleId", "UserId")
                         .IsUnique()
                         .HasFilter("[EndDate] IS NULL");
 
