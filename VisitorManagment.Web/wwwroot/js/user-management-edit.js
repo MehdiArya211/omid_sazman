@@ -125,6 +125,11 @@
                     var details = [user.rankTitle, user.fullName, user.userName, user.unitTitle, user.isActive ? "فعال" : "غیرفعال"].filter(Boolean).join(" - ");
                     return '<div class="role-assignment-user"><span>' + encode(details) + '<small>' + user.openCartableCount + ' درخواست باز</small></span><a href="/Admin/Users/EditUser/' + user.userId + '">ویرایش کاربر</a></div>';
                 }).join("");
+                if (result.isShared) {
+                    roleNotice.className = "role-assignment-notice";
+                    roleNotice.innerHTML = '<details><summary style="cursor:pointer;padding:10px">کاربران این نقش مشترک (' + result.users.length + ' نفر)</summary><div style="max-height:240px;overflow:auto">' + rows + '</div></details><small>کاربر جدید اضافه می‌شود؛ نقش و کارتابل افراد قبلی تغییر نمی‌کند.</small>';
+                    return;
+                }
                 roleNotice.className = "role-assignment-notice";
                 roleNotice.innerHTML = '<details class="role-assignment-details"><summary style="cursor:pointer;padding:10px"><i class="ti-user"></i> کاربران دارای این نقش (' + result.users.length + ' نفر) — مشاهده جزئیات</summary><div style="max-height:240px;overflow:auto;padding:10px">' + rows + '</div></details>' +
                     '<label class="role-replacement-confirm"><input type="checkbox" name="replaceExistingRoleHolder" value="true" required />' +
