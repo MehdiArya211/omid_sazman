@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using VisitorManagment.Core.Constants;
 using VisitorManagment.DataLayer.Context;
 using System;
