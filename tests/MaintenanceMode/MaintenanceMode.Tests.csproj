@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net5.0</TargetFramework><LangVersion>9.0</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.3" />
+    <ProjectReference Include="../../VisitorManagment.DataLayer/VisitorManagment.DataLayer.csproj" />
+    <Compile Include="../../VisitorManagment.Core/DTOs/Maintenance/MaintenanceState.cs" Link="Production/MaintenanceState.cs" />
+    <Compile Include="../../VisitorManagment.Core/Services/Interfaces/IMaintenanceService.cs" Link="Production/IMaintenanceService.cs" />
+    <Compile Include="../../VisitorManagment.Core/Services/MaintenanceService.cs" Link="Production/MaintenanceService.cs" />
+    <Compile Include="../../VisitorManagment.Web/Middleware/MaintenanceMiddleware.cs" Link="Production/MaintenanceMiddleware.cs" />
+    <Compile Include="../../VisitorManagment.Web/Hubs/MaintenanceHubFilter.cs" Link="Production/MaintenanceHubFilter.cs" />
+    <Compile Include="../../VisitorManagment.Web/Hubs/OnlineUsersHub.cs" Link="Production/OnlineUsersHub.cs" />
+    <Compile Include="../../VisitorManagment.Web/Pages/Developer/Maintenance.cshtml.cs" Link="Production/MaintenancePage.cs" />
+    <Compile Include="../../VisitorManagment.Web/Pages/MaintenanceStatus.cshtml.cs" Link="Production/MaintenanceStatusPage.cs" />
+    <Compile Include="../../VisitorManagment.Web/Pages/UpdateSamane.cshtml.cs" Link="Production/UpdateSamanePage.cs" />
+  </ItemGroup>
+</Project>

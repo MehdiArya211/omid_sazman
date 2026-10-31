@@ -21,6 +21,24 @@ namespace VisitorManagment.DataLayer.Migrations
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.MaintenanceSetting", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedNever().HasColumnType("int");
+                    b.Property<bool>("IsEnabled").HasColumnType("bit");
+                    b.Property<string>("Message").IsRequired().HasMaxLength(1000).HasColumnType("nvarchar(1000)");
+                    b.Property<int>("Revision").IsConcurrencyToken().HasColumnType("int");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("datetime2");
+                    b.Property<int?>("UpdatedByUserId").HasColumnType("int");
+                    b.HasKey("Id");
+                    b.ToTable("MaintenanceSettings");
+                    b.HasCheckConstraint("CK_MaintenanceSettings_SingleRow", "[Id] = 1");
+                    b.HasData(new
+                    {
+                        Id = 1, IsEnabled = false, Revision = 0,
+                        Message = "سامانه موقتاً در حال به‌روزرسانی است. لطفاً کمی بعد دوباره مراجعه کنید."
+                    });
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.LoginSlide", b =>
                 {
                     b.Property<int>("Id")

@@ -1,4 +1,5 @@
-﻿<!doctype html>
+﻿@inject VisitorManagment.Core.Services.Interfaces.IMaintenanceService MaintenanceService
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -11,6 +12,16 @@
     <link rel="stylesheet" href="~/css/notification-center.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var maintenanceDeveloper = await MaintenanceService.IsDeveloperAsync(User);
+    }
+    @if (maintenanceDeveloper && (await MaintenanceService.GetStateAsync()).IsEnabled)
+    {
+        <div class="alert alert-warning mb-0 text-center" role="status" dir="rtl">
+            حالت به‌روزرسانی فعال است؛ فقط حساب اختصاصی برنامه‌نویس می‌تواند از سامانه استفاده کند.
+            <a asp-page="/Developer/Maintenance">مدیریت و بازگرداندن سامانه به حالت عادی</a>
+        </div>
+    }
     <partial name="_OperationNotification" />
     @if (User.Identity?.IsAuthenticated == true && User.FindFirst("IsImpersonating")?.Value == "true")
     {
@@ -40,6 +51,10 @@
                 </div>
             </div>
             <ul class="navbar-nav omid-topbar__actions">
+                @if (maintenanceDeveloper)
+                {
+                    <li class="nav-item"><a asp-page="/Developer/Maintenance" class="nav-link" title="کنترل به‌روزرسانی سامانه"><i class="ti-settings"></i><span class="sr-only">کنترل به‌روزرسانی</span></a></li>
+                }
                 <li class="nav-item"><a href="/AccountPassword" class="nav-link" title="تغییر رمز عبور"><i class="ti-lock"></i><span class="sr-only">تغییر رمز عبور</span></a></li>
                 @if (User.Identity?.IsAuthenticated == true && int.TryParse(User.FindFirst("Id")?.Value, out var notificationUserId))
                 {
@@ -219,6 +234,8 @@
 
 
 
+    <div id="maintenance-client-config" hidden data-status-url="@Url.Page("/MaintenanceStatus")" data-maintenance-url="@Url.Page("/UpdateSamane")"></div>
+    <script src="~/js/maintenance-status.js" asp-append-version="true"></script>
     <script src="~/js/operation-feedback.js" asp-append-version="true"></script>
     <script src="~/js/ui-preferences.js" asp-append-version="true"></script>
     <script src="~/js/application-topbar.js" asp-append-version="true"></script>

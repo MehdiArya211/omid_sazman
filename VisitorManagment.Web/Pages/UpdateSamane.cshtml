@@ -1,47 +1,37 @@
-﻿@page
+@page
 @model VisitorManagment.Web.Pages.UpdateSamaneModel
-@{
-    Layout = "";
-}
+@{ Layout = null; }
 <!doctype html>
-<html lang="en">
-
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>بورداش - قالب داشبرد ادمین</title>
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="assets/media/image/favicon.png"/>
-
-    <!-- Plugin styles -->
-    <link rel="stylesheet" href="vendors/bundle.css" type="text/css">
-
-    <!-- App styles -->
-    <link rel="stylesheet" href="assets/css/app.min.css" type="text/css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>سامانه امید | در حال به‌روزرسانی</title>
+    <style>
+        body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f1f5f9;color:#12334b;font-family:Tahoma,Arial,sans-serif;line-height:2}main{box-sizing:border-box;width:min(92%,640px);padding:42px 28px;background:white;border-radius:22px;box-shadow:0 20px 60px #16344a12;text-align:center}h1{font-size:24px;margin:12px 0}p{white-space:pre-wrap;overflow-wrap:anywhere;color:#536677}a{color:#166b92}.symbol{font-size:48px;color:#166b92}.muted{font-size:13px;color:#728492}
+    </style>
 </head>
-<body class="bg-white h-100-vh p-t-0">
-
-<div class="p-b-50 d-block d-lg-none"></div>
-
-<div class="container h-100-vh">
-    <div class="row align-items-md-center h-100-vh">
-        <div class="col-lg-6">
-            <img class="img-fluid" src="assets/media/svg/mean_at_work.svg" alt="image">
-        </div>
-        <div class="col-lg-4 offset-lg-1">
-            <h1>سامانه امید تا مورخه 1401/09/20 در دسترس نمیباشد</h1>
-            <p>در حال بروزرسانی هستیم.</p>
-        </div>
-    </div>
-</div>
-
-<!-- Plugin scripts -->
-<script src="vendors/bundle.js"></script>
-
-<!-- App scripts -->
-<script src="assets/js/app.min.js"></script>
+<body>
+    <main>
+        <div class="symbol" aria-hidden="true">↻</div>
+        <h1>سامانه امید در حال به‌روزرسانی است</h1>
+        <p role="status">@Model.State.Message</p>
+        <p class="muted">پس از پایان به‌روزرسانی، امکان استفاده از سامانه دوباره فراهم می‌شود.</p>
+        <a asp-page="/Index">ورود برنامه‌نویس</a>
+        <noscript><p><a href="">بررسی دوباره وضعیت سامانه</a></p></noscript>
+    </main>
+    <script>
+        (function () {
+            var statusUrl = '@Url.Page("/MaintenanceStatus")';
+            var returnUrl = '@Url.Page(User.Identity?.IsAuthenticated == true ? "/Visitor/Index" : "/Index")';
+            window.setInterval(function () {
+                fetch(statusUrl, { credentials: 'same-origin', cache: 'no-store' })
+                    .then(function (response) { return response.ok ? response.json() : null; })
+                    .then(function (data) { if (data && !data.blocked) window.location.replace(returnUrl); })
+                    .catch(function () { });
+            }, 5000);
+        })();
+    </script>
 </body>
-
 </html>

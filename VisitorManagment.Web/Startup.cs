@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,12 @@ namespace VisitorManagment.Web
             services.AddRazorPages();
             //تغییر روتینگ پیش فرض سامانه
            // services.AddMvc().AddRazorPagesOptions(options => options.Conventions.AddPageRoute("/UpdateSamane", ""));
-            services.AddSignalR(options => options.MaximumReceiveMessageSize = 7 * 1024 * 1024);
+            services.AddSignalR(options =>
+            {
+                options.MaximumReceiveMessageSize = 7 * 1024 * 1024;
+                options.AddFilter<MaintenanceHubFilter>();
+            });
+            services.AddSingleton<MaintenanceHubFilter>();
             //دو خط زیر برای سیشن
             services.AddSession();
             services.AddMvc();
@@ -88,6 +94,7 @@ namespace VisitorManagment.Web
             #endregion
 
             #region IOC
+            services.AddScoped<IMaintenanceService, MaintenanceService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IAdminVisitorRequestService, AdminVisitorRequestService>();
             services.AddTransient<IPermissionService, PermissionService>();
@@ -172,6 +179,7 @@ namespace VisitorManagment.Web
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
             app.UseAuthentication();
+            app.UseMiddleware<MaintenanceMiddleware>();
 
             // کاربران دارای رمز بازنشانی‌شده تا ثبت رمز جدید به سایر صفحات دسترسی ندارند.
             app.UseMiddleware<RequiredPasswordChangeMiddleware>();
