@@ -791,7 +791,8 @@ namespace VisitorManagment.Core.Services
             try
             {
                 IQueryable<Cartable> filesQuery = _context.Cartables.Include(f => f.File)
-                    .Where(f => f.RcvrUserId == rcvrUserId && !f.File.IsDelete); // دریافت فایل‌ها برای کاربر خاص
+                    .Where(f => f.RcvrUserId == rcvrUserId && !f.IsDone &&
+                        !f.File.IsDelete && !f.File.IsArchived); // فقط کارتابل باز؛ سوابق ارجاع در گردش درخواست می‌مانند
                 #region کاربر لاگین کرده ادمین باشد
                 if (roleTypeId == SystemRoleTypes.SystemAdministrator)
                 {
@@ -979,7 +980,9 @@ namespace VisitorManagment.Core.Services
 
         {
             // rcvrUserId ===>>>UserId claim
-            IQueryable<Cartable> result = _context.Cartables.Include(f => f.File).Where(f => f.RcvrUserId == rcvrUserId && f.File.IsDelete == false && f.File.IsMeetingHold == true);
+            IQueryable<Cartable> result = _context.Cartables.Include(f => f.File)
+                .Where(f => f.RcvrUserId == rcvrUserId && !f.IsDone && !f.File.IsDelete &&
+                    !f.File.IsArchived && f.File.IsMeetingHold);
 
 
             #region Search
@@ -2580,7 +2583,7 @@ namespace VisitorManagment.Core.Services
 
                 var count = _context.Cartables
                     .Include(x => x.File)
-                    .Where(x => x.RcvrUserId == userId.Key && x.File.IsDelete == false && x.File.IsArchived == false)
+                    .Where(x => x.RcvrUserId == userId.Key && !x.IsDone && !x.File.IsDelete && !x.File.IsArchived)
                     .Select(x => x.FileId)
                     .Distinct()
                     .Count();
@@ -2610,12 +2613,30 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public void ArchivedFile(int fileId, int userId)
         {
+            if (fileId <= 0 || userId <= 0)
+                throw new InvalidOperationException("اطلاعات بایگانی معتبر نیست.");
+
             var file = GetFileByFileId(fileId);
+            if (file == null)
+                throw new InvalidOperationException("درخواست موردنظر یافت نشد.");
+            if (file.IsArchived)
+            {
+                if (file.ArchivedRegUserId == userId) return;
+                throw new InvalidOperationException("این درخواست قبلاً بایگانی شده است.");
+            }
+
+            var openCartables = _context.Cartables
+                .Where(item => item.FileId == fileId && item.RcvrUserId == userId && !item.IsDone)
+                .ToList();
+            if (openCartables.Count == 0)
+                throw new InvalidOperationException("این درخواست در کارتابل باز شما نیست.");
 
             file.IsArchived = true;
             file.ArchivedRegUserId = userId;
+            foreach (var item in openCartables) item.IsDone = true;
 
-            UpdateFile(file);
+            // وضعیت پرونده و کارتابل در یک SaveChanges ثبت می‌شوند؛ سابقه حذف نمی‌شود.
+            _context.SaveChanges();
         }
 
 
@@ -2649,11 +2670,9 @@ namespace VisitorManagment.Core.Services
             string filterCaption = "")
         {
 
-            var listFileId = _context.Hameshes
-                .Include(x => x.File)
-                .Where(x => x.UserId == userId && x.File.FileTypeId == 1).Select(x => x.FileId).Distinct().ToList();
-
-            IQueryable<Files> listFile = _context.Files.Where(x => listFileId.Contains(x.Id) && x.IsArchived);
+            // مالک بایگانی مستقل از وجود هامش و نوع درخواست است؛ درخواست‌های قدیمی هم نمایش داده می‌شوند.
+            IQueryable<Files> listFile = _context.Files
+                .Where(x => userId > 0 && x.IsArchived && x.ArchivedRegUserId == userId);
 
             #region Search
 

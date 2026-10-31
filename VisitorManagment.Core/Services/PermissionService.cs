@@ -353,33 +353,29 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public List<Permission> GetPermissionsForUser(int userId)
         {
-            // مدیر سامانه باید بتواند همه منوهای فعال را مدیریت کند؛ نمایش منوی مدیریتی
-            // او نباید به وجود یک رکورد تکراری در RolePermission وابسته باشد.
-            var isSystemAdministrator = _context.UserRoles
-                .Any(userRole => userRole.UserId == userId &&
-                                 !userRole.Role.IsDelete &&
-                                 userRole.Role.RoleType == SystemRoleTypes.SystemAdministrator);
+            if (userId <= 0 || !_context.Users.Any(user => user.Id == userId && user.IsActive))
+                return new List<Permission>();
 
-            if (isSystemAdministrator)
-            {
-                return _context.Permission
-                    .AsNoTracking()
-                    .Where(permission => permission.IsActive)
-                    .OrderBy(permission => permission.Order)
-                    .ThenBy(permission => permission.PermissionTitle)
-                    .ToList();
-            }
+            // نمایش منو فقط از دسترسی نقش‌های فعلی می‌آید؛ ShowAll یا نوع نقش مجوز اضافه نمی‌دهد.
+            var grantedPermissionIds = (from rolePermission in _context.RolePermission
+                                        join userRole in _context.UserRoles on rolePermission.RoleId equals userRole.RoleId
+                                        where userRole.UserId == userId && !userRole.Role.IsDelete
+                                        select rolePermission.PermissionId)
+                .Distinct().ToList();
 
-            var query = from p in _context.Permission
-                        join rp in _context.RolePermission on p.PermissionId equals rp.PermissionId
-                        join r in _context.Roles on rp.RoleId equals r.RoleId
-                        join ur in _context.UserRoles on r.RoleId equals ur.RoleId
-                        where ur.UserId == userId && p.IsActive && !r.IsDelete
-                        select p;
+            var grantedMenus = _context.Permission.AsNoTracking()
+                .Where(permission => permission.IsActive && grantedPermissionIds.Contains(permission.PermissionId))
+                .ToList();
+            var parentIds = grantedMenus.Where(permission => permission.ParentID.HasValue)
+                .Select(permission => permission.ParentID.Value).Distinct().ToList();
 
-            var rolePermissions = query.Distinct();
-            var publicPermissions = _context.Permission.Where(permission => permission.IsActive && permission.ShowAll);
-            return rolePermissions.Concat(publicPermissions).Distinct().OrderBy(p => p.Order).ToList();
+            // والد فقط ظرف زیرمنوی مجاز است؛ اضافه‌شدن والد، دسترسی به خواهر/برادرها نمی‌دهد.
+            return _context.Permission.AsNoTracking()
+                .Where(permission => permission.IsActive &&
+                    (grantedPermissionIds.Contains(permission.PermissionId) || parentIds.Contains(permission.PermissionId)))
+                .OrderBy(permission => permission.Order)
+                .ThenBy(permission => permission.PermissionTitle)
+                .ToList();
         }
         /// <summary>
         /// تمام نقش های موجود در سیستم

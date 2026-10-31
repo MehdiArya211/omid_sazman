@@ -27,16 +27,27 @@
 {
     var children = Model.Where(p => p.ParentID == item.PermissionId && p.IsActive).OrderBy(p => p.Order).ToList();
     var parentIsOpen = children.Any(child => IsCurrentPath(currentPath, child.MenuUrl ?? child.SubUrl)) ||
-                       (children.Count == 0 && IsCurrentPath(currentPath, item.ParentUrl));
+                       (children.Count == 0 && IsCurrentPath(currentPath, item.MenuUrl ?? item.SubUrl ?? item.ParentUrl));
     <li class="@(parentIsOpen ? "open" : "")">
 
-        <a href="#" style="color:dodgerblue" class="@(parentIsOpen ? "active" : "")" aria-expanded="@parentIsOpen.ToString().ToLowerInvariant()"> @item.PermissionTitle</a>
+        @if (children.Count > 0)
+        {
+            <a href="#" style="color:dodgerblue" class="@(parentIsOpen ? "active" : "")" aria-expanded="@parentIsOpen.ToString().ToLowerInvariant()">@item.PermissionTitle</a>
+        }
+        else
+        {
+            var targetUrl = item.MenuUrl ?? item.SubUrl ?? item.ParentUrl;
+            if (!string.IsNullOrWhiteSpace(targetUrl) && targetUrl != "#")
+            {
+                <a href="@targetUrl" class="@(parentIsOpen ? "active" : "")">@item.PermissionTitle</a>
+            }
+        }
         <ul>
             @foreach (var sub in children)
             {
                 var childIsActive = IsCurrentPath(currentPath, sub.MenuUrl ?? sub.SubUrl);
                 <li>
-                    <a href="@sub.SubUrl" class="@(childIsActive ? "active" : "")" aria-current="@(childIsActive ? "page" : null)">@sub.PermissionTitle</a>
+                    <a href="@(sub.SubUrl ?? sub.MenuUrl)" class="@(childIsActive ? "active" : "")" aria-current="@(childIsActive ? "page" : null)">@sub.PermissionTitle</a>
                 </li>
             }
         </ul>
