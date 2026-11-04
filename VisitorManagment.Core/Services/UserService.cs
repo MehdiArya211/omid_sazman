@@ -818,6 +818,17 @@ namespace VisitorManagment.Core.Services
         /// <param name="ipUser"></param>
         /// <param name="status"></param>
         /// <returns></returns>
+        public Dictionary<string, DateTime> GetFirstLoginTimes(DateTime day)
+        {
+            var start = day.Date;
+            var end = start.AddDays(1);
+            return _context.UserLoginHistories.AsNoTracking()
+                .Where(item => item.CreateDate >= start && item.CreateDate < end)
+                .GroupBy(item => item.UserName)
+                .Select(group => new { UserName = group.Key, FirstLogin = group.Min(item => item.CreateDate) })
+                .ToDictionary(item => item.UserName, item => item.FirstLogin, StringComparer.OrdinalIgnoreCase);
+        }
+
         public Task AddUserLoginHistory(string userId, DateTime CreateDate, string ipUser, bool status)
         {
             var user = new VisitorManagment.DataLayer.Entities.User.UserLoginHistory()

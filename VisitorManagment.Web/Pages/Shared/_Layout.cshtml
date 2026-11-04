@@ -44,6 +44,10 @@
     <div class="header">
         <div class="omid-topbar">
             <ul class="navbar-nav omid-topbar__actions">
+                @if (User.FindFirst("RoleTypeId")?.Value == "100")
+                {
+                    <li class="nav-item"><a href="/Admin/OnlineUsers" class="nav-link" title="کاربران آنلاین"><i class="ti-user"></i><span class="sr-only">کاربران آنلاین</span></a></li>
+                }
                 @if (maintenanceDeveloper)
                 {
                     <li class="nav-item"><a asp-page="/Developer/Maintenance" class="nav-link" title="کنترل به‌روزرسانی سامانه"><i class="ti-settings"></i><span class="sr-only">کنترل به‌روزرسانی</span></a></li>

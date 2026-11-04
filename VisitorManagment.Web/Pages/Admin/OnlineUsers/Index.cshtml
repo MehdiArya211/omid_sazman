@@ -1,0 +1,119 @@
+@page
+@model VisitorManagment.Web.Pages.Admin.OnlineUsers.IndexModel
+@{
+    ViewData["Title"] = "کاربران آنلاین";
+}
+<link rel="stylesheet" href="~/css/online-users.css" asp-append-version="true" />
+
+<main class="online-users-page" dir="rtl">
+    <section class="online-users-hero">
+        <div>
+            <span>گزارش وضعیت کاربران</span>
+            <h1>کاربران آنلاین سامانه</h1>
+            <p>وضعیت اتصال کاربران و اولین زمان ورود آن‌ها در روز انتخاب‌شده</p>
+        </div>
+        <div class="online-users-total"><strong id="onlineUsersTotal">@Model.Users.Count</strong><span>نفر آنلاین</span></div>
+    </section>
+
+    <section class="online-users-card">
+        <div class="online-users-toolbar">
+            <label for="onlineUsersDay">روز موردنظر</label>
+            <input id="onlineUsersDay" type="date" value="@Model.SelectedDay" />
+            <button type="button" id="refreshOnlineUsers"><i class="fa fa-refresh" aria-hidden="true"></i> تازه‌سازی</button>
+            <span id="onlineUsersUpdated" aria-live="polite">در حال دریافت...</span>
+        </div>
+        <div class="online-users-table-wrap">
+            <table class="online-users-table">
+                <thead>
+                    <tr><th>ردیف</th><th>نام و نام خانوادگی</th><th>کد پرسنلی</th><th>یگان</th><th>اولین ورود روز</th><th>وضعیت</th></tr>
+                </thead>
+                <tbody id="onlineUsersRows">
+                    @if (Model.Users.Count == 0)
+                    {
+                        <tr class="online-users-empty"><td colspan="6">در حال حاضر کاربر آنلاینی ثبت نشده است.</td></tr>
+                    }
+                    else
+                    {
+                        var index = 0;
+                        foreach (var user in Model.Users)
+                        {
+                            index++;
+                            <tr>
+                                <td>@index</td>
+                                <td class="online-users-name">@user.FullName</td>
+                                <td>@user.PersonalCode</td>
+                                <td>@(string.IsNullOrWhiteSpace(user.UnitTitle) ? "—" : user.UnitTitle)</td>
+                                <td>@(user.FirstLoginTime.HasValue ? user.FirstLoginTime.Value.ToString("HH:mm") : "امروز ثبت نشده")</td>
+                                <td><span class="online-users-badge"><i></i> آنلاین</span></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="online-users-note">فهرست آنلاین‌ها هر ۳۰ ثانیه به‌روزرسانی می‌شود. زمان اولین ورود از تاریخچهٔ ورود روز انتخاب‌شده خوانده می‌شود.</p>
+    </section>
+</main>
+
+@section Scripts {
+<script>
+(function () {
+    "use strict";
+    var dayInput = document.getElementById("onlineUsersDay");
+    var rows = document.getElementById("onlineUsersRows");
+    var total = document.getElementById("onlineUsersTotal");
+    var updated = document.getElementById("onlineUsersUpdated");
+    var refresh = document.getElementById("refreshOnlineUsers");
+    var timer = null;
+
+    function cell(row, value, className) {
+        var element = document.createElement("td");
+        if (className) element.className = className;
+        element.textContent = value || "—";
+        row.appendChild(element);
+        return element;
+    }
+
+    function render(data) {
+        total.textContent = Number(data.onlineCount || 0).toLocaleString("fa-IR");
+        rows.replaceChildren();
+        if (!data.users || data.users.length === 0) {
+            var empty = document.createElement("tr");
+            empty.className = "online-users-empty";
+            var message = cell(empty, "در حال حاضر کاربر آنلاینی ثبت نشده است.");
+            message.colSpan = 6;
+            rows.appendChild(empty);
+            return;
+        }
+        data.users.forEach(function (user, index) {
+            var row = document.createElement("tr");
+            cell(row, (index + 1).toLocaleString("fa-IR"));
+            cell(row, user.fullName, "online-users-name");
+            cell(row, user.personalCode);
+            cell(row, user.unitTitle);
+            cell(row, user.firstLoginTime || "امروز ثبت نشده");
+            var status = cell(row, "");
+            status.innerHTML = '<span class="online-users-badge"><i></i> آنلاین</span>';
+            rows.appendChild(row);
+        });
+    }
+
+    function load() {
+        var url = window.location.pathname + "?handler=Data&day=" + encodeURIComponent(dayInput.value);
+        fetch(url, { credentials: "same-origin", cache: "no-store", headers: { "X-Requested-With": "XMLHttpRequest" } })
+            .then(function (response) { if (!response.ok) throw new Error("request failed"); return response.json(); })
+            .then(function (data) {
+                render(data);
+                updated.textContent = "فهرست به‌روز شد.";
+            })
+            .catch(function () { updated.textContent = "به‌روزرسانی انجام نشد؛ اتصال را بررسی کنید."; });
+    }
+
+    refresh.addEventListener("click", load);
+    dayInput.addEventListener("change", load);
+    load();
+    timer = window.setInterval(load, 30000);
+    window.addEventListener("beforeunload", function () { window.clearInterval(timer); });
+})();
+</script>
+}

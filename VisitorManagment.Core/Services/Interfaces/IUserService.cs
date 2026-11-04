@@ -100,6 +100,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// <param name="status"></param>
         /// <returns></returns>
         Task AddUserLoginHistory(string userId, DateTime CreateDate, string ipUser, bool status);
+        Dictionary<string, DateTime> GetFirstLoginTimes(DateTime day);
         /// <summary>
         /// گرفتن اطلاعات سیستمی نفر لاگین کرده
         /// </summary>
