@@ -57,7 +57,6 @@ namespace VisitorManagment.Web.Pages.Visitor.File.PersonalNezami
 
             factPersonalViewModel = new FactPersonalViewModel();
 
-            ViewData["successcreate"] = false;
         }
 
         #endregion
