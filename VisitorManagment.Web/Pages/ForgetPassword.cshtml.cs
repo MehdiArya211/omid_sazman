@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -31,15 +32,29 @@ namespace VisitorManagment.Web.Pages
         }
 
         [BindProperty]
+        [Display(Name = "نام کاربری")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [StringLength(10, MinimumLength = 1, ErrorMessage = "نام کاربری باید حداکثر ۱۰ نویسه باشد")]
         public string UserName { get; set; }
 
         [BindProperty]
+        [Display(Name = "پاسخ امنیتی")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "پاسخ امنیتی باید بین ۲ تا ۱۰۰ نویسه باشد")]
         public string Answer { get; set; }
 
         [BindProperty]
+        [Display(Name = "رمز عبور جدید")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [StringLength(64, MinimumLength = 8, ErrorMessage = "رمز عبور باید بین ۸ تا ۶۴ نویسه باشد")]
+        [RegularExpression(@"\A(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}\z",
+            ErrorMessage = "رمز باید شامل حرف بزرگ و کوچک انگلیسی، عدد و نشانه باشد")]
         public string NewPassword { get; set; }
 
         [BindProperty]
+        [Display(Name = "تکرار رمز عبور جدید")]
+        [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
+        [Compare(nameof(NewPassword), ErrorMessage = "رمز عبور جدید و تکرار آن یکسان نیستند")]
         public string ConfirmPassword { get; set; }
 
         public bool QuestionSelected { get; private set; }
@@ -57,6 +72,9 @@ namespace VisitorManagment.Web.Pages
         public IActionResult OnPostAskQuestion()
         {
             LoadLoginSlides();
+            ModelState.Remove(nameof(Answer));
+            ModelState.Remove(nameof(NewPassword));
+            ModelState.Remove(nameof(ConfirmPassword));
             if (string.IsNullOrWhiteSpace(UserName) || UserName.Trim().Length > 10)
             {
                 ModelState.AddModelError(nameof(UserName), "نام کاربری معتبر را وارد کنید.");
@@ -85,13 +103,9 @@ namespace VisitorManagment.Web.Pages
             QuestionSelected = true;
             QuestionText = SecurityQuestionCatalog.GetText(questionId);
             UserName = userName;
-
-            if (string.IsNullOrWhiteSpace(Answer))
+            if (string.IsNullOrWhiteSpace(Answer) || SecurityAnswerHasher.Normalize(Answer).Length < 2)
                 ModelState.AddModelError(nameof(Answer), "پاسخ سؤال امنیتی را وارد کنید.");
-            if (!PasswordPolicy.IsValid(NewPassword))
-                ModelState.AddModelError(nameof(NewPassword), "رمز باید ۸ تا ۶۴ نویسه و شامل حروف کوچک و بزرگ انگلیسی، عدد و نماد باشد.");
-            if (!string.Equals(NewPassword, ConfirmPassword, StringComparison.Ordinal))
-                ModelState.AddModelError(nameof(ConfirmPassword), "رمز عبور و تکرار آن یکسان نیستند.");
+
             if (!ModelState.IsValid) return Page();
 
             var result = _userService.ResetPasswordWithSecurityAnswer(userName, questionId, Answer, NewPassword);
