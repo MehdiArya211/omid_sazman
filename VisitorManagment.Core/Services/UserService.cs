@@ -668,8 +668,8 @@ namespace VisitorManagment.Core.Services
             }
 
             var answerHash = questionId == SecurityQuestionCatalog.FirstSchool ? security.Answer1Hash
-                : questionId == SecurityQuestionCatalog.FirstTeacher ? security.Answer2Hash
-                : questionId == SecurityQuestionCatalog.FirstStoryBook ? security.Answer3Hash
+                : questionId == SecurityQuestionCatalog.FirstPet ? security.Answer2Hash
+                : questionId == SecurityQuestionCatalog.ChildhoodCareer ? security.Answer3Hash
                 : null;
             if (!SecurityAnswerHasher.Verify(answer, answerHash))
             {

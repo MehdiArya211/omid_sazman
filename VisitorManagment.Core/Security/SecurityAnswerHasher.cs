@@ -78,16 +78,16 @@ namespace VisitorManagment.Core.Security
     public static class SecurityQuestionCatalog
     {
         public const int FirstSchool = 1;
-        public const int FirstTeacher = 2;
-        public const int FirstStoryBook = 3;
+        public const int FirstPet = 2;
+        public const int ChildhoodCareer = 3;
 
         public static string GetText(int questionId)
         {
             switch (questionId)
             {
                 case FirstSchool: return "نام اولین مدرسه‌ای که در آن درس خواندید چه بود؟";
-                case FirstTeacher: return "نام اولین معلم دبستان شما چه بود؟";
-                case FirstStoryBook: return "نام اولین کتاب داستانی که خواندید چه بود؟";
+                case FirstPet: return "اسم یا لقب اولین حیوان خانگی‌تان چه بود؟";
+                case ChildhoodCareer: return "در کودکی دوست داشتید چه‌کاره شوید؟";
                 default: return null;
             }
         }
