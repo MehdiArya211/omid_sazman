@@ -1,0 +1,18 @@
+.account-security-page{width:100%;min-height:calc(100vh - 175px);padding:clamp(14px,2.2vw,30px);display:flex;align-items:stretch}
+.account-security-card{display:flex;flex-direction:column;width:100%;min-height:calc(100vh - 235px);overflow:hidden;border:1px solid #dfe5ef;border-radius:18px;background:#fff;box-shadow:0 14px 40px rgba(31,51,101,.08)}
+.account-security-header{display:flex;align-items:center;gap:16px;padding:24px clamp(18px,2.5vw,36px);color:#fff;background:linear-gradient(135deg,#263f9e,#3157d5 65%,#6080df)}
+.account-security-icon{display:grid;width:54px;height:54px;flex:0 0 54px;place-items:center;border:1px solid rgba(255,255,255,.28);border-radius:16px;background:rgba(255,255,255,.12);font-size:23px}
+.account-security-header h1{margin:0 0 7px;font-size:21px;font-weight:700}
+.account-security-header p{margin:0;color:rgba(255,255,255,.82);font-size:13px;line-height:1.8}
+.account-security-content{display:flex;flex:1;flex-direction:column;padding:clamp(18px,2.5vw,36px)}
+.account-security-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 26px;flex:1;align-content:start}
+.account-security-form .form-group{margin-bottom:10px}
+.account-security-form label{display:block;margin-bottom:8px;color:#40506a;font-size:13px;font-weight:700}
+.account-security-form .form-control{height:48px;border:1px solid #dfe5ef;border-radius:10px;background:#fbfcfe}
+.account-security-form .form-control:focus{border-color:#9bafea;background:#fff;box-shadow:0 0 0 3px rgba(49,87,213,.09)}
+.account-security-form .text-danger{display:block;margin-top:5px;font-size:11px}
+.security-wide{grid-column:1/-1}
+.security-note{margin:4px 0 8px;line-height:1.9}
+.security-actions{display:flex;justify-content:flex-start;gap:10px;margin-top:auto;padding-top:12px}
+.security-actions .btn{min-width:130px;height:44px;border-radius:9px}
+@media(max-width:700px){.account-security-page{min-height:calc(100vh - 130px);padding:10px}.account-security-card{min-height:calc(100vh - 150px)}.account-security-header{align-items:flex-start;padding:18px}.account-security-header h1{font-size:18px}.account-security-header p{font-size:12px}.account-security-icon{width:46px;height:46px;flex-basis:46px}.account-security-content{padding:18px}.account-security-form{grid-template-columns:1fr;gap:0}.security-wide{grid-column:1}.security-actions{flex-direction:column}.security-actions .btn{width:100%}}

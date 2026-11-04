@@ -3,39 +3,58 @@
 @{
     ViewData["Title"] = "سؤال‌های امنیتی";
 }
-<div class="card mx-auto my-4" style="max-width:760px" dir="rtl">
-    <div class="card-body p-4">
-        <h4 class="mb-2"><i class="ti-help-alt"></i> تنظیم سؤال‌های امنیتی</h4>
-        <p class="text-muted">این پاسخ‌ها برای بازیابی رمز استفاده می‌شوند. آن‌ها را طوری وارد کنید که بعداً دقیقاً به یاد بیاورید.</p>
-        @if (TempData["SecurityQuestionsSaved"] is string saved)
-        {
-            <div class="alert alert-success" role="status">@saved</div>
-        }
-        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-        <form method="post">
-            <div class="form-group">
-                <label for="CurrentPassword">رمز فعلی حساب</label>
-                <input asp-for="CurrentPassword" type="password" class="form-control" autocomplete="current-password" required />
-                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+<link rel="stylesheet" href="~/css/account-security-questions.css" asp-append-version="true" />
+
+<main class="account-security-page" dir="rtl">
+    <section class="account-security-card">
+        <header class="account-security-header">
+            <span class="account-security-icon"><i class="ti-help-alt"></i></span>
+            <div>
+                <h1>تنظیم سؤال‌های امنیتی</h1>
+                <p>این پاسخ‌ها برای بازیابی رمز استفاده می‌شوند. آن‌ها را طوری وارد کنید که بعداً دقیقاً به یاد بیاورید.</p>
             </div>
-            <div class="form-group">
-                <label for="Answer1">نام اولین مدرسه‌ای که در آن درس خواندید چه بود؟</label>
-                <input asp-for="Answer1" class="form-control" autocomplete="off" maxlength="100" required />
-                <span asp-validation-for="Answer1" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label for="Answer2">اسم یا لقب اولین حیوان خانگی‌تان چه بود؟</label>
-                <input asp-for="Answer2" class="form-control" autocomplete="off" maxlength="100" required />
-                <span asp-validation-for="Answer2" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label for="Answer3">در کودکی دوست داشتید چه‌کاره شوید؟</label>
-                <input asp-for="Answer3" class="form-control" autocomplete="off" maxlength="100" required />
-                <span asp-validation-for="Answer3" class="text-danger"></span>
-            </div>
-            <div class="alert alert-warning">هنگام بازیابی فقط یکی از این سؤال‌ها به‌صورت تصادفی پرسیده می‌شود. پاسخ‌ها به‌شکل قابل‌خواندن ذخیره نمی‌شوند.</div>
-            <button type="submit" class="btn btn-primary">ذخیره پاسخ‌های امنیتی</button>
-            <a asp-page="/AccountPassword" class="btn btn-light">بازگشت</a>
-        </form>
-    </div>
-</div>
+        </header>
+
+        <div class="account-security-content">
+            @if (TempData["SecurityQuestionsSaved"] is string saved)
+            {
+                <div class="alert alert-success security-wide" role="status">@saved</div>
+            }
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger security-wide" role="alert"></div>
+
+            <form method="post" class="account-security-form">
+                <div class="form-group">
+                    <label for="CurrentPassword">رمز فعلی حساب</label>
+                    <input asp-for="CurrentPassword" type="password" class="form-control" autocomplete="current-password" required />
+                    <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Answer1">نام اولین مدرسه‌ای که در آن درس خواندید چه بود؟</label>
+                    <input asp-for="Answer1" class="form-control" autocomplete="off" maxlength="100" required />
+                    <span asp-validation-for="Answer1" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Answer2">اسم یا لقب اولین حیوان خانگی‌تان چه بود؟</label>
+                    <input asp-for="Answer2" class="form-control" autocomplete="off" maxlength="100" required />
+                    <span asp-validation-for="Answer2" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="Answer3">در کودکی دوست داشتید چه‌کاره شوید؟</label>
+                    <input asp-for="Answer3" class="form-control" autocomplete="off" maxlength="100" required />
+                    <span asp-validation-for="Answer3" class="text-danger"></span>
+                </div>
+
+                <div class="alert alert-warning security-wide security-note">
+                    هنگام بازیابی فقط یکی از این سؤال‌ها به‌صورت تصادفی پرسیده می‌شود. پاسخ‌ها به‌شکل قابل‌خواندن ذخیره نمی‌شوند.
+                </div>
+                <div class="security-actions security-wide">
+                    <button type="submit" class="btn btn-primary"><i class="ti-check"></i> ذخیره پاسخ‌های امنیتی</button>
+                    <a asp-page="/AccountPassword" class="btn btn-light">بازگشت</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
