@@ -52,6 +52,7 @@ namespace VisitorManagment.DataLayer.Context
         public DbSet<Vam> Vams { get; set; }
         public DbSet<VamCode> VamCodes { get; set; }
         public DbSet<UserLoginHistory> UserLoginHistories { get; set; }
+        public DbSet<UserSecurityQuestion> UserSecurityQuestions { get; set; }
         public DbSet<LoginSlide> LoginSlides { get; set; }
         public DbSet<MaintenanceSetting> MaintenanceSettings { get; set; }
 
@@ -116,6 +117,16 @@ namespace VisitorManagment.DataLayer.Context
             {
                 Id = 1, IsEnabled = false, Revision = 0,
                 Message = "سامانه موقتاً در حال به‌روزرسانی است. لطفاً کمی بعد دوباره مراجعه کنید."
+            });
+            modelBuilder.Entity<UserSecurityQuestion>(entity =>
+            {
+                entity.HasKey(item => item.UserId);
+                entity.Property(item => item.Answer1Hash).HasMaxLength(200).IsRequired();
+                entity.Property(item => item.Answer2Hash).HasMaxLength(200).IsRequired();
+                entity.Property(item => item.Answer3Hash).HasMaxLength(200).IsRequired();
+                entity.HasOne<Users>().WithOne().HasForeignKey<UserSecurityQuestion>(item => item.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasCheckConstraint("CK_UserSecurityQuestions_FailedAttempts", "[FailedAttempts] >= 0 AND [FailedAttempts] <= 5");
             });
             modelBuilder.Entity<LoginSlide>()
                 .HasIndex(slide => slide.SortOrder);

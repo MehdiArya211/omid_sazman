@@ -70,7 +70,7 @@ namespace VisitorManagment.Core.DTOs
         [Display(Name = "رمز عبور جدید")]
         [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
         [StringLength(64, MinimumLength = 8, ErrorMessage = "رمز عبور باید حداقل ۸ کاراکتر باشد")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}$",
+        [RegularExpression(@"\A(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}\z",
             ErrorMessage = "رمز باید شامل حرف بزرگ، حرف کوچک، عدد و نشانه باشد")]
         public string NewPassword { get; set; }
 

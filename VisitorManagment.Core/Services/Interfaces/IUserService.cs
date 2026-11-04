@@ -49,6 +49,8 @@ namespace VisitorManagment.Core.Services.Interfaces
 
         #region Change Password
         bool ForgetPassword(ForgetPasswordViewModel forgetPassword);
+        bool SaveSecurityAnswers(int userId, string currentPassword, string answer1, string answer2, string answer3);
+        VisitorManagment.Core.DTOs.PasswordRecoveryResult ResetPasswordWithSecurityAnswer(string userName, int questionId, string answer, string newPassword);
 
         /// <summary>
         /// رمز کاربر را به کد پرسنلی او بازنشانی و تغییر رمز در ورود بعدی را اجباری می‌کند.

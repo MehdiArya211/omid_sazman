@@ -597,19 +597,111 @@ namespace VisitorManagment.Core.Services
         /// <summary>
         /// عملیات مربوط به این بخش را انجام می‌دهد.
         /// </summary>
-        public bool ForgetPassword(ForgetPasswordViewModel forgetPassword)
-        {
-            var user = _context.Users.Where(x => x.UserName == forgetPassword.UserName).SingleOrDefault();
-            if (user == null)
-            {
-                return false;
-            }
-            user.Password = PasswordHelper.EncodePasswordMd5(forgetPassword.Password);
-            UpdateUser(user);
-            return true;
+        /// <summary>
+        /// بازیابی قدیمی مبتنی بر نام کاربری غیرفعال است؛ بازیابی فقط از طریق سؤال امنیتی انجام می‌شود.
+        /// </summary>
+        public bool ForgetPassword(ForgetPasswordViewModel forgetPassword) => false;
 
+        /// <summary>سه پاسخ امنیتی را پس از بررسی رمز فعلی برای حساب ذخیره یا جایگزین می‌کند.</summary>
+        public bool SaveSecurityAnswers(int userId, string currentPassword, string answer1, string answer2, string answer3)
+        {
+            if (userId <= 0 || string.IsNullOrWhiteSpace(currentPassword) ||
+                string.IsNullOrWhiteSpace(answer1) || string.IsNullOrWhiteSpace(answer2) || string.IsNullOrWhiteSpace(answer3))
+                return false;
+
+            var normalizedAnswers = new[] { answer1, answer2, answer3 }
+                .Select(SecurityAnswerHasher.Normalize).ToArray();
+            if (normalizedAnswers.Any(answer => answer.Length < 2 || answer.Length > 100)) return false;
+
+            var user = _context.Users.SingleOrDefault(item => item.Id == userId && item.IsActive && !item.IsDelete);
+            if (user == null || user.Password != PasswordHelper.EncodePasswordMd5(currentPassword)) return false;
+
+            var security = _context.UserSecurityQuestions.SingleOrDefault(item => item.UserId == userId);
+            if (security == null)
+            {
+                security = new UserSecurityQuestion { UserId = userId };
+                _context.UserSecurityQuestions.Add(security);
+            }
+
+            security.Answer1Hash = SecurityAnswerHasher.Hash(normalizedAnswers[0]);
+            security.Answer2Hash = SecurityAnswerHasher.Hash(normalizedAnswers[1]);
+            security.Answer3Hash = SecurityAnswerHasher.Hash(normalizedAnswers[2]);
+            security.FailedAttempts = 0;
+            security.LockedUntilUtc = null;
+            security.UpdatedAtUtc = DateTime.UtcNow;
+            _context.SaveChanges();
+            return true;
         }
 
+        /// <summary>پاسخ انتخاب‌شده را بررسی و پس از پنج خطا برای ۱۵ دقیقه بازیابی را متوقف می‌کند.</summary>
+        public PasswordRecoveryResult ResetPasswordWithSecurityAnswer(string userName, int questionId, string answer, string newPassword)
+        {
+            var response = new PasswordRecoveryResult { Status = PasswordRecoveryStatus.UserNotFound, AttemptsRemaining = 5 };
+            if (string.IsNullOrWhiteSpace(userName)) return response;
+            if (!PasswordPolicy.IsValid(newPassword))
+            {
+                response.Status = PasswordRecoveryStatus.InvalidPassword;
+                return response;
+            }
+
+            var user = _context.Users.SingleOrDefault(item => item.UserName == userName.Trim() && item.IsActive && !item.IsDelete);
+            if (user == null) return response;
+
+            var security = _context.UserSecurityQuestions.SingleOrDefault(item => item.UserId == user.Id);
+            if (security == null)
+            {
+                response.Status = PasswordRecoveryStatus.NotConfigured;
+                return response;
+            }
+
+            var now = DateTime.UtcNow;
+            if (security.LockedUntilUtc.HasValue && security.LockedUntilUtc.Value > now)
+            {
+                response.Status = PasswordRecoveryStatus.Locked;
+                response.AttemptsRemaining = 0;
+                return response;
+            }
+            if (security.LockedUntilUtc.HasValue)
+            {
+                security.LockedUntilUtc = null;
+                security.FailedAttempts = 0;
+            }
+
+            var answerHash = questionId == SecurityQuestionCatalog.FirstSchool ? security.Answer1Hash
+                : questionId == SecurityQuestionCatalog.FirstTeacher ? security.Answer2Hash
+                : questionId == SecurityQuestionCatalog.FirstStoryBook ? security.Answer3Hash
+                : null;
+            if (!SecurityAnswerHasher.Verify(answer, answerHash))
+            {
+                security.FailedAttempts = Math.Min(5, security.FailedAttempts + 1);
+                response.AttemptsRemaining = Math.Max(0, 5 - security.FailedAttempts);
+                response.Status = PasswordRecoveryStatus.InvalidAnswer;
+                if (security.FailedAttempts >= 5)
+                {
+                    security.LockedUntilUtc = now.AddMinutes(15);
+                    response.Status = PasswordRecoveryStatus.Locked;
+                }
+                _context.SaveChanges();
+                return response;
+            }
+
+            if (string.Equals(newPassword, user.UserName, StringComparison.OrdinalIgnoreCase))
+            {
+                response.Status = PasswordRecoveryStatus.InvalidPassword;
+                return response;
+            }
+
+            user.Password = PasswordHelper.EncodePasswordMd5(newPassword);
+            user.ActiveCode = NameGenerator.GenerateUniqCode();
+            user.EditDate = DateTime.Now;
+            security.FailedAttempts = 0;
+            security.LockedUntilUtc = null;
+            security.UpdatedAtUtc = now;
+            _context.SaveChanges();
+            response.Status = PasswordRecoveryStatus.Success;
+            response.AttemptsRemaining = 5;
+            return response;
+        }
         /// <inheritdoc />
         public bool ResetPasswordToPersonnelCode(int userId)
         {

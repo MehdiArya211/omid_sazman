@@ -53,6 +53,10 @@
                     <li class="nav-item"><a asp-page="/Developer/Maintenance" class="nav-link" title="کنترل به‌روزرسانی سامانه"><i class="ti-settings"></i><span class="sr-only">کنترل به‌روزرسانی</span></a></li>
                 }
                 <li class="nav-item"><a href="/AccountPassword" class="nav-link" title="تغییر رمز عبور"><i class="ti-lock"></i><span class="sr-only">تغییر رمز عبور</span></a></li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-item"><a href="/AccountSecurityQuestions" class="nav-link" title="تنظیم سؤال‌های امنیتی"><i class="ti-help-alt"></i><span class="sr-only">تنظیم سؤال‌های امنیتی</span></a></li>
+                }
                 @if (User.Identity?.IsAuthenticated == true && int.TryParse(User.FindFirst("Id")?.Value, out var notificationUserId))
                 {
                     @await Component.InvokeAsync("NotificationCenter", notificationUserId)

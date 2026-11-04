@@ -578,6 +578,20 @@ namespace VisitorManagment.DataLayer.Migrations
                     b.ToTable("UserLoginHistories");
                 });
 
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.User.UserSecurityQuestion", b =>
+                {
+                    b.Property<int>("UserId").HasColumnType("int");
+                    b.Property<string>("Answer1Hash").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.Property<string>("Answer2Hash").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.Property<string>("Answer3Hash").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.Property<int>("FailedAttempts").HasColumnType("int");
+                    b.Property<DateTime?>("LockedUntilUtc").HasColumnType("datetime2");
+                    b.Property<DateTime>("UpdatedAtUtc").HasColumnType("datetime2");
+                    b.HasKey("UserId");
+                    b.ToTable("UserSecurityQuestions");
+                    b.HasCheckConstraint("CK_UserSecurityQuestions_FailedAttempts", "[FailedAttempts] >= 0 AND [FailedAttempts] <= 5");
+                });
+
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.User.UserRole", b =>
                 {
                     b.Property<int>("UR_Id")
@@ -2181,6 +2195,15 @@ namespace VisitorManagment.DataLayer.Migrations
                         .HasForeignKey("RoleTypeFinalId");
 
                     b.Navigation("RoleTypeFinal");
+                });
+
+            modelBuilder.Entity("VisitorManagment.DataLayer.Entities.User.UserSecurityQuestion", b =>
+                {
+                    b.HasOne("VisitorManagment.DataLayer.Entities.User.Users", null)
+                        .WithOne()
+                        .HasForeignKey("VisitorManagment.DataLayer.Entities.User.UserSecurityQuestion", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("VisitorManagment.DataLayer.Entities.User.UserRole", b =>
