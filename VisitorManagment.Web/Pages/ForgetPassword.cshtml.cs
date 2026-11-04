@@ -15,6 +15,7 @@ using VisitorManagment.Core.Security;
 using VisitorManagment.Core.Services.Interfaces;
 using VisitorManagment.DataLayer.Context;
 using VisitorManagment.DataLayer.Entities.User;
+using VisitorManagment.DataLayer.Entities;
 
 namespace VisitorManagment.Web.Pages
 {
