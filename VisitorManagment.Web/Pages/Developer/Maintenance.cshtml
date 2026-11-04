@@ -1,0 +1,30 @@
+@page
+@model VisitorManagment.Web.Pages.Developer.MaintenanceModel
+@{ ViewData["Title"] = "کنترل به‌روزرسانی سامانه"; }
+<section class="container py-4" dir="rtl" style="max-width:850px">
+    <div class="card shadow-sm">
+        <div class="card-header"><h1 class="h4 mb-0">کنترل به‌روزرسانی سامانه</h1></div>
+        <div class="card-body">
+            <p class="alert @(Model.State.IsEnabled ? "alert-warning" : "alert-success")" role="status">
+                وضعیت فعلی: <strong>@(Model.State.IsEnabled ? "در حال به‌روزرسانی؛ دسترسی کاربران متوقف است" : "عادی؛ سامانه در دسترس کاربران است")</strong>
+            </p>
+            <p>در حالت به‌روزرسانی، حساب اختصاصی شما امکان بررسی سامانه و بازگرداندن آن به حالت عادی را دارد. کاربران حاضر نیز به صفحه اطلاع‌رسانی منتقل می‌شوند.</p>
+            <form method="post" data-confirm="تنظیمات دسترسی کاربران سامانه تغییر کند؟">
+                <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+                <input asp-for="Input.Revision" type="hidden" />
+                <div class="form-check mb-3">
+                    <input asp-for="Input.IsEnabled" class="form-check-input" />
+                    <label asp-for="Input.IsEnabled" class="form-check-label">فعال‌بودن حالت به‌روزرسانی</label>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.Message">پیام قابل نمایش به کاربران</label>
+                    <textarea asp-for="Input.Message" class="form-control" rows="4" maxlength="1000"></textarea>
+                    <span asp-validation-for="Input.Message" class="text-danger"></span>
+                    <small class="form-text text-muted">اگر پیام خالی باشد، پیام پیش‌فرض نمایش داده می‌شود.</small>
+                </div>
+                <button type="submit" class="btn btn-primary">ذخیره تنظیمات</button>
+                <a asp-page="/Visitor/Index" class="btn btn-light">بازگشت به سامانه</a>
+            </form>
+        </div>
+    </div>
+</section>

@@ -67,7 +67,7 @@ namespace VisitorManagment.Web.Pages.Visitor
             UserDisplayName = User.FindFirst("FullName")?.Value ?? "کاربر سامانه";
             UserUnitTitle = User.FindFirst("UnitCodeTitle")?.Value ?? "یگان سازمانی";
             UserIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "نامشخص";
-            LoginDateTime = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            LoginDateTime = DateTime.UtcNow.AddHours(3.5).ToString("yyyy/MM/dd HH:mm");
 
             if (int.TryParse(userName, out var personalNumber))
             {

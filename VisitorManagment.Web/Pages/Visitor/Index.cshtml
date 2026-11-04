@@ -55,16 +55,16 @@
         </div>
         <div class="omid-chart-grid">
             <article class="omid-chart-card">
-                <header><div class="omid-chart-card__icon"><i class="fa fa-line-chart"></i></div><div><h3>روند کل ملاقات‌ها</h3><p>تغییر تعداد درخواست‌های ثبت‌شده در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نوع نمودار<select data-chart-target="total"><option value="line">خطی</option><option value="bar">ستونی</option><option value="radar">راداری</option></select></label><button type="button" data-chart-expand="total" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                <header><div class="omid-chart-card__icon"><i class="fa fa-line-chart"></i></div><div><h3>روند کل ملاقات‌ها</h3><p>تغییر تعداد درخواست‌های ثبت‌شده در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نوع نمودار<select data-chart-target="total"><option value="line">خطی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="total" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
                 <div class="omid-chart-canvas"><canvas id="totalRequestsTrend" aria-label="نمودار روند کل ملاقات‌ها" role="img"></canvas></div>
             </article>
             <article class="omid-chart-card">
-                <header><div class="omid-chart-card__icon"><i class="fa fa-area-chart"></i></div><div><h3>مقایسه وضعیت رسیدگی</h3><p>مقایسه اقدام، نظریه و عودت در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نوع نمودار<select data-chart-target="status"><option value="line">خطی</option><option value="bar">ستونی</option><option value="radar">راداری</option></select></label><button type="button" data-chart-expand="status" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                <header><div class="omid-chart-card__icon"><i class="fa fa-area-chart"></i></div><div><h3>مقایسه وضعیت رسیدگی</h3><p>مقایسه اقدام، نظریه و عودت در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نوع نمودار<select data-chart-target="status"><option value="bar">ستونی</option><option value="line">خطی</option></select></label><button type="button" data-chart-expand="status" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
                 <div class="omid-chart-legend"><span class="is-resolved">اقدام‌شده</span><span class="is-opinion">ثبت نظریه</span><span class="is-returned">عودت</span></div>
                 <div class="omid-chart-canvas"><canvas id="statusRequestsTrend" aria-label="نمودار مقایسه وضعیت درخواست‌ها" role="img"></canvas></div>
             </article>
-            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-pie-chart"></i></div><div><h3>ترکیب وضعیت درخواست‌ها</h3><p>سهم هر وضعیت از کل درخواست‌ها</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="composition"><option value="doughnut">حلقه‌ای</option><option value="pie">دایره‌ای</option><option value="polarArea">قطبی</option></select></label><button type="button" data-chart-expand="composition" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="requestComposition" aria-label="نمودار ترکیب وضعیت‌ها" role="img"></canvas></div></article>
-            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-building"></i></div><div><h3>یگان‌های دارای بیشترین درخواست</h3><p>ده یگان اول در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="units"><option value="horizontalBar">افقی</option><option value="bar">ستونی</option><option value="line">خطی</option></select></label><button type="button" data-chart-expand="units" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="unitRequestsChart" aria-label="نمودار درخواست یگان‌ها" role="img"></canvas></div></article>
+            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-pie-chart"></i></div><div><h3>ترکیب وضعیت درخواست‌ها</h3><p>سهم هر وضعیت از کل درخواست‌ها</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="composition"><option value="doughnut">حلقه‌ای</option><option value="pie">دایره‌ای</option></select></label><button type="button" data-chart-expand="composition" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="requestComposition" aria-label="نمودار ترکیب وضعیت‌ها" role="img"></canvas></div></article>
+            <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-building"></i></div><div><h3>یگان‌های دارای بیشترین درخواست</h3><p>ده یگان اول در بازه انتخابی</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="units"><option value="horizontalBar">افقی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="units" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="unitRequestsChart" aria-label="نمودار درخواست یگان‌ها" role="img"></canvas></div></article>
             <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-signal"></i></div><div><h3>روند تجمعی ملاقات‌ها</h3><p>رشد مجموع درخواست‌ها در طول زمان</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="cumulative"><option value="line">خطی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="cumulative" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="cumulativeRequestsChart" aria-label="نمودار تجمعی درخواست‌ها" role="img"></canvas></div></article>
             <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-percent"></i></div><div><h3>نرخ رسیدگی دوره‌ای</h3><p>درصد اقدام یا ثبت نظریه نسبت به کل</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="efficiency"><option value="line">خطی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="efficiency" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="efficiencyChart" aria-label="نمودار نرخ رسیدگی" role="img"></canvas></div></article>
         </div>
@@ -117,49 +117,70 @@
             var trend = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.MonthlyTrend));
             var units = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.UnitBreakdown));
             var labels = trend.map(function (item) { return item.Label; });
-            var gridColor = "rgba(126, 91, 151, .10)";
+            var gridColor = "rgba(126, 91, 151, .12)";
             var commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: { duration: 700 },
+                animation: { duration: 650 },
                 legend: { display: false },
                 tooltips: {
                     mode: "index",
                     intersect: false,
-                    backgroundColor: "rgba(63,49,80,.94)",
+                    backgroundColor: "rgba(48,38,59,.96)",
                     titleFontFamily: "inherit",
                     bodyFontFamily: "inherit",
-                    displayColors: true
+                    displayColors: true,
+                    xPadding: 12,
+                    yPadding: 10
                 },
+                hover: { mode: "nearest", intersect: true },
                 scales: {
-                    xAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#83788e" } }],
-                    yAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#83788e" } }]
+                    xAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#675a70", autoSkip: true, maxRotation: 0 } }],
+                    yAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#675a70", padding: 8 } }]
                 }
             };
 
             var totalChart = new Chart(document.getElementById("totalRequestsTrend"), {
                 type: "line",
-                data: { labels: labels, datasets: [{ label: "کل ملاقات‌ها", data: trend.map(function (item) { return item.TotalRequests; }), borderColor: "#9a62c2", backgroundColor: "rgba(186,116,223,.16)", pointBackgroundColor: "#fff", pointBorderColor: "#9a62c2", pointBorderWidth: 3, pointRadius: 4, pointHoverRadius: 6, borderWidth: 3, lineTension: .35, fill: true }] },
+                data: { labels: labels, datasets: [{ label: "کل درخواست‌ها", data: trend.map(function (item) { return item.TotalRequests; }), borderColor: "#8051a4", backgroundColor: "rgba(154,98,194,.13)", pointBackgroundColor: "#fff", pointBorderColor: "#8051a4", pointBorderWidth: 2, pointRadius: 3, pointHoverRadius: 5, borderWidth: 3, lineTension: .28, fill: true }] },
                 options: commonOptions
             });
 
+            var statusOptions = JSON.parse(JSON.stringify(commonOptions));
+            statusOptions.scales.yAxes[0].stacked = true;
+            statusOptions.scales.xAxes[0].stacked = true;
             var statusChart = new Chart(document.getElementById("statusRequestsTrend"), {
-                type: "line",
+                type: "bar",
                 data: { labels: labels, datasets: [
-                    { label: "اقدام‌شده", data: trend.map(function (item) { return item.ResolvedRequests; }), borderColor: "#3674bd", backgroundColor: "rgba(54,116,189,.05)", pointBackgroundColor: "#3674bd", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
-                    { label: "ثبت نظریه", data: trend.map(function (item) { return item.OpinionRequests; }), borderColor: "#2585a3", backgroundColor: "rgba(37,133,163,.05)", pointBackgroundColor: "#2585a3", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false },
-                    { label: "عودت", data: trend.map(function (item) { return item.ReturnedRequests; }), borderColor: "#b17a27", backgroundColor: "rgba(177,122,39,.05)", pointBackgroundColor: "#b17a27", borderWidth: 2, pointRadius: 3, lineTension: .35, fill: false }
+                    { label: "اقدام‌شده", data: trend.map(function (item) { return item.ResolvedRequests; }), backgroundColor: "rgba(54,116,189,.84)", borderColor: "#3674bd", borderWidth: 1 },
+                    { label: "ثبت نظریه", data: trend.map(function (item) { return item.OpinionRequests; }), backgroundColor: "rgba(37,133,163,.84)", borderColor: "#2585a3", borderWidth: 1 },
+                    { label: "عودت", data: trend.map(function (item) { return item.ReturnedRequests; }), backgroundColor: "rgba(177,122,39,.84)", borderColor: "#b17a27", borderWidth: 1 }
                 ] },
-                options: commonOptions
+                options: statusOptions
             });
-            var compositionChart = new Chart(document.getElementById("requestComposition"), { type: "doughnut", data: { labels: ["اقدام‌شده", "ثبت نظریه", "عودت", "سایر"], datasets: [{ data: [@Model.Statistics.ResolvedRequests, @Model.Statistics.OpinionRequests, @Model.Statistics.ReturnedRequests, @Model.Statistics.OtherRequests], backgroundColor: ["#5d8fd1", "#52a4b9", "#d5a04c", "#cbb9d8"], borderColor: "#fff", borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, legend: { position: "bottom", labels: { fontFamily: "inherit", fontColor: "#6f6278" } }, tooltips: { bodyFontFamily: "inherit", titleFontFamily: "inherit" }, cutoutPercentage: 65 } });
+            var compositionChart = new Chart(document.getElementById("requestComposition"), {
+                type: "doughnut",
+                data: { labels: ["اقدام‌شده", "ثبت نظریه", "عودت", "سایر"], datasets: [{ data: [@Model.Statistics.ResolvedRequests, @Model.Statistics.OpinionRequests, @Model.Statistics.ReturnedRequests, @Model.Statistics.OtherRequests], backgroundColor: ["#4f83c2", "#3d9bb3", "#d29b37", "#b9a8c7"], borderColor: "#fff", borderWidth: 3, hoverOffset: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, legend: { position: "bottom", labels: { fontFamily: "inherit", fontColor: "#55475f", padding: 18, usePointStyle: true } }, tooltips: { bodyFontFamily: "inherit", titleFontFamily: "inherit", backgroundColor: "rgba(48,38,59,.96)", xPadding: 12, yPadding: 10 }, cutoutPercentage: 66 }
+            });
             var unitOptions = JSON.parse(JSON.stringify(commonOptions));
             unitOptions.legend = { display: false };
-            unitOptions.scales = { xAxes: [{ gridLines: { color: gridColor }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit" } }], yAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit" } }] };
-            var unitChart = new Chart(document.getElementById("unitRequestsChart"), { type: "horizontalBar", data: { labels: units.map(function (item) { return item.UnitTitle; }), datasets: [{ label: "تعداد درخواست", data: units.map(function (item) { return item.RequestCount; }), backgroundColor: "rgba(154,98,194,.72)", borderColor: "#8f56b5", borderWidth: 1 }] }, options: unitOptions });
+            unitOptions.scales = {
+                xAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#675a70", padding: 8 } }],
+                yAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#51445b", autoSkip: false } }]
+            };
+            var unitChart = new Chart(document.getElementById("unitRequestsChart"), {
+                type: "horizontalBar",
+                data: { labels: units.map(function (item) { return item.UnitTitle; }), datasets: [{ label: "تعداد درخواست", data: units.map(function (item) { return item.RequestCount; }), backgroundColor: "rgba(143,86,181,.82)", hoverBackgroundColor: "#754397", borderColor: "#8f56b5", borderWidth: 1, barPercentage: .72, categoryPercentage: .78 }] },
+                options: unitOptions
+            });
             var cumulativeValue = 0;
-            var cumulativeChart = new Chart(document.getElementById("cumulativeRequestsChart"), { type: "line", data: { labels: labels, datasets: [{ label: "مجموع تجمعی", data: trend.map(function (item) { cumulativeValue += item.TotalRequests; return cumulativeValue; }), borderColor: "#754397", backgroundColor: "rgba(189,120,223,.18)", borderWidth: 3, pointRadius: 2, lineTension: .25, fill: true }] }, options: commonOptions });
-            var efficiencyChart = new Chart(document.getElementById("efficiencyChart"), { type: "line", data: { labels: labels, datasets: [{ label: "درصد رسیدگی", data: trend.map(function (item) { return item.TotalRequests ? Math.round((item.ResolvedRequests + item.OpinionRequests) * 100 / item.TotalRequests) : 0; }), borderColor: "#2585a3", backgroundColor: "rgba(37,133,163,.14)", borderWidth: 3, pointRadius: 3, lineTension: .3, fill: true }] }, options: commonOptions });
+            var cumulativeChart = new Chart(document.getElementById("cumulativeRequestsChart"), { type: "line", data: { labels: labels, datasets: [{ label: "مجموع تجمعی", data: trend.map(function (item) { cumulativeValue += item.TotalRequests; return cumulativeValue; }), borderColor: "#754397", backgroundColor: "rgba(189,120,223,.13)", pointBackgroundColor: "#fff", pointBorderColor: "#754397", borderWidth: 3, pointRadius: 2, lineTension: .25, fill: true }] }, options: commonOptions });
+            var efficiencyOptions = JSON.parse(JSON.stringify(commonOptions));
+            efficiencyOptions.scales.yAxes[0].ticks.min = 0;
+            efficiencyOptions.scales.yAxes[0].ticks.max = 100;
+            efficiencyOptions.scales.yAxes[0].ticks.callback = function (value) { return value + "٪"; };
+            var efficiencyChart = new Chart(document.getElementById("efficiencyChart"), { type: "bar", data: { labels: labels, datasets: [{ label: "درصد رسیدگی", data: trend.map(function (item) { return item.TotalRequests ? Math.round((item.ResolvedRequests + item.OpinionRequests) * 100 / item.TotalRequests) : 0; }), backgroundColor: "rgba(37,133,163,.78)", borderColor: "#2585a3", borderWidth: 1, barPercentage: .58, categoryPercentage: .72 }] }, options: efficiencyOptions });
             var charts = { total: totalChart, status: statusChart, composition: compositionChart, units: unitChart, cumulative: cumulativeChart, efficiency: efficiencyChart };
             function changeChartType(key, type) {
                 var currentChart = charts[key];

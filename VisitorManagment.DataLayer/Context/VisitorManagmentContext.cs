@@ -53,6 +53,7 @@ namespace VisitorManagment.DataLayer.Context
         public DbSet<VamCode> VamCodes { get; set; }
         public DbSet<UserLoginHistory> UserLoginHistories { get; set; }
         public DbSet<LoginSlide> LoginSlides { get; set; }
+        public DbSet<MaintenanceSetting> MaintenanceSettings { get; set; }
 
         #region Meeting
         public DbSet<Meeting> Meetings { get; set; }
@@ -109,6 +110,13 @@ namespace VisitorManagment.DataLayer.Context
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<MaintenanceSetting>()
+                .HasCheckConstraint("CK_MaintenanceSettings_SingleRow", "[Id] = 1");
+            modelBuilder.Entity<MaintenanceSetting>().HasData(new MaintenanceSetting
+            {
+                Id = 1, IsEnabled = false, Revision = 0,
+                Message = "سامانه موقتاً در حال به‌روزرسانی است. لطفاً کمی بعد دوباره مراجعه کنید."
+            });
             modelBuilder.Entity<LoginSlide>()
                 .HasIndex(slide => slide.SortOrder);
             modelBuilder.Entity<NotificationUser>()
