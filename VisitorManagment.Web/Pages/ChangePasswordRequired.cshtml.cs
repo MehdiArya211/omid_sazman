@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Services.Interfaces;
+using VisitorManagment.Core.Security;
 
 namespace VisitorManagment.Web.Pages
 {
@@ -30,7 +31,11 @@ namespace VisitorManagment.Web.Pages
         #region Properties
 
         [BindProperty]
-        public RequiredPasswordChangeViewModel Input { get; set; }
+        public RequiredPasswordChangeViewModel Input { get; set; } = new RequiredPasswordChangeViewModel();
+
+        [BindProperty] public string SecurityAnswer1 { get; set; }
+        [BindProperty] public string SecurityAnswer2 { get; set; }
+        [BindProperty] public string SecurityAnswer3 { get; set; }
 
         #endregion
 
@@ -52,12 +57,16 @@ namespace VisitorManagment.Web.Pages
         /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
+            ValidateSecurityAnswer(SecurityAnswer1, nameof(SecurityAnswer1));
+            ValidateSecurityAnswer(SecurityAnswer2, nameof(SecurityAnswer2));
+            ValidateSecurityAnswer(SecurityAnswer3, nameof(SecurityAnswer3));
             if (!ModelState.IsValid) return Page();
 
             var userId = GetCurrentUserId();
-            if (userId <= 0 || !_userService.ChangeRequiredPassword(userId, Input.CurrentPassword, Input.NewPassword))
+            if (userId <= 0 || !_userService.ChangeRequiredPasswordAndSaveSecurityAnswers(
+                userId, Input.CurrentPassword, Input.NewPassword, SecurityAnswer1, SecurityAnswer2, SecurityAnswer3))
             {
-                ModelState.AddModelError(string.Empty, "رمز موقت صحیح نیست یا امکان تغییر رمز وجود ندارد.");
+                ModelState.AddModelError(string.Empty, "رمز موقت صحیح نیست، رمز جدید معتبر نیست یا ثبت اطلاعات امنیتی انجام نشد.");
                 return Page();
             }
 
@@ -69,6 +78,13 @@ namespace VisitorManagment.Web.Pages
         #endregion
 
         #region Helpers
+
+        private void ValidateSecurityAnswer(string answer, string key)
+        {
+            var normalized = SecurityAnswerHasher.Normalize(answer);
+            if (normalized.Length < 2 || normalized.Length > 100)
+                ModelState.AddModelError(key, "پاسخ باید بین ۲ تا ۱۰۰ نویسه باشد.");
+        }
 
         private int GetCurrentUserId()
         {

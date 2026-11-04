@@ -723,6 +723,53 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <inheritdoc />
+        public bool ChangeRequiredPasswordAndSaveSecurityAnswers(int userId, string currentPassword, string newPassword, string answer1, string answer2, string answer3)
+        {
+            if (userId <= 0 || string.IsNullOrWhiteSpace(currentPassword) ||
+                !PasswordPolicy.IsValid(newPassword) || string.Equals(currentPassword, newPassword, StringComparison.Ordinal) ||
+                string.IsNullOrWhiteSpace(answer1) || string.IsNullOrWhiteSpace(answer2) || string.IsNullOrWhiteSpace(answer3))
+                return false;
+
+            var normalizedAnswers = new[] { answer1, answer2, answer3 }
+                .Select(SecurityAnswerHasher.Normalize).ToArray();
+            if (normalizedAnswers.Any(answer => answer.Length < 2 || answer.Length > 100))
+                return false;
+
+            var currentPasswordHash = PasswordHelper.EncodePasswordMd5(currentPassword);
+            var user = _context.Users.SingleOrDefault(item =>
+                item.Id == userId &&
+                item.IsActive &&
+                !item.IsDelete &&
+                item.ActiveCode == PasswordChangeRequiredMarker &&
+                item.Password == currentPasswordHash);
+
+            if (user == null || string.Equals(newPassword, user.UserName, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            var security = _context.UserSecurityQuestions.SingleOrDefault(item => item.UserId == userId);
+            if (security == null)
+            {
+                security = new UserSecurityQuestion { UserId = userId };
+                _context.UserSecurityQuestions.Add(security);
+            }
+
+            security.Answer1Hash = SecurityAnswerHasher.Hash(normalizedAnswers[0]);
+            security.Answer2Hash = SecurityAnswerHasher.Hash(normalizedAnswers[1]);
+            security.Answer3Hash = SecurityAnswerHasher.Hash(normalizedAnswers[2]);
+            security.FailedAttempts = 0;
+            security.LockedUntilUtc = null;
+            security.UpdatedAtUtc = DateTime.UtcNow;
+
+            user.Password = PasswordHelper.EncodePasswordMd5(newPassword);
+            user.ActiveCode = NameGenerator.GenerateUniqCode();
+            user.EditDate = DateTime.Now;
+
+            // EF Core writes the user and security answers in one database transaction.
+            _context.SaveChanges();
+            return true;
+        }
+
+        /// <inheritdoc />
         public bool ChangeRequiredPassword(int userId, string currentPassword, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)) return false;

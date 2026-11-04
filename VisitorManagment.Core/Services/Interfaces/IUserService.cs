@@ -66,6 +66,9 @@ namespace VisitorManagment.Core.Services.Interfaces
         /// رمز موقت را کنترل و رمز جدید را ثبت می‌کند؛ در صورت موفقیت اجبار تغییر رمز برداشته می‌شود.
         /// </summary>
         bool ChangeRequiredPassword(int userId, string currentPassword, string newPassword);
+
+        /// <summary>رمز موقت و سه پاسخ امنیتی را در یک ذخیرهٔ اتمی ثبت می‌کند.</summary>
+        bool ChangeRequiredPasswordAndSaveSecurityAnswers(int userId, string currentPassword, string newPassword, string answer1, string answer2, string answer3);
         #endregion
 
         #region SignUp
