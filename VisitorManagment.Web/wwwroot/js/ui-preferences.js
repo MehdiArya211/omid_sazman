@@ -15,7 +15,7 @@
         try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { return {}; }
     }
     function apply(value) {
-        var size = Math.max(90, Math.min(110, Number(value.size) || 100));
+        var size = Math.max(90, Math.min(110, Number(value.size) || 90));
         var font = fonts[value.font] ? value.font : "default";
         root.style.setProperty("--user-font-scale", size / 100);
         root.style.setProperty("--user-font-family", fonts[font]);
@@ -33,7 +33,7 @@
         if (!panel || !toggle || !font || !size) return;
         var value = read();
         font.value = fonts[value.font] ? value.font : "default";
-        size.value = Math.max(90, Math.min(110, Number(value.size) || 100));
+        size.value = Math.max(90, Math.min(110, Number(value.size) || 90));
         output.textContent = size.value + "٪";
 
         function open(state) {
@@ -54,7 +54,7 @@
         font.addEventListener("change", save);
         size.addEventListener("input", save);
         document.getElementById("uiSettingsReset").addEventListener("click", function () {
-            localStorage.removeItem(key); font.value = "default"; size.value = 100; save();
+            localStorage.removeItem(key); font.value = "default"; size.value = 90; save();
         });
         document.addEventListener("keydown", function (event) { if (event.key === "Escape") open(false); });
     });
