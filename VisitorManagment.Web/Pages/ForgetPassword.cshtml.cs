@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -6,9 +8,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Security;
 using VisitorManagment.Core.Services.Interfaces;
+using VisitorManagment.DataLayer.Context;
+using VisitorManagment.DataLayer.Entities.User;
 
 namespace VisitorManagment.Web.Pages
 {
@@ -17,8 +22,13 @@ namespace VisitorManagment.Web.Pages
         private const string UsernameSessionKey = "PasswordRecovery.UserName";
         private const string QuestionSessionKey = "PasswordRecovery.QuestionId";
         private readonly IUserService _userService;
+        private readonly VisitorManagmentContext _context;
 
-        public ForgetPasswordModel(IUserService userService) => _userService = userService;
+        public ForgetPasswordModel(IUserService userService, VisitorManagmentContext context)
+        {
+            _userService = userService;
+            _context = context;
+        }
 
         [BindProperty]
         public string UserName { get; set; }
@@ -35,15 +45,18 @@ namespace VisitorManagment.Web.Pages
         public bool QuestionSelected { get; private set; }
         public int AttemptsRemaining { get; private set; } = 5;
         public string QuestionText { get; private set; }
+        public List<LoginSlide> LoginSlides { get; private set; } = new List<LoginSlide>();
 
         public void OnGet()
         {
+            LoadLoginSlides();
             HttpContext.Session.Remove(UsernameSessionKey);
             HttpContext.Session.Remove(QuestionSessionKey);
         }
 
         public IActionResult OnPostAskQuestion()
         {
+            LoadLoginSlides();
             if (string.IsNullOrWhiteSpace(UserName) || UserName.Trim().Length > 10)
             {
                 ModelState.AddModelError(nameof(UserName), "نام کاربری معتبر را وارد کنید.");
@@ -62,6 +75,7 @@ namespace VisitorManagment.Web.Pages
 
         public async Task<IActionResult> OnPostResetAsync()
         {
+            LoadLoginSlides();
             if (!TryLoadQuestion(out var userName, out var questionId))
             {
                 ModelState.AddModelError(string.Empty, "فرایند بازیابی منقضی شده است؛ دوباره شروع کنید.");
@@ -107,6 +121,24 @@ namespace VisitorManagment.Web.Pages
                     break;
             }
             return Page();
+        }
+
+        private void LoadLoginSlides()
+        {
+            LoginSlides = _context.LoginSlides.AsNoTracking()
+                .Where(item => item.IsActive)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.Id)
+                .ToList();
+
+            if (LoginSlides.Count > 0) return;
+
+            LoginSlides = new List<LoginSlide>
+            {
+                new LoginSlide { ImagePath = "/assets/media/image/photo2.jpg", Title = "دسترسی سریع و یکپارچه", Description = "ثبت و پیگیری درخواست‌ها در یک محیط سازمانی", AltText = "محیط کاری دیجیتال" },
+                new LoginSlide { ImagePath = "/assets/media/image/photo3.jpg", Title = "پیگیری شفاف درخواست‌ها", Description = "مشاهده وضعیت و گردش درخواست در هر مرحله", AltText = "کار با سامانه سازمانی" },
+                new LoginSlide { ImagePath = "/assets/media/image/photo1.jpg", Title = "مدیریت ساده‌تر", Description = "دسترسی به کارتابل و خدمات موردنیاز کارکنان", AltText = "سامانه هوشمند مدیریتی" }
+            };
         }
 
         private bool TryLoadQuestion(out string userName, out int questionId)
