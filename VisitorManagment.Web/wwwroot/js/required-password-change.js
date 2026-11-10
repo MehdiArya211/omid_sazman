@@ -40,12 +40,34 @@
         });
     });
 
-    document.querySelector('[data-password-change-form]').addEventListener('submit', function () {
-        var submit = this.querySelector('[type="submit"]');
-        if (!this.checkValidity()) return;
-        submit.disabled = true;
-        submit.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>در حال ثبت...</span>';
-    });
+    var passwordForm = document.querySelector('[data-password-change-form]');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function () {
+            var form = this;
+            var submit = form.querySelector('[type="submit"]');
+            if (!form.checkValidity() || !submit || submit.disabled) return;
+
+            var originalContent = submit.innerHTML;
+            submit.disabled = true;
+            submit.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>در حال ثبت...</span>';
+
+            window.setTimeout(function () {
+                if (!document.documentElement.contains(form) || !submit.disabled) return;
+                submit.disabled = false;
+                submit.innerHTML = originalContent;
+
+                var notice = form.querySelector('[data-submit-timeout]');
+                if (!notice) {
+                    notice = document.createElement('div');
+                    notice.setAttribute('data-submit-timeout', '');
+                    notice.className = 'alert alert-warning mt-2';
+                    notice.setAttribute('role', 'alert');
+                    form.insertBefore(notice, submit);
+                }
+                notice.textContent = 'پاسخی از سامانه دریافت نشد. اتصال را بررسی کنید و دوباره تلاش کنید.';
+            }, 35000);
+        });
+    }
 
     password.addEventListener('input', updateStrength);
     updateStrength();
