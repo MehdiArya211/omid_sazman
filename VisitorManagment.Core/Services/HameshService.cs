@@ -367,51 +367,70 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public ListHameshViewModel GetHameshIdByFileId(int fileId, int pageId = 1, int requestsubject = 0, string filterCaption = "")
         {
-            int fileid = _context.Files.Where(f => f.Id == fileId).Select(f => f.Id).SingleOrDefault();
-            int? meetingId = _context.Files.Where(f => f.Id == fileId).Select(f => f.MeetingId).SingleOrDefault();
+            var file = _context.Files
+                .AsNoTracking()
+                .Where(item => item.Id == fileId)
+                .Select(item => new { item.Id, item.MeetingId })
+                .FirstOrDefault();
 
-            IQueryable<Hamesh> result = _context.Hameshes
-                .Where(r => r.FileId == fileId && r.UserDesc != null && r.UserDesc.Trim() != "")
-                .OrderBy(x => x.RegDate).ThenBy(x => x.Id);
-
-            var take = 1000;
-            var skip = (pageId - 1) * take;
-
-            ListHameshViewModel list = new ListHameshViewModel() { };
-            list.CurrentPage = pageId;
-            list.skip = skip;
-            list.count = result.Count();
-            list.PageCount = (int)Math.Ceiling(result.Count() / (double)take);  // result.Count() / take;
-
-            list.MeetingId = meetingId;
-
-            list.hameshes = result.Select(t => new HameshInfoViewModel()
+            if (file == null)
             {
-                Id = t.Id,
-                FirstName = t.User.FirstName,
-                LastName = t.User.LastName,
-                RankTitle = t.File.Personal.RankTitle,
-                ActionTypeTitle = t.ActionType.Title,
-                UserDesc = t.UserDesc,
-                RegDate = t.RegDate,
-                FirstNamePersonel = t.File.Personal.FirstName,
-                LastNamePersonel = t.File.Personal.LastName,
-                RankTitlePersonal = t.File.Personal.RankTitle,
-                FarmandehPersonalName = t.File.FarmandehPersonalName,
-                // UserId is the person who performed this step; ParentId points to the previous step.
-                SenderUserName = t.ParentId.HasValue
+                return new ListHameshViewModel
+                {
+                    CurrentPage = 1,
+                    PageCount = 0,
+                    count = 0,
+                    skip = 0,
+                    MeetingId = null,
+                    hameshes = new List<HameshInfoViewModel>(),
+                    ErrorMessage = "درخواست مورد نظر یافت نشد."
+                };
+            }
+
+            // صفحه گردش کنترل صفحه‌بندی ندارد؛ همه اقدامات را برای نمایش کامل برمی‌گردانیم.
+            var historyQuery = _context.Hameshes
+                .AsNoTracking()
+                .Where(item => item.FileId == fileId && item.UserDesc != null && item.UserDesc.Trim() != "")
+                .OrderBy(item => item.RegDate).ThenBy(item => item.Id);
+
+            var history = historyQuery.Select(item => new HameshInfoViewModel
+            {
+                Id = item.Id,
+                FileId = item.FileId,
+                UserId = item.UserId,
+                ParentId = item.ParentId,
+                ActionTypeId = item.ActionTypeId,
+                FirstName = item.User.FirstName,
+                LastName = item.User.LastName,
+                RankTitle = item.File.Personal.RankTitle,
+                ActionTypeTitle = item.ActionType.Title,
+                UserDesc = item.UserDesc,
+                RegDate = item.RegDate,
+                FirstNamePersonel = item.File.Personal.FirstName,
+                LastNamePersonel = item.File.Personal.LastName,
+                RankTitlePersonal = item.File.Personal.RankTitle,
+                FarmandehPersonalName = item.File.FarmandehPersonalName,
+                SenderUserName = item.ParentId.HasValue
                     ? _context.Hameshes
-                        .Where(parent => parent.Id == t.ParentId.Value)
+                        .Where(parent => parent.Id == item.ParentId.Value)
                         .Select(parent => parent.User.FirstName + " " + parent.User.LastName)
                         .FirstOrDefault()
                     : _context.Users
-                        .Where(user => user.Id == t.File.RegUserId)
+                        .Where(user => user.Id == item.File.RegUserId)
                         .Select(user => user.FirstName + " " + user.LastName)
                         .FirstOrDefault(),
-                RcvrUserName = t.User.FirstName + " " + t.User.LastName
+                RcvrUserName = item.User.FirstName + " " + item.User.LastName
+            }).ToList();
 
-            }).Skip(skip).Take(take).ToList();
-            return list;
+            return new ListHameshViewModel
+            {
+                CurrentPage = 1,
+                PageCount = history.Count > 0 ? 1 : 0,
+                count = history.Count,
+                skip = 0,
+                MeetingId = file.MeetingId,
+                hameshes = history
+            };
         }
 
 
