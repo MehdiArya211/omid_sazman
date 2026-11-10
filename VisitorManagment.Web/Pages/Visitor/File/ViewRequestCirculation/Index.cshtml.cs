@@ -111,10 +111,10 @@ namespace VisitorManagment.Web.Pages.Visitor.ViewRequestCirculation
 
             var normalized = new string(value.Trim().Select(character =>
             {
-                if (character >= '\\u06F0' && character <= '\\u06F9')
-                    return (char)('0' + character - '\\u06F0');
-                if (character >= '\\u0660' && character <= '\\u0669')
-                    return (char)('0' + character - '\\u0660');
+                if (character >= '\u06F0' && character <= '\u06F9')
+                    return (char)('0' + character - '\u06F0');
+                if (character >= '\u0660' && character <= '\u0669')
+                    return (char)('0' + character - '\u0660');
                 return character;
             }).ToArray());
 
