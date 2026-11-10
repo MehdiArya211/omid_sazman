@@ -45,62 +45,95 @@ namespace VisitorManagment.Web.Pages.Visitor.ViewRequestCirculation
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
         /// </summary>
-        public IActionResult OnGet(int pageId = 1, string filterCaption = "", int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0 , string startDateSearch = "", string endDateSearch = "")
+        public IActionResult OnGet(int pageId = 1, string filterCaption = "", int requestsubject = 0,
+            int filterGharargah = 0, int filterYegan = 0, string startDateSearch = "", string endDateSearch = "")
         {
+            listHameshViewModel = new ListHameshViewModel
+            {
+                hameshes = new List<HameshInfoViewModel>()
+            };
 
-            listHameshViewModel = new ListHameshViewModel();
-            listHameshViewModel.hameshes = new List<HameshInfoViewModel>();
-            var userid = int.Parse(User.FindFirst("Id").Value);
-            var unitCode = int.Parse(User.FindFirst("UnitCode").Value);
+            if (!int.TryParse(User.FindFirst("Id")?.Value, out var userId) ||
+                !int.TryParse(User.FindFirst("UnitCode")?.Value, out var unitCode))
+            {
+                return Forbid();
+            }
+
             ViewData["RequestSubject"] = new SelectList(_fileService.GetRequestSubject(), "Id", "Title");
             ViewData["Gharargah"] = new SelectList(_webApiService.GetGharargah().Data, "Id", "Title");
             ViewData["Yegan"] = new SelectList(_webApiService.GetOrganByGharargahId(filterGharargah).Data, "Id", "Title");
             ViewData["ListMoavenatHa"] = new SelectList(_fileService.GetRolesJustMooavenatHa(), "RoleId", "Title");
 
-            #region Convert string date time to english date time
-            DateTime? startDateEnglish=null;
-            DateTime? endDateEnglish=null;
+            DateTime? startDateEnglish = null;
+            DateTime? endDateEnglish = null;
+            var hasStartDate = !string.IsNullOrWhiteSpace(startDateSearch);
+            var hasEndDate = !string.IsNullOrWhiteSpace(endDateSearch);
 
-            if (startDateSearch != "" && endDateSearch != "")
+            if (hasStartDate != hasEndDate)
             {
-                //زمان شروع رو با / جدا میکنه
-                var startDate = startDateSearch.Split('/');
-                //سال و ماه و روز تاریخ شروع رو به اینت تبدیل میکنیم
-                var yearstart = Int32.Parse(string.Join("", startDate[0].Select(c => char.GetNumericValue(c))));
-                var monthstart = Int32.Parse(string.Join("", startDate[1].Select(c => char.GetNumericValue(c))));
-                var daystart = Int32.Parse(string.Join("", startDate[2].Select(c => char.GetNumericValue(c))));
-                //زمان شروع شمسی رو به میلادی تبدیل میکنیم
-                startDateEnglish = new DateTime(yearstart, monthstart, daystart, new PersianCalendar());
-                //stEnghlish = new DateTime(yearstart, monthstart, daystart, new PersianCalendar()).ToShortDateString();
-                //DateTime t1 = startDateEnglish.ToSortDateString();
-                //خط زیرم معادل خط بالاس
-                //var startDateEnglish = DateTime.Parse(allstartDate.ToString(CultureInfo.CreateSpecificCulture("en-Us")));
-                //********************************************************************************************************************//
-                var endDate = endDateSearch.Split('/');
-                var yearend = Int32.Parse(string.Join("", endDate[0].Select(c => char.GetNumericValue(c))));
-                var monthend = Int32.Parse(string.Join("", endDate[1].Select(c => char.GetNumericValue(c))));
-                var dayend = Int32.Parse(string.Join("", endDate[2].Select(c => char.GetNumericValue(c))));
-                endDateEnglish = new DateTime(yearend, monthend, dayend, new PersianCalendar());
-                //enEnghlish = new DateTime(yearend, monthend, dayend, new PersianCalendar()).ToShortDateString();
+                ViewData["invalidDateRange"] = "true";
+                listviewmodel = new ListFileViewModel { files = new List<FactPersonalViewModel>() };
+                return Page();
+            }
 
+            if (hasStartDate && hasEndDate)
+            {
+                if (!TryParsePersianDate(startDateSearch, out var parsedStart) ||
+                    !TryParsePersianDate(endDateSearch, out var parsedEnd))
+                {
+                    ViewData["invalidDateRange"] = "true";
+                    listviewmodel = new ListFileViewModel { files = new List<FactPersonalViewModel>() };
+                    return Page();
+                }
+
+                startDateEnglish = parsedStart;
+                endDateEnglish = parsedEnd;
                 if (startDateEnglish > endDateEnglish)
                 {
                     ViewData["startDateBiggerThanEndDate"] = "true";
+                    listviewmodel = new ListFileViewModel { files = new List<FactPersonalViewModel>() };
                     return Page();
-
                 }
-
             }
-            //حالا سرچ بر اساس تاریخ رو بنویس
 
-            #endregion
-
-
-            //listviewmodel = _fileService.GetListFileForCirculation(userid, unitCode, pageId, requestsubject, filterGharargah, filterYegan, filterCaption, stEnghlish, enEnghlish);
-            listviewmodel = _fileService.GetListFileForCirculation(userid, startDateEnglish, endDateEnglish, unitCode, pageId, requestsubject, filterGharargah, filterYegan , filterCaption);
+            listviewmodel = _fileService.GetListFileForCirculation(
+                userId, startDateEnglish, endDateEnglish, unitCode, pageId,
+                requestsubject, filterGharargah, filterYegan, filterCaption);
             users = new List<Users>();
-
             return Page();
+        }
+
+        private static bool TryParsePersianDate(string value, out DateTime date)
+        {
+            date = default;
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            var normalized = new string(value.Trim().Select(character =>
+            {
+                if (character >= '\u06F0' && character <= '\u06F9')
+                    return (char)('0' + character - '\u06F0');
+                if (character >= '\u0660' && character <= '\u0669')
+                    return (char)('0' + character - '\u0660');
+                return character;
+            }).ToArray());
+
+            var parts = normalized.Split('/');
+            if (parts.Length != 3 ||
+                !int.TryParse(parts[0], out var year) ||
+                !int.TryParse(parts[1], out var month) ||
+                !int.TryParse(parts[2], out var day))
+                return false;
+
+            try
+            {
+                date = new DateTime(year, month, day, new PersianCalendar());
+                return true;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return false;
+            }
         }
 
         /// <summary>

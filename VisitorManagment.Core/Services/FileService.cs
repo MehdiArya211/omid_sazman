@@ -35,6 +35,53 @@ namespace VisitorManagment.Core.Services
             _webApiService = webApiService;
         }
 
+        private static string NormalizeCirculationSearchTerm(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+
+            var characters = value.Trim().ToCharArray();
+            for (var index = 0; index < characters.Length; index++)
+            {
+                if (characters[index] >= '\u06F0' && characters[index] <= '\u06F9')
+                    characters[index] = (char)('0' + characters[index] - '\u06F0');
+                else if (characters[index] >= '\u0660' && characters[index] <= '\u0669')
+                    characters[index] = (char)('0' + characters[index] - '\u0660');
+            }
+
+            return new string(characters);
+        }
+
+        /// <summary>
+        /// شناسه فایل‌هایی را می‌دهد که در دوره تصدی فعلی یا قبلیِ همین جایگاه هامش خورده‌اند.
+        /// تاریخچه RoleId معیار پایدار جایگاه است؛ تطبیق عنوان و یگان برای داده‌های قدیمیِ بدون تاریخچه نگه داشته شده است.
+        /// </summary>
+                private IQueryable<int> GetFilesWithPositionHamesh(int? unitDutyCode, int[] roleIds, int[] roleTypes, string[] roleTitles)
+        {
+            var roleIdValues = roleIds ?? Array.Empty<int>();
+            var roleTypeValues = roleTypes ?? Array.Empty<int>();
+            var roleTitleValues = roleTitles ?? Array.Empty<string>();
+            var hasRoleHistory = roleIdValues.Length > 0;
+            var hasLegacyPositionData = unitDutyCode.HasValue &&
+                (roleTypeValues.Length > 0 || roleTitleValues.Length > 0);
+
+            return _context.Hameshes
+                .Where(hamesh =>
+                    (hasLegacyPositionData &&
+                     hamesh.User.UnitDutyCode == unitDutyCode &&
+                     (roleTypeValues.Contains(hamesh.RoleTypeId) ||
+                      roleTitleValues.Contains(hamesh.RoleTypeTitle))) ||
+                    (hasRoleHistory &&
+                     _context.RoleAssignmentHistories.Any(history =>
+                         roleIdValues.Contains(history.RoleId) &&
+                         history.UserId == hamesh.UserId &&
+                         history.StartDate <= hamesh.RegDate &&
+                         (!history.EndDate.HasValue || hamesh.RegDate < history.EndDate.Value) &&
+                         (roleTypeValues.Contains(hamesh.RoleTypeId) ||
+                          roleTitleValues.Contains(hamesh.RoleTypeTitle))))
+                )
+                .Select(hamesh => hamesh.FileId);
+        }
+
         /// <summary>
         /// دریافت لیست موضوعات درخواست.
         /// </summary>
@@ -1050,50 +1097,61 @@ namespace VisitorManagment.Core.Services
             }
             else
             {
-                var currentUser = _context.Users
+                var currentUserUnitDutyCode = _context.Users
                     .Where(user => user.Id == rcvrUserId)
-                    .Select(user => new { user.UnitDutyCode })
+                    .Select(user => user.UnitDutyCode)
                     .SingleOrDefault();
-                var currentRoleTypes = _context.UserRoles
+                var currentRoles = _context.UserRoles
                     .Where(userRole => userRole.UserId == rcvrUserId && !userRole.Role.IsDelete)
-                    .Select(userRole => userRole.Role.RoleType)
-                    .Distinct()
-                    .ToArray();
+                    .Select(userRole => new
+                    {
+                        userRole.RoleId,
+                        userRole.Role.RoleType,
+                        userRole.Role.Title
+                    })
+                    .ToList();
+                var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+                var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+                var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
 
-                var userFileIds = _context.Hameshes
-                    .Where(hamesh => hamesh.UserId == rcvrUserId)
-                    .Select(hamesh => hamesh.FileId);
-
-                // سوابق نقش برای کارشناس جایگزین همان یگان هم قابل مشاهده است.
-                var samePositionFileIds = currentUser != null && currentUser.UnitDutyCode.HasValue && currentRoleTypes.Length > 0
-                    ? _context.Hameshes
-                        .Where(hamesh => currentRoleTypes.Contains(hamesh.RoleTypeId) &&
-                                         hamesh.User.UnitDutyCode == currentUser.UnitDutyCode)
-                        .Select(hamesh => hamesh.FileId)
-                    : Enumerable.Empty<int>().AsQueryable();
+                var positionHameshFileIds = GetFilesWithPositionHamesh(
+                    currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+                var positionCartableFileIds = _context.Cartables
+                    .Where(cartable => !cartable.IsDone &&
+                        cartable.RcvrRoleId.HasValue &&
+                        currentRoleIds.Contains(cartable.RcvrRoleId.Value))
+                    .Select(cartable => cartable.FileId);
 
                 result = _context.Files.Where(file =>
                     !file.IsDelete &&
                     (file.RegUserId == rcvrUserId ||
-                     userFileIds.Contains(file.Id) ||
-                     samePositionFileIds.Contains(file.Id)));
+                     _context.Hameshes.Any(hamesh => hamesh.FileId == file.Id && hamesh.UserId == rcvrUserId) ||
+                     positionHameshFileIds.Contains(file.Id) ||
+                     positionCartableFileIds.Contains(file.Id)));
             }
 
             if (startDateSearchFilter.HasValue)
+                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value.Date);
+
+            if (endDateSearchFilter.HasValue)
             {
-                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value);
-                if (endDateSearchFilter.HasValue)
-                {
-                    result = result.Where(file => file.RegDate <= endDateSearchFilter.Value);
-                }
+                var endExclusive = endDateSearchFilter.Value.Date.AddDays(1);
+                result = result.Where(file => file.RegDate < endExclusive);
             }
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
+                var searchTerm = NormalizeCirculationSearchTerm(filterCaption);
                 result = result.Where(file =>
-                    file.PersonalCode.Contains(filterCaption) ||
-                    file.Personal.FirstName.Contains(filterCaption) ||
-                    file.Personal.LastName.Contains(filterCaption));
+                    (file.PersonalCode != null && file.PersonalCode.Contains(searchTerm)) ||
+                    (file.MelliCode != null && file.MelliCode.Contains(searchTerm)) ||
+                    (file.Personal != null &&
+                     ((file.Personal.PersonalCode != null && file.Personal.PersonalCode.Contains(searchTerm)) ||
+                      (file.Personal.MelliCode != null && file.Personal.MelliCode.Contains(searchTerm)) ||
+                      (file.Personal.FirstName != null && file.Personal.FirstName.Contains(searchTerm)) ||
+                      (file.Personal.LastName != null && file.Personal.LastName.Contains(searchTerm)))) ||
+                    (file.FirstName != null && file.FirstName.Contains(searchTerm)) ||
+                    (file.LastName != null && file.LastName.Contains(searchTerm)));
             }
 
             if (requestsubject != 0)
@@ -1155,10 +1213,15 @@ namespace VisitorManagment.Core.Services
                             : _context.Cartables
                                 .Where(cartable => cartable.FileId == file.Id && !cartable.IsDone)
                                 .OrderByDescending(cartable => cartable.RegDate)
-                                .Select(cartable => _context.Users
-                                    .Where(user => user.Id == cartable.RcvrUserId)
-                                    .Select(user => user.FirstName + " " + user.LastName)
-                                    .FirstOrDefault())
+                                .Select(cartable => cartable.RcvrUserId > 0
+                                    ? _context.Users
+                                        .Where(user => user.Id == cartable.RcvrUserId)
+                                        .Select(user => user.FirstName + " " + user.LastName)
+                                        .FirstOrDefault()
+                                    : _context.Roles
+                                        .Where(role => role.RoleId == cartable.RcvrRoleId)
+                                        .Select(role => role.Title)
+                                        .FirstOrDefault())
                                 .FirstOrDefault() ?? "در انتظار ارجاع",
                     RegDate = file.RegDate
                 })
@@ -1174,48 +1237,63 @@ namespace VisitorManagment.Core.Services
         {
             // گردش شخصی باید بر اساس کاربر هامش‌زن و جایگاه سازمانی باشد؛
             // محدودکردن به چند RoleType ثابت، نقش‌های اختصاصی یگان (مانند 3001) را حذف می‌کرد.
-            var currentUser = _context.Users
+            var currentUserUnitDutyCode = _context.Users
                 .Where(user => user.Id == userId)
-                .Select(user => new { user.UnitDutyCode })
+                .Select(user => user.UnitDutyCode)
                 .SingleOrDefault();
-            var currentRoleTypes = _context.UserRoles
+            var currentRoles = _context.UserRoles
                 .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
-                .Select(userRole => userRole.Role.RoleType)
-                .Distinct()
-                .ToArray();
+                .Select(userRole => new
+                {
+                    userRole.RoleId,
+                    userRole.Role.RoleType,
+                    userRole.Role.Title
+                })
+                .ToList();
+            var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+            var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+            var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
+            var positionHameshFileIds = GetFilesWithPositionHamesh(
+                currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+            var positionCartableFileIds = _context.Cartables
+                .Where(cartable => !cartable.IsDone &&
+                    cartable.RcvrRoleId.HasValue &&
+                    currentRoleIds.Contains(cartable.RcvrRoleId.Value))
+                .Select(cartable => cartable.FileId);
 
-            var result = _context.Hameshes
-                .Where(hamesh =>
-                    hamesh.UserId == userId ||
-                    (currentUser != null &&
-                     currentUser.UnitDutyCode.HasValue &&
-                     currentRoleTypes.Length > 0 &&
-                     currentRoleTypes.Contains(hamesh.RoleTypeId) &&
-                     hamesh.User.UnitDutyCode == currentUser.UnitDutyCode))
-                .Select(hamesh => hamesh.File)
-                .Distinct();
+            var result = _context.Files.Where(file =>
+                !file.IsDelete &&
+                (_context.Hameshes.Any(hamesh => hamesh.FileId == file.Id && hamesh.UserId == userId) ||
+                 positionHameshFileIds.Contains(file.Id) ||
+                 positionCartableFileIds.Contains(file.Id)));
 
             var resultForFilterMoavenat = _context.Hameshes.Include(x => x.File).Distinct();
 
 
             #region Search/filter
 
-            if (startDateSearchFilter != null)
+            if (startDateSearchFilter.HasValue)
+                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value.Date);
+
+            if (endDateSearchFilter.HasValue)
             {
-                if (endDateSearchFilter != null)
-                {
-                    result = result.Where(u => u.RegDate >= startDateSearchFilter && u.RegDate <= endDateSearchFilter);
-                }
-                //var stDate = startDateSearchFilter.ToString();
-                //var regDateWithoutTime = result.Select(x=>x.RegDate.ToShortDateString()).SingleOrDefault() ;
-                /*result =result.Select(x=>x.RegDate)*/;
-                // result = result.Where(u => u.RegDate.Contains(regDateWithoutTime));
-                //result = result.Where(u => u.RegDate.ToShamsi()==startDateSearchFilter);
+                var endExclusive = endDateSearchFilter.Value.Date.AddDays(1);
+                result = result.Where(file => file.RegDate < endExclusive);
             }
 
-            if (!string.IsNullOrEmpty(filterCaption))
+            if (!string.IsNullOrWhiteSpace(filterCaption))
             {
-                result = result.Where(u => u.PersonalCode.Contains(filterCaption) || u.Personal.FirstName.Contains(filterCaption) || u.Personal.LastName.Contains(filterCaption));
+                var searchTerm = NormalizeCirculationSearchTerm(filterCaption);
+                result = result.Where(file =>
+                    (file.PersonalCode != null && file.PersonalCode.Contains(searchTerm)) ||
+                    (file.MelliCode != null && file.MelliCode.Contains(searchTerm)) ||
+                    (file.Personal != null &&
+                     ((file.Personal.PersonalCode != null && file.Personal.PersonalCode.Contains(searchTerm)) ||
+                      (file.Personal.MelliCode != null && file.Personal.MelliCode.Contains(searchTerm)) ||
+                      (file.Personal.FirstName != null && file.Personal.FirstName.Contains(searchTerm)) ||
+                      (file.Personal.LastName != null && file.Personal.LastName.Contains(searchTerm)))) ||
+                    (file.FirstName != null && file.FirstName.Contains(searchTerm)) ||
+                    (file.LastName != null && file.LastName.Contains(searchTerm)));
             }
 
 
@@ -1235,17 +1313,12 @@ namespace VisitorManagment.Core.Services
             }
 
 
-            //اینجا رو بنویسم
             if (filterMoavenat != 0)
             {
-                var role = _context.Roles.Where(x => x.RoleId == filterMoavenat).SingleOrDefault();
-
-                result = _context.Hameshes.Include(x => x.File).Where(x => x.User.UserRoles.Select(x => x.Role.Code).FirstOrDefault() == role.Code).Select(x => x.File).Distinct();
-
-                // result = _context.Hameshes.Include(x => x.File).Where(x=>x.RoleTypeId == filterMoavenat).Select(x => x.File).Distinct();
-                // result = _context.Hameshes.Include(x => x.File).Where(x => x.RoleTypeId == filterMoavenat).Select(x => x.File).Distinct();
-
-                //result = resultForFilterMoavenat.Where(x => x.RoleTypeId == filterMoavenat).Select(x => x.File).Distinct();
+                result = result.Where(file =>
+                    _context.Hameshes.Any(hamesh =>
+                        hamesh.FileId == file.Id &&
+                        hamesh.RoleTypeId == filterMoavenat));
             }
 
             #endregion
@@ -2706,19 +2779,29 @@ namespace VisitorManagment.Core.Services
         {
             if (userId <= 0 || fileId <= 0) return false;
 
-            var currentUser = _context.Users
+            var currentUserUnitDutyCode = _context.Users
                 .AsNoTracking()
                 .Where(user => user.Id == userId)
-                .Select(user => new { user.UnitDutyCode })
+                .Select(user => user.UnitDutyCode)
                 .SingleOrDefault();
-            if (currentUser == null) return false;
-
-            var currentRoleTypes = _context.UserRoles
+            var currentRoles = _context.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
-                .Select(userRole => userRole.Role.RoleType)
-                .Distinct()
-                .ToArray();
+                .Select(userRole => new
+                {
+                    userRole.RoleId,
+                    userRole.Role.RoleType,
+                    userRole.Role.Title
+                })
+                .ToList();
+            var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+            var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+            var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
+            var positionFileIds = GetFilesWithPositionHamesh(
+                currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+            var formerPositionHolderIds = _context.RoleAssignmentHistories
+                .Where(history => currentRoleIds.Contains(history.RoleId))
+                .Select(history => history.UserId);
 
             return _context.Files
                 .AsNoTracking()
@@ -2726,12 +2809,8 @@ namespace VisitorManagment.Core.Services
                     file.IsArchived &&
                     !file.IsDelete &&
                     (file.ArchivedRegUserId == userId ||
-                     (currentUser.UnitDutyCode.HasValue &&
-                      currentRoleTypes.Length > 0 &&
-                      _context.Hameshes.Any(hamesh =>
-                          hamesh.FileId == file.Id &&
-                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
-                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
+                     formerPositionHolderIds.Contains(file.ArchivedRegUserId) ||
+                     positionFileIds.Contains(file.Id)));
         }
 
         /// <summary>
@@ -2742,39 +2821,52 @@ namespace VisitorManagment.Core.Services
             string filterGharargah = "",
             string filterCaption = "")
         {
-            var currentUser = _context.Users
+            var currentUserUnitDutyCode = _context.Users
                 .AsNoTracking()
                 .Where(user => user.Id == userId)
-                .Select(user => new { user.UnitDutyCode })
+                .Select(user => user.UnitDutyCode)
                 .SingleOrDefault();
-            var currentRoleTypes = _context.UserRoles
+            var currentRoles = _context.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
-                .Select(userRole => userRole.Role.RoleType)
-                .Distinct()
-                .ToArray();
+                .Select(userRole => new
+                {
+                    userRole.RoleId,
+                    userRole.Role.RoleType,
+                    userRole.Role.Title
+                })
+                .ToList();
+            var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+            var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+            var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
+            var positionFileIds = GetFilesWithPositionHamesh(
+                currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+            var formerPositionHolderIds = _context.RoleAssignmentHistories
+                .Where(history => currentRoleIds.Contains(history.RoleId))
+                .Select(history => history.UserId);
 
-            // بایگانی متعلق به صاحب قبلی جایگاه، برای کارشناس فعلی همان نقش و یگان نیز قابل مشاهده است.
+            // آرشیوهای متصدیان قبلی همان RoleId، همراه با آرشیوهای مستقیم کاربر، در این فهرست می‌مانند.
             IQueryable<Files> listFile = _context.Files
                 .AsNoTracking()
                 .Where(file => file.IsArchived &&
                     !file.IsDelete &&
                     (file.ArchivedRegUserId == userId ||
-                     (currentUser != null &&
-                      currentUser.UnitDutyCode.HasValue &&
-                      currentRoleTypes.Length > 0 &&
-                      _context.Hameshes.Any(hamesh =>
-                          hamesh.FileId == file.Id &&
-                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
-                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
+                     formerPositionHolderIds.Contains(file.ArchivedRegUserId) ||
+                     positionFileIds.Contains(file.Id)));
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
-                var term = filterCaption.Trim();
+                var searchTerm = NormalizeCirculationSearchTerm(filterCaption);
                 listFile = listFile.Where(file =>
-                    file.Personal.PersonalCode.Contains(term) ||
-                    file.Personal.FirstName.Contains(term) ||
-                    file.Personal.LastName.Contains(term));
+                    (file.PersonalCode != null && file.PersonalCode.Contains(searchTerm)) ||
+                    (file.MelliCode != null && file.MelliCode.Contains(searchTerm)) ||
+                    (file.Personal != null &&
+                     ((file.Personal.PersonalCode != null && file.Personal.PersonalCode.Contains(searchTerm)) ||
+                      (file.Personal.MelliCode != null && file.Personal.MelliCode.Contains(searchTerm)) ||
+                      (file.Personal.FirstName != null && file.Personal.FirstName.Contains(searchTerm)) ||
+                      (file.Personal.LastName != null && file.Personal.LastName.Contains(searchTerm)))) ||
+                    (file.FirstName != null && file.FirstName.Contains(searchTerm)) ||
+                    (file.LastName != null && file.LastName.Contains(searchTerm)));
             }
 
             if (int.TryParse(filterGharargah, out var gharargahId) && gharargahId > 0)
