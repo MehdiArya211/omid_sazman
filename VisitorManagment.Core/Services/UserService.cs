@@ -649,7 +649,82 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <summary>پاسخ انتخاب‌شده را بررسی و پس از پنج خطا برای ۱۵ دقیقه بازیابی را متوقف می‌کند.</summary>
-        public PasswordRecoveryResult ResetPasswordWithSecurityAnswer(string userName, int questionId, string answer, string newPassword)
+                /// <summary>بازیابی رمز را با عملیات دیتابیس async و امکان لغو درخواست اجرا می‌کند.</summary>
+        public async Task<PasswordRecoveryResult> ResetPasswordWithSecurityAnswerAsync(
+            string userName, int questionId, string answer, string newPassword,
+            System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            var response = new PasswordRecoveryResult { Status = PasswordRecoveryStatus.UserNotFound, AttemptsRemaining = 5 };
+            if (string.IsNullOrWhiteSpace(userName)) return response;
+            if (!PasswordPolicy.IsValid(newPassword))
+            {
+                response.Status = PasswordRecoveryStatus.InvalidPassword;
+                return response;
+            }
+
+            var normalizedUserName = userName.Trim();
+            var user = await _context.Users
+                .SingleOrDefaultAsync(item => item.UserName == normalizedUserName && item.IsActive && !item.IsDelete, cancellationToken);
+            if (user == null) return response;
+
+            var security = await _context.UserSecurityQuestions
+                .SingleOrDefaultAsync(item => item.UserId == user.Id, cancellationToken);
+            if (security == null)
+            {
+                response.Status = PasswordRecoveryStatus.NotConfigured;
+                return response;
+            }
+
+            var now = DateTime.UtcNow;
+            if (security.LockedUntilUtc.HasValue && security.LockedUntilUtc.Value > now)
+            {
+                response.Status = PasswordRecoveryStatus.Locked;
+                response.AttemptsRemaining = 0;
+                return response;
+            }
+            if (security.LockedUntilUtc.HasValue)
+            {
+                security.LockedUntilUtc = null;
+                security.FailedAttempts = 0;
+            }
+
+            var answerHash = questionId == SecurityQuestionCatalog.FirstSchool ? security.Answer1Hash
+                : questionId == SecurityQuestionCatalog.FirstPet ? security.Answer2Hash
+                : questionId == SecurityQuestionCatalog.ChildhoodCareer ? security.Answer3Hash
+                : null;
+            if (!SecurityAnswerHasher.Verify(answer, answerHash))
+            {
+                security.FailedAttempts = Math.Min(5, security.FailedAttempts + 1);
+                response.AttemptsRemaining = Math.Max(0, 5 - security.FailedAttempts);
+                response.Status = PasswordRecoveryStatus.InvalidAnswer;
+                if (security.FailedAttempts >= 5)
+                {
+                    security.LockedUntilUtc = now.AddMinutes(15);
+                    response.Status = PasswordRecoveryStatus.Locked;
+                }
+                await _context.SaveChangesAsync(cancellationToken);
+                return response;
+            }
+
+            if (string.Equals(newPassword, user.UserName, StringComparison.OrdinalIgnoreCase))
+            {
+                response.Status = PasswordRecoveryStatus.InvalidPassword;
+                return response;
+            }
+
+            user.Password = PasswordHelper.EncodePasswordMd5(newPassword);
+            user.ActiveCode = NameGenerator.GenerateUniqCode();
+            user.EditDate = DateTime.Now;
+            security.FailedAttempts = 0;
+            security.LockedUntilUtc = null;
+            security.UpdatedAtUtc = now;
+            await _context.SaveChangesAsync(cancellationToken);
+            response.Status = PasswordRecoveryStatus.Success;
+            response.AttemptsRemaining = 5;
+            return response;
+        }
+
+public PasswordRecoveryResult ResetPasswordWithSecurityAnswer(string userName, int questionId, string answer, string newPassword)
         {
             var response = new PasswordRecoveryResult { Status = PasswordRecoveryStatus.UserNotFound, AttemptsRemaining = 5 };
             if (string.IsNullOrWhiteSpace(userName)) return response;
