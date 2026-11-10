@@ -2661,6 +2661,42 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <summary>
+        /// بررسی دسترسی کاربر به آرشیو متعلق به همان جایگاه سازمانی را انجام می‌دهد.
+        /// </summary>
+        public bool CanUserViewArchivedFile(int userId, int fileId)
+        {
+            if (userId <= 0 || fileId <= 0) return false;
+
+            var currentUser = _context.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new { user.UnitDutyCode })
+                .SingleOrDefault();
+            if (currentUser == null) return false;
+
+            var currentRoleTypes = _context.UserRoles
+                .AsNoTracking()
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .Select(userRole => userRole.Role.RoleType)
+                .Distinct()
+                .ToArray();
+
+            return _context.Files
+                .AsNoTracking()
+                .Any(file => file.Id == fileId &&
+                    file.IsArchived &&
+                    !file.IsDelete &&
+                    (file.ArchivedRegUserId == userId ||
+                     (currentUser.UnitDutyCode.HasValue &&
+                      currentRoleTypes.Length > 0 &&
+                      file.UnitDutyCode == currentUser.UnitDutyCode &&
+                      _context.Hameshes.Any(hamesh =>
+                          hamesh.FileId == file.Id &&
+                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
+                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
+        }
+
+        /// <summary>
         /// دریافت لیست درخواست‌های آرشیوشده.
         /// </summary>
         public ListFileViewModel GetListArchivedFile(int userId, int requestsubject = 0,
