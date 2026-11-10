@@ -312,6 +312,29 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
             }
             var roleTypeTitle = User.FindFirst("RoleTypeTitle")?.Value ?? "نامشخص";
 
+            if (!int.TryParse(User.FindFirst("RoleId")?.Value, out var roleId) ||
+                !int.TryParse(User.FindFirst("UnitDutyCode")?.Value, out var unitDutyCode) ||
+                !int.TryParse(User.FindFirst("UnitCode")?.Value, out var unitCode) ||
+                !int.TryParse(User.FindFirst("CodGha")?.Value, out var codeGha))
+            {
+                ModelState.AddModelError("", "اطلاعات دسترسی کاربر کامل نیست. لطفاً دوباره وارد سامانه شوید.");
+                OnGet(fileId);
+                return Page();
+            }
+
+            var allowedReceiverIds = _workFlowService
+                .GetRecieverUserListBySndrRoleId(roleId, unitDutyCode, unitCode, codeGha, fileId, roleTypeId)
+                .Select(user => user.Id)
+                .Distinct()
+                .ToList();
+
+            if (rcvrUserId.Any(id => id <= 0 || !allowedReceiverIds.Contains(id)))
+            {
+                ModelState.AddModelError("", "یک یا چند گیرنده با مسیر گردش مجاز این درخواست مطابقت ندارد.");
+                OnGet(fileId);
+                return Page();
+            }
+
             if (!int.TryParse(User.FindFirst("RoleTypeIdFinal")?.Value, out var RoleTypeIdFinal))
             {
                 ModelState.AddModelError("", "خطا در دریافت شناسه نوع نقش");
@@ -430,6 +453,19 @@ namespace VisitorManagment.Web.Pages.Visitor.File.HameshInfo
 
                 ModelState.AddModelError("", "نوع اقدام، متن نظریه و حداقل یک گیرنده برای عودت را مشخص کنید.");
 
+                return Page();
+            }
+
+            var allowedReturnReceiverIds = _workFlowService
+                .GetRecieverUserListByFileId(fileId, userId)
+                .Select(user => user.Id)
+                .Distinct()
+                .ToList();
+
+            if (rcvrUserId.Any(id => id <= 0 || !allowedReturnReceiverIds.Contains(id)))
+            {
+                ModelState.AddModelError("", "گیرندهٔ انتخاب‌شده در مسیر قبلی این درخواست وجود ندارد.");
+                OnGet(fileId);
                 return Page();
             }
 
