@@ -2648,65 +2648,64 @@ namespace VisitorManagment.Core.Services
             string filterGharargah = "",
             string filterCaption = "")
         {
-
-            var listFileId = _context.Hameshes
-                .Include(x => x.File)
-                .Where(x => x.UserId == userId && x.File.FileTypeId == 1).Select(x => x.FileId).Distinct().ToList();
-
-            IQueryable<Files> listFile = _context.Files.Where(x => listFileId.Contains(x.Id) && x.IsArchived);
-
-            #region Search
+            // هر کاربر فقط درخواست‌هایی را می‌بیند که خودش بایگانی کرده است.
+            IQueryable<Files> listFile = _context.Files
+                .AsNoTracking()
+                .Where(file => file.IsArchived &&
+                    !file.IsDelete &&
+                    file.ArchivedRegUserId == userId);
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
                 var term = filterCaption.Trim();
-                listFile = listFile.Where(u => u.Personal.PersonalCode.Contains(term) ||
-                    u.Personal.FirstName.Contains(term) || u.Personal.LastName.Contains(term));
+                listFile = listFile.Where(file =>
+                    file.Personal.PersonalCode.Contains(term) ||
+                    file.Personal.FirstName.Contains(term) ||
+                    file.Personal.LastName.Contains(term));
             }
 
             if (int.TryParse(filterGharargah, out var gharargahId) && gharargahId > 0)
-                listFile = listFile.Where(t => t.CodGha == gharargahId);
+                listFile = listFile.Where(file => file.CodGha == gharargahId);
 
             if (requestsubject > 0)
-                listFile = listFile.Where(t => t.RequestSubjectId == requestsubject);
+                listFile = listFile.Where(file => file.RequestSubjectId == requestsubject);
 
             if (filterAvamerSadereh == 1)
-                listFile = listFile.Where(t => t.IsMeetingHold);
-            #endregion
+                listFile = listFile.Where(file => file.IsMeetingHold);
 
-            ListFileViewModel list = new ListFileViewModel() { };
-
-            list.count = listFile.Count();
-            list.files = listFile.Select(t => new FactPersonalViewModel()
-            {
-                Id = t.Id,
-                AddUserId = t.Personal.RegUserId,
-                FirstName = t.Personal.FirstName,
-                LastName = t.Personal.LastName,
-                PersonalCode = t.Personal.PersonalCode,
-                MelliCode = t.Personal.MelliCode,
-                ReqSubTitle = t.RequestSubject.Title,
-                FileStatusTitle = t.FileStatus.Title,
-                PriorityTitle = t.Priority.Title,
-                RankTitle = t.RankTitle,
-                JobDes = t.JobDes,
-                Phone = t.Phone,
-                StatuseTitle = t.StatusTitle,
-                BranchTitle = t.BranchTitle,
-                UnitDutyTitle = t.UnitDutyTitle,
-                UnitTitle = t.UnitTitle,
-                CodGhaTitle = t.CodGhaTitle,
-                RegDate = t.RegDate,
-                IsMeetingHold = t.IsMeetingHold,
-                IsAnswerdMoavenat = t.IsMoavenatAnswered,
-                IsArchived = t.IsArchived,
-
-            })
-                .Distinct()
-                .OrderByDescending(u => u.RegDate)
+            var files = listFile
+                .OrderByDescending(file => file.RegDate)
+                .Select(file => new FactPersonalViewModel
+                {
+                    Id = file.Id,
+                    AddUserId = file.Personal.RegUserId,
+                    FirstName = file.Personal.FirstName,
+                    LastName = file.Personal.LastName,
+                    PersonalCode = file.Personal.PersonalCode,
+                    MelliCode = file.Personal.MelliCode,
+                    ReqSubTitle = file.RequestSubject.Title,
+                    FileStatusTitle = file.FileStatus.Title,
+                    PriorityTitle = file.Priority.Title,
+                    RankTitle = file.RankTitle,
+                    JobDes = file.JobDes,
+                    Phone = file.Phone,
+                    StatuseTitle = file.StatusTitle,
+                    BranchTitle = file.BranchTitle,
+                    UnitDutyTitle = file.UnitDutyTitle,
+                    UnitTitle = file.UnitTitle,
+                    CodGhaTitle = file.CodGhaTitle,
+                    RegDate = file.RegDate,
+                    IsMeetingHold = file.IsMeetingHold,
+                    IsAnswerdMoavenat = file.IsMoavenatAnswered,
+                    IsArchived = file.IsArchived
+                })
                 .ToList();
 
-            return list;
+            return new ListFileViewModel
+            {
+                count = files.Count,
+                files = files
+            };
         }
 
 
