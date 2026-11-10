@@ -74,9 +74,9 @@ namespace VisitorManagment.Web.Pages
             HttpContext.Session.Remove(QuestionSessionKey);
         }
 
-        public async Task<IActionResult> OnPostAskQuestionAsync()
+        public IActionResult OnPostAskQuestion()
         {
-            await LoadLoginSlidesAsync(HttpContext.RequestAborted);
+            LoadFallbackLoginSlides();
             ModelState.Remove(nameof(Answer));
             ModelState.Remove(nameof(NewPassword));
             ModelState.Remove(nameof(ConfirmPassword));
@@ -98,7 +98,7 @@ namespace VisitorManagment.Web.Pages
 
         public async Task<IActionResult> OnPostResetAsync()
         {
-            await LoadLoginSlidesAsync(HttpContext.RequestAborted);
+            LoadFallbackLoginSlides();
             if (!TryLoadQuestion(out var userName, out var questionId))
             {
                 ModelState.AddModelError(string.Empty, "فرایند بازیابی منقضی شده است؛ دوباره شروع کنید.");
@@ -113,6 +113,7 @@ namespace VisitorManagment.Web.Pages
 
             if (!ModelState.IsValid) return Page();
 
+            _logger.LogInformation("Password recovery reset handler started.");
             PasswordRecoveryResult result;
             using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted))
             {
@@ -134,6 +135,7 @@ namespace VisitorManagment.Web.Pages
                     return Page();
                 }
             }
+            _logger.LogInformation("Password recovery reset handler completed with status {Status}.", result.Status);
             AttemptsRemaining = result.AttemptsRemaining;
             Answer = null;
             ModelState.Remove(nameof(Answer));
@@ -170,13 +172,17 @@ namespace VisitorManagment.Web.Pages
                 .ThenBy(item => item.Id)
                 .ToListAsync(cancellationToken);
 
-            if (LoginSlides.Count > 0) return;
+            if (LoginSlides.Count == 0)
+                LoadFallbackLoginSlides();
+        }
 
+        private void LoadFallbackLoginSlides()
+        {
             LoginSlides = new List<LoginSlide>
             {
                 new LoginSlide { ImagePath = "/assets/media/image/photo2.jpg", Title = "دسترسی سریع و یکپارچه", Description = "ثبت و پیگیری درخواست‌ها در یک محیط سازمانی", AltText = "محیط کاری دیجیتال" },
-                new LoginSlide { ImagePath = "/assets/media/image/photo3.jpg", Title = "پیگیری شفاف درخواست‌ها", Description = "مشاهده وضعیت و گردش درخواست در هر مرحله", AltText = "کار با سامانه سازمانی" },
-                new LoginSlide { ImagePath = "/assets/media/image/photo1.jpg", Title = "مدیریت ساده‌تر", Description = "دسترسی به کارتابل و خدمات موردنیاز کارکنان", AltText = "سامانه هوشمند مدیریتی" }
+                new LoginSlide { ImagePath = "/assets/media/image/photo3.jpg", Title = "پیگیری شفاف درخواست‌ها", Description = "مشاهده وضعیت و گردش درخواست در هر مرحله", AltText = "پیگیری درخواست‌ها" },
+                new LoginSlide { ImagePath = "/assets/media/image/photo1.jpg", Title = "مدیریت ساده‌تر", Description = "دسترسی به خدمات موردنیاز", AltText = "سامانه هوشمند مدیریتی" }
             };
         }
 
