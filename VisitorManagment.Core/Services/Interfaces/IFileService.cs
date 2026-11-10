@@ -165,6 +165,11 @@ namespace VisitorManagment.Core.Services.Interfaces
             string filterCaption = "");
 
         /// <summary>
+        /// بررسی دسترسی کاربر به آرشیو با توجه به جایگاه سازمانی فعلی را انجام می‌دهد.
+        /// </summary>
+        bool CanUserViewArchivedFile(int userId, int fileId);
+
+        /// <summary>
         /// دریافت لیست فایل‌های آرشیو شده
         /// </summary>
         ListFileViewModel GetListArchivedFile(
