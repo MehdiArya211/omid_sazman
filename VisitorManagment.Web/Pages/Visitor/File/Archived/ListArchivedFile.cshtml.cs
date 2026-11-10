@@ -65,8 +65,11 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
             if (!int.TryParse(User.FindFirst("Id")?.Value, out var userId))
                 return Forbid();
 
+            if (!_fileService.CanUserViewArchivedFile(userId, fileid))
+                return NotFound();
+
             var file = _fileService.GetFile(fileid);
-            if (file == null || !file.IsArchived || file.ArchivedRegUserId != userId)
+            if (file == null || !file.IsArchived)
                 return NotFound();
 
             return new JsonResult(file);
@@ -83,8 +86,11 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
             if (!int.TryParse(User.FindFirst("Id")?.Value, out var userId))
                 return Forbid();
 
+            if (!_fileService.CanUserViewArchivedFile(userId, fileId))
+                return NotFound();
+
             var file = _fileService.GetFile(fileId);
-            if (file == null || !file.IsArchived || file.ArchivedRegUserId != userId)
+            if (file == null || !file.IsArchived)
                 return NotFound();
 
             listHameshViewModel = _hameshService.GetHameshIdByFileId(fileId);
