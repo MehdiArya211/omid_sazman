@@ -1169,10 +1169,28 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public ListFileViewModel GetListFileForCirculationAdmin(int userId, DateTime? startDateSearchFilter, DateTime? endDateSearchFilter, int unitCode, int pageId = 1, int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0, int filterMoavenat = 0, string filterCaption = "")
         {
-            // rcvrUserId ===>>>UserId claim
-            //فایل هایی که ف انصار و معاون شماره 3 هامش زده رو میاره برامون
-            var result = _context.Hameshes.Include(x => x.File)
-                .Where((x => x.UserId == userId && (x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert || x.RoleTypeId == SystemRoleTypes.NezajaOperator || x.RoleTypeId == SystemRoleTypes.DeputyOffice))).Select(x => x.File).Distinct();
+            // گردش شخصی باید بر اساس کاربر هامش‌زن و جایگاه سازمانی باشد؛
+            // محدودکردن به چند RoleType ثابت، نقش‌های اختصاصی یگان (مانند 3001) را حذف می‌کرد.
+            var currentUser = _context.Users
+                .Where(user => user.Id == userId)
+                .Select(user => new { user.UnitDutyCode })
+                .SingleOrDefault();
+            var currentRoleTypes = _context.UserRoles
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .Select(userRole => userRole.Role.RoleType)
+                .Distinct()
+                .ToArray();
+
+            var result = _context.Hameshes
+                .Where(hamesh =>
+                    hamesh.UserId == userId ||
+                    (currentUser != null &&
+                     currentUser.UnitDutyCode.HasValue &&
+                     currentRoleTypes.Length > 0 &&
+                     currentRoleTypes.Contains(hamesh.RoleTypeId) &&
+                     hamesh.User.UnitDutyCode == currentUser.UnitDutyCode))
+                .Select(hamesh => hamesh.File)
+                .Distinct();
 
             var resultForFilterMoavenat = _context.Hameshes.Include(x => x.File).Distinct();
 
