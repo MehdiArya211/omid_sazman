@@ -1,5 +1,4 @@
-﻿
-@model IEnumerable<VisitorManagment.DataLayer.Entities.Permissions.Permission>
+﻿@model IEnumerable<VisitorManagment.DataLayer.Entities.Permissions.Permission>
 
 @functions {
     private static string NormalizePath(string value)
@@ -15,42 +14,95 @@
         return !string.IsNullOrEmpty(target) &&
                (currentPath == target || currentPath.StartsWith(target + "/"));
     }
+
+    private static string ResolveIcon(string iconName, string title)
+    {
+        if (!string.IsNullOrWhiteSpace(iconName))
+        {
+            var tokens = iconName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length > 0 && tokens.All(token =>
+                token.All(character => char.IsLetterOrDigit(character) || character == '-' || character == '_')))
+                return string.Join(" ", tokens);
+        }
+
+        var value = (title ?? string.Empty).Trim();
+        if (value.Contains("خانه") || value.Contains("صفحه اصلی")) return "ti-home";
+        if (value.Contains("ارتباط تصویری") || value.Contains("جلسه")) return "ti-video-camera";
+        if (value.Contains("ملاقات")) return "ti-calendar";
+        if (value.Contains("آرشیو")) return "ti-archive";
+        if (value.Contains("گردش")) return "ti-share";
+        if (value.Contains("گزارش") || value.Contains("داشبورد")) return "ti-bar-chart";
+        if (value.Contains("پشتیبانی") || value.Contains("چت") || value.Contains("ارتباط با ما")) return "ti-comments";
+        if (value.Contains("بازرسی")) return "ti-shield";
+        if (value.Contains("خودرو") || value.Contains("وسیله نقلیه")) return "ti-car";
+        if (value.Contains("تجهیز") || value.Contains("اموال")) return "ti-briefcase";
+        if (value.Contains("اعلان") || value.Contains("اطلاع‌رسانی")) return "ti-bell";
+        if (value.Contains("دسترسی") || value.Contains("امنیت")) return "ti-key";
+        if (value.Contains("نقش") || value.Contains("کاربر") || value.Contains("پرسنل")) return "ti-user";
+        if (value.Contains("منو")) return "ti-menu-alt";
+        if (value.Contains("جستجو") || value.Contains("پیگیری")) return "ti-search";
+        if (value.Contains("درخواست") || value.Contains("کارتابل")) return "ti-clipboard";
+        if (value.Contains("فایل") || value.Contains("مدرک")) return "ti-file";
+        if (value.Contains("تنظیم")) return "ti-settings";
+        return "ti-menu-alt";
+    }
 }
 
 @{
     var currentPath = NormalizePath(Context.Request.Path.Value);
 }
 
-<li><a style="color:red" href="/Visitor/Index">صفحه اصلی</a></li>
+<li class="sidebar-menu-home">
+    <a href="/Visitor/Index" class="sidebar-menu-link">
+        <span class="sidebar-menu-icon"><i class="ti-home" aria-hidden="true"></i></span>
+        <span class="sidebar-menu-label">صفحه اصلی</span>
+    </a>
+</li>
 
-@foreach (var item in Model.Where(p => p.ParentID == null && p.IsActive==true))
+@foreach (var item in Model.Where(permission => permission.ParentID == null && permission.IsActive).OrderBy(permission => permission.Order))
 {
-    var children = Model.Where(p => p.ParentID == item.PermissionId && p.IsActive).OrderBy(p => p.Order).ToList();
+    var children = Model.Where(permission => permission.ParentID == item.PermissionId && permission.IsActive)
+        .OrderBy(permission => permission.Order).ToList();
     var parentIsOpen = children.Any(child => IsCurrentPath(currentPath, child.MenuUrl ?? child.SubUrl)) ||
                        (children.Count == 0 && IsCurrentPath(currentPath, item.MenuUrl ?? item.SubUrl ?? item.ParentUrl));
-    <li class="@(parentIsOpen ? "open" : "")">
+    var parentTarget = item.MenuUrl ?? item.SubUrl ?? item.ParentUrl;
+    var parentIcon = ResolveIcon(item.IconName, item.PermissionTitle);
+
+    <li class="@(parentIsOpen ? "open " : "")sidebar-menu-item">
+        @if (children.Count > 0)
+        {
+            <a href="#" class="sidebar-menu-link sidebar-menu-parent @(parentIsOpen ? "active" : "")"
+               aria-expanded="@parentIsOpen.ToString().ToLowerInvariant()">
+                <span class="sidebar-menu-icon"><i class="@parentIcon" aria-hidden="true"></i></span>
+                <span class="sidebar-menu-label">@item.PermissionTitle</span>
+                <i class="ti-angle-left sidebar-menu-chevron" aria-hidden="true"></i>
+            </a>
+        }
+        else if (!string.IsNullOrWhiteSpace(parentTarget) && parentTarget != "#")
+        {
+            <a href="@parentTarget" class="sidebar-menu-link @(parentIsOpen ? "active" : "")">
+                <span class="sidebar-menu-icon"><i class="@parentIcon" aria-hidden="true"></i></span>
+                <span class="sidebar-menu-label">@item.PermissionTitle</span>
+            </a>
+        }
 
         @if (children.Count > 0)
         {
-            <a href="#" style="color:dodgerblue" class="@(parentIsOpen ? "active" : "")" aria-expanded="@parentIsOpen.ToString().ToLowerInvariant()">@item.PermissionTitle</a>
+            <ul class="sidebar-submenu">
+                @foreach (var sub in children)
+                {
+                    var childTarget = sub.SubUrl ?? sub.MenuUrl;
+                    var childIsActive = IsCurrentPath(currentPath, childTarget);
+                    var childIcon = ResolveIcon(sub.IconName, sub.PermissionTitle);
+                    <li class="sidebar-submenu-item">
+                        <a href="@childTarget" class="sidebar-submenu-link @(childIsActive ? "active" : "")"
+                           aria-current="@(childIsActive ? "page" : null)">
+                            <i class="@childIcon" aria-hidden="true"></i>
+                            <span>@sub.PermissionTitle</span>
+                        </a>
+                    </li>
+                }
+            </ul>
         }
-        else
-        {
-            var targetUrl = item.MenuUrl ?? item.SubUrl ?? item.ParentUrl;
-            if (!string.IsNullOrWhiteSpace(targetUrl) && targetUrl != "#")
-            {
-                <a href="@targetUrl" class="@(parentIsOpen ? "active" : "")">@item.PermissionTitle</a>
-            }
-        }
-        <ul>
-            @foreach (var sub in children)
-            {
-                var childIsActive = IsCurrentPath(currentPath, sub.MenuUrl ?? sub.SubUrl);
-                <li>
-                    <a href="@(sub.SubUrl ?? sub.MenuUrl)" class="@(childIsActive ? "active" : "")" aria-current="@(childIsActive ? "page" : null)">@sub.PermissionTitle</a>
-                </li>
-            }
-        </ul>
     </li>
 }
-
