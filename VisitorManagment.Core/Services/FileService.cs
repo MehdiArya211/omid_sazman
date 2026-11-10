@@ -52,6 +52,31 @@ namespace VisitorManagment.Core.Services
         }
 
         /// <summary>
+        /// شناسه فایل‌هایی را می‌دهد که در دوره تصدی فعلی یا قبلیِ همین جایگاه هامش خورده‌اند.
+        /// تاریخچه RoleId معیار پایدار جایگاه است؛ تطبیق عنوان و یگان برای داده‌های قدیمیِ بدون تاریخچه نگه داشته شده است.
+        /// </summary>
+        private IQueryable<int> GetFilesWithPositionHamesh(int? unitDutyCode, int[] roleIds, int[] roleTypes, string[] roleTitles)
+        {
+            var hasRoleHistory = roleIds != null && roleIds.Length > 0;
+            var hasLegacyPositionData = unitDutyCode.HasValue &&
+                ((roleTypes != null && roleTypes.Length > 0) || (roleTitles != null && roleTitles.Length > 0));
+
+            return _context.Hameshes
+                .Where(hamesh =>
+                    (hasLegacyPositionData &&
+                     hamesh.User.UnitDutyCode == unitDutyCode &&
+                     ((roleTypes != null && roleTypes.Contains(hamesh.RoleTypeId)) ||
+                      (roleTitles != null && roleTitles.Contains(hamesh.RoleTypeTitle)))) ||
+                    (hasRoleHistory &&
+                     _context.RoleAssignmentHistories.Any(history =>
+                         roleIds.Contains(history.RoleId) &&
+                         history.UserId == hamesh.UserId &&
+                         history.StartDate <= hamesh.RegDate &&
+                         (!history.EndDate.HasValue || hamesh.RegDate < history.EndDate.Value))))
+                .Select(hamesh => hamesh.FileId);
+        }
+
+        /// <summary>
         /// دریافت لیست موضوعات درخواست.
         /// </summary>
         public List<RequestSubject> GetRequestSubject()
@@ -1066,33 +1091,37 @@ namespace VisitorManagment.Core.Services
             }
             else
             {
-                var currentUser = _context.Users
+                var currentUserUnitDutyCode = _context.Users
                     .Where(user => user.Id == rcvrUserId)
-                    .Select(user => new { user.UnitDutyCode })
+                    .Select(user => user.UnitDutyCode)
                     .SingleOrDefault();
-                var currentRoleTypes = _context.UserRoles
+                var currentRoles = _context.UserRoles
                     .Where(userRole => userRole.UserId == rcvrUserId && !userRole.Role.IsDelete)
-                    .Select(userRole => userRole.Role.RoleType)
-                    .Distinct()
-                    .ToArray();
+                    .Select(userRole => new
+                    {
+                        userRole.RoleId,
+                        userRole.Role.RoleType,
+                        userRole.Role.Title
+                    })
+                    .ToList();
+                var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+                var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+                var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
 
-                var userFileIds = _context.Hameshes
-                    .Where(hamesh => hamesh.UserId == rcvrUserId)
-                    .Select(hamesh => hamesh.FileId);
-
-                // سوابق نقش برای کارشناس جایگزین همان یگان هم قابل مشاهده است.
-                var samePositionFileIds = currentUser != null && currentUser.UnitDutyCode.HasValue && currentRoleTypes.Length > 0
-                    ? _context.Hameshes
-                        .Where(hamesh => currentRoleTypes.Contains(hamesh.RoleTypeId) &&
-                                         hamesh.User.UnitDutyCode == currentUser.UnitDutyCode)
-                        .Select(hamesh => hamesh.FileId)
-                    : Enumerable.Empty<int>().AsQueryable();
+                var positionHameshFileIds = GetFilesWithPositionHamesh(
+                    currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+                var positionCartableFileIds = _context.Cartables
+                    .Where(cartable => !cartable.IsDone &&
+                        cartable.RcvrRoleId.HasValue &&
+                        currentRoleIds.Contains(cartable.RcvrRoleId.Value))
+                    .Select(cartable => cartable.FileId);
 
                 result = _context.Files.Where(file =>
                     !file.IsDelete &&
                     (file.RegUserId == rcvrUserId ||
-                     userFileIds.Contains(file.Id) ||
-                     samePositionFileIds.Contains(file.Id)));
+                     _context.Hameshes.Any(hamesh => hamesh.FileId == file.Id && hamesh.UserId == rcvrUserId) ||
+                     positionHameshFileIds.Contains(file.Id) ||
+                     positionCartableFileIds.Contains(file.Id)));
             }
 
             if (startDateSearchFilter.HasValue)
@@ -1197,26 +1226,35 @@ namespace VisitorManagment.Core.Services
         {
             // گردش شخصی باید بر اساس کاربر هامش‌زن و جایگاه سازمانی باشد؛
             // محدودکردن به چند RoleType ثابت، نقش‌های اختصاصی یگان (مانند 3001) را حذف می‌کرد.
-            var currentUser = _context.Users
+            var currentUserUnitDutyCode = _context.Users
                 .Where(user => user.Id == userId)
-                .Select(user => new { user.UnitDutyCode })
+                .Select(user => user.UnitDutyCode)
                 .SingleOrDefault();
-            var currentRoleTypes = _context.UserRoles
+            var currentRoles = _context.UserRoles
                 .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
-                .Select(userRole => userRole.Role.RoleType)
-                .Distinct()
-                .ToArray();
+                .Select(userRole => new
+                {
+                    userRole.RoleId,
+                    userRole.Role.RoleType,
+                    userRole.Role.Title
+                })
+                .ToList();
+            var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+            var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+            var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
+            var positionHameshFileIds = GetFilesWithPositionHamesh(
+                currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+            var positionCartableFileIds = _context.Cartables
+                .Where(cartable => !cartable.IsDone &&
+                    cartable.RcvrRoleId.HasValue &&
+                    currentRoleIds.Contains(cartable.RcvrRoleId.Value))
+                .Select(cartable => cartable.FileId);
 
-            var result = _context.Hameshes
-                .Where(hamesh =>
-                    hamesh.UserId == userId ||
-                    (currentUser != null &&
-                     currentUser.UnitDutyCode.HasValue &&
-                     currentRoleTypes.Length > 0 &&
-                     currentRoleTypes.Contains(hamesh.RoleTypeId) &&
-                     hamesh.User.UnitDutyCode == currentUser.UnitDutyCode))
-                .Select(hamesh => hamesh.File)
-                .Distinct();
+            var result = _context.Files.Where(file =>
+                !file.IsDelete &&
+                (_context.Hameshes.Any(hamesh => hamesh.FileId == file.Id && hamesh.UserId == userId) ||
+                 positionHameshFileIds.Contains(file.Id) ||
+                 positionCartableFileIds.Contains(file.Id)));
 
             var resultForFilterMoavenat = _context.Hameshes.Include(x => x.File).Distinct();
 
