@@ -35,6 +35,22 @@ namespace VisitorManagment.Core.Services
             _webApiService = webApiService;
         }
 
+        private static string NormalizeCirculationSearchTerm(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+
+            var characters = value.Trim().ToCharArray();
+            for (var index = 0; index < characters.Length; index++)
+            {
+                if (characters[index] >= '\u06F0' && characters[index] <= '\u06F9')
+                    characters[index] = (char)('0' + characters[index] - '\u06F0');
+                else if (characters[index] >= '\u0660' && characters[index] <= '\u0669')
+                    characters[index] = (char)('0' + characters[index] - '\u0660');
+            }
+
+            return new string(characters);
+        }
+
         /// <summary>
         /// دریافت لیست موضوعات درخواست.
         /// </summary>
@@ -1080,20 +1096,27 @@ namespace VisitorManagment.Core.Services
             }
 
             if (startDateSearchFilter.HasValue)
+                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value.Date);
+
+            if (endDateSearchFilter.HasValue)
             {
-                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value);
-                if (endDateSearchFilter.HasValue)
-                {
-                    result = result.Where(file => file.RegDate <= endDateSearchFilter.Value);
-                }
+                var endExclusive = endDateSearchFilter.Value.Date.AddDays(1);
+                result = result.Where(file => file.RegDate < endExclusive);
             }
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
+                var searchTerm = NormalizeCirculationSearchTerm(filterCaption);
                 result = result.Where(file =>
-                    file.PersonalCode.Contains(filterCaption) ||
-                    file.Personal.FirstName.Contains(filterCaption) ||
-                    file.Personal.LastName.Contains(filterCaption));
+                    (file.PersonalCode != null && file.PersonalCode.Contains(searchTerm)) ||
+                    (file.MelliCode != null && file.MelliCode.Contains(searchTerm)) ||
+                    (file.Personal != null &&
+                     ((file.Personal.PersonalCode != null && file.Personal.PersonalCode.Contains(searchTerm)) ||
+                      (file.Personal.MelliCode != null && file.Personal.MelliCode.Contains(searchTerm)) ||
+                      (file.Personal.FirstName != null && file.Personal.FirstName.Contains(searchTerm)) ||
+                      (file.Personal.LastName != null && file.Personal.LastName.Contains(searchTerm)))) ||
+                    (file.FirstName != null && file.FirstName.Contains(searchTerm)) ||
+                    (file.LastName != null && file.LastName.Contains(searchTerm)));
             }
 
             if (requestsubject != 0)
@@ -1200,22 +1223,28 @@ namespace VisitorManagment.Core.Services
 
             #region Search/filter
 
-            if (startDateSearchFilter != null)
+            if (startDateSearchFilter.HasValue)
+                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value.Date);
+
+            if (endDateSearchFilter.HasValue)
             {
-                if (endDateSearchFilter != null)
-                {
-                    result = result.Where(u => u.RegDate >= startDateSearchFilter && u.RegDate <= endDateSearchFilter);
-                }
-                //var stDate = startDateSearchFilter.ToString();
-                //var regDateWithoutTime = result.Select(x=>x.RegDate.ToShortDateString()).SingleOrDefault() ;
-                /*result =result.Select(x=>x.RegDate)*/;
-                // result = result.Where(u => u.RegDate.Contains(regDateWithoutTime));
-                //result = result.Where(u => u.RegDate.ToShamsi()==startDateSearchFilter);
+                var endExclusive = endDateSearchFilter.Value.Date.AddDays(1);
+                result = result.Where(file => file.RegDate < endExclusive);
             }
 
-            if (!string.IsNullOrEmpty(filterCaption))
+            if (!string.IsNullOrWhiteSpace(filterCaption))
             {
-                result = result.Where(u => u.PersonalCode.Contains(filterCaption) || u.Personal.FirstName.Contains(filterCaption) || u.Personal.LastName.Contains(filterCaption));
+                var searchTerm = NormalizeCirculationSearchTerm(filterCaption);
+                result = result.Where(file =>
+                    (file.PersonalCode != null && file.PersonalCode.Contains(searchTerm)) ||
+                    (file.MelliCode != null && file.MelliCode.Contains(searchTerm)) ||
+                    (file.Personal != null &&
+                     ((file.Personal.PersonalCode != null && file.Personal.PersonalCode.Contains(searchTerm)) ||
+                      (file.Personal.MelliCode != null && file.Personal.MelliCode.Contains(searchTerm)) ||
+                      (file.Personal.FirstName != null && file.Personal.FirstName.Contains(searchTerm)) ||
+                      (file.Personal.LastName != null && file.Personal.LastName.Contains(searchTerm)))) ||
+                    (file.FirstName != null && file.FirstName.Contains(searchTerm)) ||
+                    (file.LastName != null && file.LastName.Contains(searchTerm)));
             }
 
 
@@ -2770,11 +2799,17 @@ namespace VisitorManagment.Core.Services
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
-                var term = filterCaption.Trim();
+                var searchTerm = NormalizeCirculationSearchTerm(filterCaption);
                 listFile = listFile.Where(file =>
-                    file.Personal.PersonalCode.Contains(term) ||
-                    file.Personal.FirstName.Contains(term) ||
-                    file.Personal.LastName.Contains(term));
+                    (file.PersonalCode != null && file.PersonalCode.Contains(searchTerm)) ||
+                    (file.MelliCode != null && file.MelliCode.Contains(searchTerm)) ||
+                    (file.Personal != null &&
+                     ((file.Personal.PersonalCode != null && file.Personal.PersonalCode.Contains(searchTerm)) ||
+                      (file.Personal.MelliCode != null && file.Personal.MelliCode.Contains(searchTerm)) ||
+                      (file.Personal.FirstName != null && file.Personal.FirstName.Contains(searchTerm)) ||
+                      (file.Personal.LastName != null && file.Personal.LastName.Contains(searchTerm)))) ||
+                    (file.FirstName != null && file.FirstName.Contains(searchTerm)) ||
+                    (file.LastName != null && file.LastName.Contains(searchTerm)));
             }
 
             if (int.TryParse(filterGharargah, out var gharargahId) && gharargahId > 0)
