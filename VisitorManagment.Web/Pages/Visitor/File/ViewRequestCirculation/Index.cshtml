@@ -4,6 +4,10 @@
 @{
     var j = 0;
 }
+@if (ViewBag.invalidDateRange == "true")
+{
+    <div class="alert alert-danger m-3" role="alert">بازه تاریخ واردشده معتبر نیست. تاریخ شروع و پایان را با قالب سال/ماه/روز وارد کنید.</div>
+}
 @if (ViewBag.startDateBiggerThanEndDate == "true")
 {
     <div class="swal-overlay swal-overlay--show-modal" tabIndex="-1">
