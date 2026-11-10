@@ -1047,13 +1047,33 @@ namespace VisitorManagment.Core.Services
             }
             else
             {
+                var currentUser = _context.Users
+                    .Where(user => user.Id == rcvrUserId)
+                    .Select(user => new { user.UnitDutyCode })
+                    .SingleOrDefault();
+                var currentRoleTypes = _context.UserRoles
+                    .Where(userRole => userRole.UserId == rcvrUserId && !userRole.Role.IsDelete)
+                    .Select(userRole => userRole.Role.RoleType)
+                    .Distinct()
+                    .ToArray();
+
                 var userFileIds = _context.Hameshes
                     .Where(hamesh => hamesh.UserId == rcvrUserId)
                     .Select(hamesh => hamesh.FileId);
 
+                // سوابق نقش برای کارشناس جایگزین همان یگان هم قابل مشاهده است.
+                var samePositionFileIds = currentUser != null && currentUser.UnitDutyCode.HasValue && currentRoleTypes.Length > 0
+                    ? _context.Hameshes
+                        .Where(hamesh => currentRoleTypes.Contains(hamesh.RoleTypeId) &&
+                                         hamesh.User.UnitDutyCode == currentUser.UnitDutyCode)
+                        .Select(hamesh => hamesh.FileId)
+                    : Enumerable.Empty<int>().AsQueryable();
+
                 result = _context.Files.Where(file =>
                     !file.IsDelete &&
-                    (file.RegUserId == rcvrUserId || userFileIds.Contains(file.Id)));
+                    (file.RegUserId == rcvrUserId ||
+                     userFileIds.Contains(file.Id) ||
+                     samePositionFileIds.Contains(file.Id)));
             }
 
             if (startDateSearchFilter.HasValue)
@@ -2648,12 +2668,32 @@ namespace VisitorManagment.Core.Services
             string filterGharargah = "",
             string filterCaption = "")
         {
-            // هر کاربر فقط درخواست‌هایی را می‌بیند که خودش بایگانی کرده است.
+            var currentUser = _context.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new { user.UnitDutyCode })
+                .SingleOrDefault();
+            var currentRoleTypes = _context.UserRoles
+                .AsNoTracking()
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .Select(userRole => userRole.Role.RoleType)
+                .Distinct()
+                .ToArray();
+
+            // بایگانی متعلق به صاحب قبلی جایگاه، برای کارشناس فعلی همان نقش و یگان نیز قابل مشاهده است.
             IQueryable<Files> listFile = _context.Files
                 .AsNoTracking()
                 .Where(file => file.IsArchived &&
                     !file.IsDelete &&
-                    file.ArchivedRegUserId == userId);
+                    (file.ArchivedRegUserId == userId ||
+                     (currentUser != null &&
+                      currentUser.UnitDutyCode.HasValue &&
+                      currentRoleTypes.Length > 0 &&
+                      file.UnitDutyCode == currentUser.UnitDutyCode &&
+                      _context.Hameshes.Any(hamesh =>
+                          hamesh.FileId == file.Id &&
+                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
+                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
