@@ -37,6 +37,8 @@
             var showPassword = input.type === 'password';
             input.type = showPassword ? 'text' : 'password';
             button.querySelector('i').className = showPassword ? 'ti-eye-off' : 'ti-eye';
+            button.setAttribute('aria-pressed', showPassword ? 'true' : 'false');
+            button.setAttribute('aria-label', showPassword ? 'مخفی‌کردن رمز عبور' : 'نمایش رمز عبور');
         });
     });
 
