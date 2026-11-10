@@ -36,6 +36,7 @@ namespace VisitorManagment.Core.Security
             {
                 var salt = Convert.FromBase64String(parts[1]);
                 var expected = Convert.FromBase64String(parts[2]);
+                if (salt.Length != SaltSize || expected.Length != HashSize) return false;
                 using (var derive = new Rfc2898DeriveBytes(Normalize(answer), salt, iterations, HashAlgorithmName.SHA256))
                 {
                     var actual = derive.GetBytes(expected.Length);
@@ -43,6 +44,14 @@ namespace VisitorManagment.Core.Security
                 }
             }
             catch (FormatException)
+            {
+                return false;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (CryptographicException)
             {
                 return false;
             }
