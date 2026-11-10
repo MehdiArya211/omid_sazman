@@ -17,29 +17,24 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model.hameshes != null)
+        @if (Model?.hameshes?.Any() == true)
         {
             @foreach (var hamesh in Model.hameshes)
             {
-
                 <tr>
-                    <td>@(j+=1)</td>
-                    <td>@hamesh.RankTitlePersonal @hamesh.FirstNamePersonel @hamesh.LastNamePersonel</td>
+                    <td>@(++j)</td>
+                    <td>@(string.IsNullOrWhiteSpace(hamesh.SenderUserName) ? "ثبت‌کننده درخواست" : hamesh.SenderUserName)</td>
                     <td>@hamesh.RcvrUserName</td>
                     <td>@hamesh.ActionTypeTitle</td>
                     <td>@hamesh.UserDesc</td>
                     <td>@hamesh.RegDate.ToShamsi()</td>
-
                 </tr>
             }
         }
-
         else
         {
             <tr>
-                <td>1</td>
-                <td>موردی یافت نشد</td>
-
+                <td colspan="6" class="text-center text-muted">هنوز اقدامی برای این درخواست ثبت نشده است.</td>
             </tr>
         }
 
