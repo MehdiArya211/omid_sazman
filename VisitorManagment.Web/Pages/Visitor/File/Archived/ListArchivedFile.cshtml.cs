@@ -60,10 +60,19 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
         /// <summary>
         /// درخواست دریافت اطلاعات صفحه را پردازش می‌کند.
         /// </summary>
-        public JsonResult OnGetGetFileInfo(int fileid)
+        public IActionResult OnGetGetFileInfo(int fileid)
         {
-            var fileId = _fileService.GetFile(fileid);
-            return new JsonResult(fileId);
+            if (!int.TryParse(User.FindFirst("Id")?.Value, out var userId))
+                return Forbid();
+
+            if (!_fileService.CanUserViewArchivedFile(userId, fileid))
+                return NotFound();
+
+            var file = _fileService.GetFile(fileid);
+            if (file == null)
+                return NotFound();
+
+            return new JsonResult(file);
         }
 
 
@@ -74,6 +83,12 @@ namespace VisitorManagment.Web.Pages.Visitor.File.Archived
         /// </summary>
         public IActionResult OnGetHamesh(int fileId)
         {
+            if (!int.TryParse(User.FindFirst("Id")?.Value, out var userId))
+                return Forbid();
+
+            if (!_fileService.CanUserViewArchivedFile(userId, fileId))
+                return NotFound();
+
             listHameshViewModel = _hameshService.GetHameshIdByFileId(fileId);
             return new PartialViewResult
             {
