@@ -1041,121 +1041,159 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public ListFileViewModel GetListFileForCirculation(int rcvrUserId, DateTime? startDateSearchFilter, DateTime? endDateSearchFilter, int unitCode, int pageId = 1, int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0, string filterCaption = "")
         {
-            // rcvrUserId ===>>>UserId claim
-            IQueryable<Hamesh> hamesh = _context.Hameshes.Include(f => f.File);
-            IQueryable<Cartable> result2 = _context.Cartables.Include(f => f.File).ThenInclude(x => x.Personal);
-            IQueryable<Cartable> result1 = _context.Cartables.Include(f => f.File).Where(f => f.RcvrUserId == rcvrUserId);
+            // کاربران عادی درخواست‌هایی را می‌بینند که خودشان ثبت کرده‌اند یا در گردش آن هامش داشته‌اند.
+            // دسترسی گسترده‌ی کاربران مدیریتی فعلی حفظ می‌شود.
             IQueryable<Files> result;
-            //120-------->رئیس دفتر 3
-            //154-------->مدیر سامانه
-
             if (rcvrUserId == 120 || rcvrUserId == 154)
             {
-                result = _context.Files.Where(x => x.IsDelete == false);
+                result = _context.Files.Where(file => !file.IsDelete);
             }
-
             else
             {
-                var listFileId = _context.Hameshes
-                 .Include(x => x.File)
-                 .Where(x => x.UserId == rcvrUserId).Select(x => x.FileId).Distinct().ToList();
+                var currentUser = _context.Users
+                    .Where(user => user.Id == rcvrUserId)
+                    .Select(user => new { user.UnitDutyCode })
+                    .SingleOrDefault();
+                var currentRoleTypes = _context.UserRoles
+                    .Where(userRole => userRole.UserId == rcvrUserId && !userRole.Role.IsDelete)
+                    .Select(userRole => userRole.Role.RoleType)
+                    .Distinct()
+                    .ToArray();
 
-                result = _context.Files.Where(x => listFileId.Contains(x.Id));
+                var userFileIds = _context.Hameshes
+                    .Where(hamesh => hamesh.UserId == rcvrUserId)
+                    .Select(hamesh => hamesh.FileId);
+
+                // سوابق نقش برای کارشناس جایگزین همان یگان هم قابل مشاهده است.
+                var samePositionFileIds = currentUser != null && currentUser.UnitDutyCode.HasValue && currentRoleTypes.Length > 0
+                    ? _context.Hameshes
+                        .Where(hamesh => currentRoleTypes.Contains(hamesh.RoleTypeId) &&
+                                         hamesh.User.UnitDutyCode == currentUser.UnitDutyCode)
+                        .Select(hamesh => hamesh.FileId)
+                    : Enumerable.Empty<int>().AsQueryable();
+
+                result = _context.Files.Where(file =>
+                    !file.IsDelete &&
+                    (file.RegUserId == rcvrUserId ||
+                     userFileIds.Contains(file.Id) ||
+                     samePositionFileIds.Contains(file.Id)));
             }
 
-
-            #region Search/filter
-            if (startDateSearchFilter != null)
+            if (startDateSearchFilter.HasValue)
             {
-                if (endDateSearchFilter != null)
+                result = result.Where(file => file.RegDate >= startDateSearchFilter.Value);
+                if (endDateSearchFilter.HasValue)
                 {
-                    result = result.Where(u => u.RegDate >= startDateSearchFilter && u.RegDate <= endDateSearchFilter);
+                    result = result.Where(file => file.RegDate <= endDateSearchFilter.Value);
                 }
-                //var stDate = startDateSearchFilter.ToString();
-                //var regDateWithoutTime = result.Select(x=>x.RegDate.ToShortDateString()).SingleOrDefault() ;
-                /*result =result.Select(x=>x.RegDate)*/;
-                // result = result.Where(u => u.RegDate.Contains(regDateWithoutTime));
-                //result = result.Where(u => u.RegDate.ToShamsi()==startDateSearchFilter);
             }
 
-            if (!string.IsNullOrEmpty(filterCaption))
+            if (!string.IsNullOrWhiteSpace(filterCaption))
             {
-                result = result.Where(u => u.PersonalCode.Contains(filterCaption) || u.Personal.FirstName.Contains(filterCaption) || u.Personal.LastName.Contains(filterCaption));
+                result = result.Where(file =>
+                    file.PersonalCode.Contains(filterCaption) ||
+                    file.Personal.FirstName.Contains(filterCaption) ||
+                    file.Personal.LastName.Contains(filterCaption));
             }
-
 
             if (requestsubject != 0)
-            {
-                result = result.Where(t => t.RequestSubjectId == requestsubject);
-            }
+                result = result.Where(file => file.RequestSubjectId == requestsubject);
 
             if (filterGharargah != 0)
-            {
-                result = result.Where(t => t.CodGha == filterGharargah);
-            }
+                result = result.Where(file => file.CodGha == filterGharargah);
 
             if (filterYegan != 0)
+                result = result.Where(file => file.UnitCode == filterYegan);
+
+            const int take = 20;
+            var skip = (Math.Max(pageId, 1) - 1) * take;
+            var totalCount = result.Count();
+
+            var list = new ListFileViewModel
             {
-                result = result.Where(t => t.UnitCode == filterYegan);
-            }
+                CurrentPage = Math.Max(pageId, 1),
+                skip = skip,
+                count = totalCount,
+                PageCount = (int)Math.Ceiling(totalCount / (double)take)
+            };
 
-            #endregion
+            list.files = result
+                .OrderByDescending(file => file.RegDate)
+                .Skip(skip)
+                .Take(take)
+                .Select(file => new FactPersonalViewModel
+                {
+                    Id = file.Id,
+                    AddUserId = file.RegUserId,
+                    FirstName = file.Personal.FirstName,
+                    LastName = file.Personal.LastName,
+                    PersonalCode = file.Personal.PersonalCode,
+                    MelliCode = file.Personal.MelliCode,
+                    ReqSubTitle = file.RequestSubject.Title,
+                    FileStatusTitle = file.FileStatus.Title,
+                    PriorityTitle = file.Priority.Title,
+                    RankTitle = file.RankTitle,
+                    JobDes = file.JobDes,
+                    Phone = file.Phone,
+                    StatuseTitle = file.StatusTitle,
+                    BranchTitle = file.BranchTitle,
+                    UnitDutyTitle = file.UnitDutyTitle,
+                    UnitTitle = file.UnitTitle,
+                    CodGhaTitle = file.CodGhaTitle,
+                    RequestDescription = file.RequestDescription,
+                    IsArchived = file.IsArchived,
+                    IsFinished = file.IsFinished,
+                    ReciverUserRole = _context.Hameshes
+                        .Where(hamesh => hamesh.FileId == file.Id)
+                        .OrderByDescending(hamesh => hamesh.RegDate)
+                        .Select(hamesh => hamesh.RoleTypeTitle)
+                        .FirstOrDefault(),
+                    CurrentStage = file.IsArchived
+                        ? "بایگانی شده"
+                        : file.IsFinished
+                            ? "مختومه"
+                            : _context.Cartables
+                                .Where(cartable => cartable.FileId == file.Id && !cartable.IsDone)
+                                .OrderByDescending(cartable => cartable.RegDate)
+                                .Select(cartable => _context.Users
+                                    .Where(user => user.Id == cartable.RcvrUserId)
+                                    .Select(user => user.FirstName + " " + user.LastName)
+                                    .FirstOrDefault())
+                                .FirstOrDefault() ?? "در انتظار ارجاع",
+                    RegDate = file.RegDate
+                })
+                .ToList();
 
-
-            var take = 20;
-            var skip = (pageId - 1) * take;
-
-            ListFileViewModel list = new ListFileViewModel() { };
-            list.CurrentPage = pageId;
-            list.skip = skip;
-            list.count = result.Count();
-            list.PageCount = (int)Math.Ceiling(result.Count() / (double)take);// result.Count() / take;
-                                                                              //*****************
-
-            //*****************
-            list.files = result.Select(t => new FactPersonalViewModel()
-            {
-                Id = t.Id,
-                AddUserId = t.Personal.RegUserId,
-                FirstName = t.Personal.FirstName,
-                LastName = t.Personal.LastName,
-                PersonalCode = t.Personal.PersonalCode,
-                MelliCode = t.Personal.MelliCode,
-                ReqSubTitle = t.RequestSubject.Title,
-                FileStatusTitle = t.FileStatus.Title,
-                PriorityTitle = t.Priority.Title,
-                RankTitle = t.RankTitle,
-                JobDes = t.JobDes,
-                Phone = t.Phone,
-                StatuseTitle = t.StatusTitle,
-                BranchTitle = t.BranchTitle,
-                UnitDutyTitle = t.UnitDutyTitle,
-                UnitTitle = t.UnitTitle,
-                CodGhaTitle = t.CodGhaTitle,
-                RequestDescription = t.RequestDescription,
-                // ReciverUserId =t.Cartables.Where(x=>x.FileId==t.Id).OrderBy(x=>x.RegDate).Select(x=>x.RcvrUserId).Last(),
-                ReciverUserRole = _context.Hameshes
-                .Include(x => x.User)
-                .Where(x => x.FileId == t.Id)
-                .OrderBy(x => x.RegDate)
-                .Select(x => x.RoleTypeTitle)
-                .LastOrDefault(),
-
-                RegDate = t.RegDate
-            }).OrderByDescending(u => u.RegDate).ToList();
             return list;
         }
-
 
         /// <summary>
         /// دریافت لیست درخواست‌ها جهت گردش در بخش مدیریت.
         /// </summary>
         public ListFileViewModel GetListFileForCirculationAdmin(int userId, DateTime? startDateSearchFilter, DateTime? endDateSearchFilter, int unitCode, int pageId = 1, int requestsubject = 0, int filterGharargah = 0, int filterYegan = 0, int filterMoavenat = 0, string filterCaption = "")
         {
-            // rcvrUserId ===>>>UserId claim
-            //فایل هایی که ف انصار و معاون شماره 3 هامش زده رو میاره برامون
-            var result = _context.Hameshes.Include(x => x.File)
-                .Where((x => x.UserId == userId && (x.RoleTypeId == SystemRoleTypes.AnsarHeadquartersExpert || x.RoleTypeId == SystemRoleTypes.NezajaOperator || x.RoleTypeId == SystemRoleTypes.DeputyOffice))).Select(x => x.File).Distinct();
+            // گردش شخصی باید بر اساس کاربر هامش‌زن و جایگاه سازمانی باشد؛
+            // محدودکردن به چند RoleType ثابت، نقش‌های اختصاصی یگان (مانند 3001) را حذف می‌کرد.
+            var currentUser = _context.Users
+                .Where(user => user.Id == userId)
+                .Select(user => new { user.UnitDutyCode })
+                .SingleOrDefault();
+            var currentRoleTypes = _context.UserRoles
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .Select(userRole => userRole.Role.RoleType)
+                .Distinct()
+                .ToArray();
+
+            var result = _context.Hameshes
+                .Where(hamesh =>
+                    hamesh.UserId == userId ||
+                    (currentUser != null &&
+                     currentUser.UnitDutyCode.HasValue &&
+                     currentRoleTypes.Length > 0 &&
+                     currentRoleTypes.Contains(hamesh.RoleTypeId) &&
+                     hamesh.User.UnitDutyCode == currentUser.UnitDutyCode))
+                .Select(hamesh => hamesh.File)
+                .Distinct();
 
             var resultForFilterMoavenat = _context.Hameshes.Include(x => x.File).Distinct();
 
@@ -2664,68 +2702,125 @@ namespace VisitorManagment.Core.Services
         /// <summary>
         /// دریافت لیست درخواست‌های آرشیوشده.
         /// </summary>
+        public bool CanUserViewArchivedFile(int userId, int fileId)
+        {
+            if (userId <= 0 || fileId <= 0) return false;
+
+            var currentUser = _context.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new { user.UnitDutyCode })
+                .SingleOrDefault();
+            if (currentUser == null) return false;
+
+            var currentRoleTypes = _context.UserRoles
+                .AsNoTracking()
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .Select(userRole => userRole.Role.RoleType)
+                .Distinct()
+                .ToArray();
+
+            return _context.Files
+                .AsNoTracking()
+                .Any(file => file.Id == fileId &&
+                    file.IsArchived &&
+                    !file.IsDelete &&
+                    (file.ArchivedRegUserId == userId ||
+                     (currentUser.UnitDutyCode.HasValue &&
+                      currentRoleTypes.Length > 0 &&
+                      file.UnitDutyCode == currentUser.UnitDutyCode &&
+                      _context.Hameshes.Any(hamesh =>
+                          hamesh.FileId == file.Id &&
+                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
+                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
+        }
+
+        /// <summary>
+        /// دریافت لیست درخواست‌های آرشیوشده.
+        /// </summary>
         public ListFileViewModel GetListArchivedFile(int userId, int requestsubject = 0,
             int filterAvamerSadereh = 0,
             string filterGharargah = "",
             string filterCaption = "")
         {
+            var currentUser = _context.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new { user.UnitDutyCode })
+                .SingleOrDefault();
+            var currentRoleTypes = _context.UserRoles
+                .AsNoTracking()
+                .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
+                .Select(userRole => userRole.Role.RoleType)
+                .Distinct()
+                .ToArray();
 
-            // مالک بایگانی مستقل از وجود هامش و نوع درخواست است؛ درخواست‌های قدیمی هم نمایش داده می‌شوند.
+            // بایگانی متعلق به صاحب قبلی جایگاه، برای کارشناس فعلی همان نقش و یگان نیز قابل مشاهده است.
             IQueryable<Files> listFile = _context.Files
-                .Where(x => userId > 0 && x.IsArchived && x.ArchivedRegUserId == userId);
-
-            #region Search
+                .AsNoTracking()
+                .Where(file => file.IsArchived &&
+                    !file.IsDelete &&
+                    (file.ArchivedRegUserId == userId ||
+                     (currentUser != null &&
+                      currentUser.UnitDutyCode.HasValue &&
+                      currentRoleTypes.Length > 0 &&
+                      file.UnitDutyCode == currentUser.UnitDutyCode &&
+                      _context.Hameshes.Any(hamesh =>
+                          hamesh.FileId == file.Id &&
+                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
+                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
                 var term = filterCaption.Trim();
-                listFile = listFile.Where(u => u.Personal.PersonalCode.Contains(term) ||
-                    u.Personal.FirstName.Contains(term) || u.Personal.LastName.Contains(term));
+                listFile = listFile.Where(file =>
+                    file.Personal.PersonalCode.Contains(term) ||
+                    file.Personal.FirstName.Contains(term) ||
+                    file.Personal.LastName.Contains(term));
             }
 
             if (int.TryParse(filterGharargah, out var gharargahId) && gharargahId > 0)
-                listFile = listFile.Where(t => t.CodGha == gharargahId);
+                listFile = listFile.Where(file => file.CodGha == gharargahId);
 
             if (requestsubject > 0)
-                listFile = listFile.Where(t => t.RequestSubjectId == requestsubject);
+                listFile = listFile.Where(file => file.RequestSubjectId == requestsubject);
 
             if (filterAvamerSadereh == 1)
-                listFile = listFile.Where(t => t.IsMeetingHold);
-            #endregion
+                listFile = listFile.Where(file => file.IsMeetingHold);
 
-            ListFileViewModel list = new ListFileViewModel() { };
-
-            list.count = listFile.Count();
-            list.files = listFile.Select(t => new FactPersonalViewModel()
-            {
-                Id = t.Id,
-                AddUserId = t.Personal.RegUserId,
-                FirstName = t.Personal.FirstName,
-                LastName = t.Personal.LastName,
-                PersonalCode = t.Personal.PersonalCode,
-                MelliCode = t.Personal.MelliCode,
-                ReqSubTitle = t.RequestSubject.Title,
-                FileStatusTitle = t.FileStatus.Title,
-                PriorityTitle = t.Priority.Title,
-                RankTitle = t.RankTitle,
-                JobDes = t.JobDes,
-                Phone = t.Phone,
-                StatuseTitle = t.StatusTitle,
-                BranchTitle = t.BranchTitle,
-                UnitDutyTitle = t.UnitDutyTitle,
-                UnitTitle = t.UnitTitle,
-                CodGhaTitle = t.CodGhaTitle,
-                RegDate = t.RegDate,
-                IsMeetingHold = t.IsMeetingHold,
-                IsAnswerdMoavenat = t.IsMoavenatAnswered,
-                IsArchived = t.IsArchived,
-
-            })
-                .Distinct()
-                .OrderByDescending(u => u.RegDate)
+            var files = listFile
+                .OrderByDescending(file => file.RegDate)
+                .Select(file => new FactPersonalViewModel
+                {
+                    Id = file.Id,
+                    AddUserId = file.Personal.RegUserId,
+                    FirstName = file.Personal.FirstName,
+                    LastName = file.Personal.LastName,
+                    PersonalCode = file.Personal.PersonalCode,
+                    MelliCode = file.Personal.MelliCode,
+                    ReqSubTitle = file.RequestSubject.Title,
+                    FileStatusTitle = file.FileStatus.Title,
+                    PriorityTitle = file.Priority.Title,
+                    RankTitle = file.RankTitle,
+                    JobDes = file.JobDes,
+                    Phone = file.Phone,
+                    StatuseTitle = file.StatusTitle,
+                    BranchTitle = file.BranchTitle,
+                    UnitDutyTitle = file.UnitDutyTitle,
+                    UnitTitle = file.UnitTitle,
+                    CodGhaTitle = file.CodGhaTitle,
+                    RegDate = file.RegDate,
+                    IsMeetingHold = file.IsMeetingHold,
+                    IsAnswerdMoavenat = file.IsMoavenatAnswered,
+                    IsArchived = file.IsArchived
+                })
                 .ToList();
 
-            return list;
+            return new ListFileViewModel
+            {
+                count = files.Count,
+                files = files
+            };
         }
 
 
