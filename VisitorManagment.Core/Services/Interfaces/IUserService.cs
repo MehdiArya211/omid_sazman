@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using VisitorManagment.DataLayer.Entities.VisitorManagment;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace VisitorManagment.Core.Services.Interfaces
@@ -52,6 +53,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         bool SaveSecurityAnswers(int userId, string currentPassword, string answer1, string answer2, string answer3);
         bool HasSecurityAnswers(int userId);
         VisitorManagment.Core.DTOs.PasswordRecoveryResult ResetPasswordWithSecurityAnswer(string userName, int questionId, string answer, string newPassword);
+        Task<VisitorManagment.Core.DTOs.PasswordRecoveryResult> ResetPasswordWithSecurityAnswerAsync(string userName, int questionId, string answer, string newPassword, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// رمز کاربر را به کد پرسنلی او بازنشانی و تغییر رمز در ورود بعدی را اجباری می‌کند.
