@@ -55,26 +55,30 @@ namespace VisitorManagment.Core.Services
         /// شناسه فایل‌هایی را می‌دهد که در دوره تصدی فعلی یا قبلیِ همین جایگاه هامش خورده‌اند.
         /// تاریخچه RoleId معیار پایدار جایگاه است؛ تطبیق عنوان و یگان برای داده‌های قدیمیِ بدون تاریخچه نگه داشته شده است.
         /// </summary>
-        private IQueryable<int> GetFilesWithPositionHamesh(int? unitDutyCode, int[] roleIds, int[] roleTypes, string[] roleTitles)
+                private IQueryable<int> GetFilesWithPositionHamesh(int? unitDutyCode, int[] roleIds, int[] roleTypes, string[] roleTitles)
         {
-            var hasRoleHistory = roleIds != null && roleIds.Length > 0;
+            var roleIdValues = roleIds ?? Array.Empty<int>();
+            var roleTypeValues = roleTypes ?? Array.Empty<int>();
+            var roleTitleValues = roleTitles ?? Array.Empty<string>();
+            var hasRoleHistory = roleIdValues.Length > 0;
             var hasLegacyPositionData = unitDutyCode.HasValue &&
-                ((roleTypes != null && roleTypes.Length > 0) || (roleTitles != null && roleTitles.Length > 0));
+                (roleTypeValues.Length > 0 || roleTitleValues.Length > 0);
 
             return _context.Hameshes
                 .Where(hamesh =>
                     (hasLegacyPositionData &&
                      hamesh.User.UnitDutyCode == unitDutyCode &&
-                     ((roleTypes != null && roleTypes.Contains(hamesh.RoleTypeId)) ||
-                      (roleTitles != null && roleTitles.Contains(hamesh.RoleTypeTitle)))) ||
+                     (roleTypeValues.Contains(hamesh.RoleTypeId) ||
+                      roleTitleValues.Contains(hamesh.RoleTypeTitle))) ||
                     (hasRoleHistory &&
                      _context.RoleAssignmentHistories.Any(history =>
-                         roleIds.Contains(history.RoleId) &&
+                         roleIdValues.Contains(history.RoleId) &&
                          history.UserId == hamesh.UserId &&
                          history.StartDate <= hamesh.RegDate &&
                          (!history.EndDate.HasValue || hamesh.RegDate < history.EndDate.Value) &&
-                         ((roleTypes != null && roleTypes.Contains(hamesh.RoleTypeId)) ||
-                          (roleTitles != null && roleTitles.Contains(hamesh.RoleTypeTitle)))))
+                         (roleTypeValues.Contains(hamesh.RoleTypeId) ||
+                          roleTitleValues.Contains(hamesh.RoleTypeTitle))))
+                )
                 .Select(hamesh => hamesh.FileId);
         }
 
