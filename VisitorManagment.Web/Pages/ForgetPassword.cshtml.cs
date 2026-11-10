@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using VisitorManagment.Core.DTOs;
 using VisitorManagment.Core.Security;
 using VisitorManagment.Core.Services.Interfaces;
@@ -25,11 +27,13 @@ namespace VisitorManagment.Web.Pages
         private const string QuestionSessionKey = "PasswordRecovery.QuestionId";
         private readonly IUserService _userService;
         private readonly VisitorManagmentContext _context;
+        private readonly ILogger<ForgetPasswordModel> _logger;
 
-        public ForgetPasswordModel(IUserService userService, VisitorManagmentContext context)
+        public ForgetPasswordModel(IUserService userService, VisitorManagmentContext context, ILogger<ForgetPasswordModel> logger)
         {
             _userService = userService;
             _context = context;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -63,16 +67,16 @@ namespace VisitorManagment.Web.Pages
         public string QuestionText { get; private set; }
         public List<LoginSlide> LoginSlides { get; private set; } = new List<LoginSlide>();
 
-        public void OnGet()
+        public async Task OnGetAsync()
         {
-            LoadLoginSlides();
+            await LoadLoginSlidesAsync(HttpContext.RequestAborted);
             HttpContext.Session.Remove(UsernameSessionKey);
             HttpContext.Session.Remove(QuestionSessionKey);
         }
 
-        public IActionResult OnPostAskQuestion()
+        public async Task<IActionResult> OnPostAskQuestionAsync()
         {
-            LoadLoginSlides();
+            await LoadLoginSlidesAsync(HttpContext.RequestAborted);
             ModelState.Remove(nameof(Answer));
             ModelState.Remove(nameof(NewPassword));
             ModelState.Remove(nameof(ConfirmPassword));
@@ -94,7 +98,7 @@ namespace VisitorManagment.Web.Pages
 
         public async Task<IActionResult> OnPostResetAsync()
         {
-            LoadLoginSlides();
+            await LoadLoginSlidesAsync(HttpContext.RequestAborted);
             if (!TryLoadQuestion(out var userName, out var questionId))
             {
                 ModelState.AddModelError(string.Empty, "فرایند بازیابی منقضی شده است؛ دوباره شروع کنید.");
@@ -109,7 +113,27 @@ namespace VisitorManagment.Web.Pages
 
             if (!ModelState.IsValid) return Page();
 
-            var result = _userService.ResetPasswordWithSecurityAnswer(userName, questionId, Answer, NewPassword);
+            PasswordRecoveryResult result;
+            using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted))
+            {
+                timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                try
+                {
+                    result = await _userService.ResetPasswordWithSecurityAnswerAsync(
+                        userName, questionId, Answer, NewPassword, timeout.Token);
+                }
+                catch (OperationCanceledException) when (!HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    ModelState.AddModelError(string.Empty, "پاسخ سامانه بیش از حد طول کشید. لطفاً کمی بعد دوباره تلاش کنید.");
+                    return Page();
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Password recovery failed while processing a reset request.");
+                    ModelState.AddModelError(string.Empty, "در انجام درخواست بازیابی خطایی رخ داد. لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.");
+                    return Page();
+                }
+            }
             AttemptsRemaining = result.AttemptsRemaining;
             Answer = null;
             ModelState.Remove(nameof(Answer));
@@ -138,13 +162,13 @@ namespace VisitorManagment.Web.Pages
             return Page();
         }
 
-        private void LoadLoginSlides()
+        private async Task LoadLoginSlidesAsync(CancellationToken cancellationToken)
         {
-            LoginSlides = _context.LoginSlides.AsNoTracking()
+            LoginSlides = await _context.LoginSlides.AsNoTracking()
                 .Where(item => item.IsActive)
                 .OrderBy(item => item.SortOrder)
                 .ThenBy(item => item.Id)
-                .ToList();
+                .ToListAsync(cancellationToken);
 
             if (LoginSlides.Count > 0) return;
 
