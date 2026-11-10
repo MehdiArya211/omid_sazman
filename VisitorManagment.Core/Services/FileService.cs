@@ -1313,17 +1313,12 @@ namespace VisitorManagment.Core.Services
             }
 
 
-            //اینجا رو بنویسم
             if (filterMoavenat != 0)
             {
-                var role = _context.Roles.Where(x => x.RoleId == filterMoavenat).SingleOrDefault();
-
-                result = _context.Hameshes.Include(x => x.File).Where(x => x.User.UserRoles.Select(x => x.Role.Code).FirstOrDefault() == role.Code).Select(x => x.File).Distinct();
-
-                // result = _context.Hameshes.Include(x => x.File).Where(x=>x.RoleTypeId == filterMoavenat).Select(x => x.File).Distinct();
-                // result = _context.Hameshes.Include(x => x.File).Where(x => x.RoleTypeId == filterMoavenat).Select(x => x.File).Distinct();
-
-                //result = resultForFilterMoavenat.Where(x => x.RoleTypeId == filterMoavenat).Select(x => x.File).Distinct();
+                result = result.Where(file =>
+                    _context.Hameshes.Any(hamesh =>
+                        hamesh.FileId == file.Id &&
+                        hamesh.RoleTypeId == filterMoavenat));
             }
 
             #endregion
