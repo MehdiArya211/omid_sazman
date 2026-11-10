@@ -72,7 +72,9 @@ namespace VisitorManagment.Core.Services
                          roleIds.Contains(history.RoleId) &&
                          history.UserId == hamesh.UserId &&
                          history.StartDate <= hamesh.RegDate &&
-                         (!history.EndDate.HasValue || hamesh.RegDate < history.EndDate.Value))))
+                         (!history.EndDate.HasValue || hamesh.RegDate < history.EndDate.Value) &&
+                         ((roleTypes != null && roleTypes.Contains(hamesh.RoleTypeId)) ||
+                          (roleTitles != null && roleTitles.Contains(hamesh.RoleTypeTitle)))))
                 .Select(hamesh => hamesh.FileId);
         }
 
