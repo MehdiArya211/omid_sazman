@@ -32,10 +32,26 @@
         if (!container) return;
         clearPreview(container);
         var files = Array.prototype.slice.call(input.files || []);
+        var feedback = section ? section.querySelector("[data-upload-feedback]") : null;
+        var form = input.closest("form");
+        var submitButton = form ? form.querySelector('button[type="submit"]') : null;
+        var allowed = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png", ".zip"];
+        var errors = files.filter(function (file) {
+            var dot = file.name.lastIndexOf(".");
+            var extension = dot >= 0 ? file.name.substring(dot).toLowerCase() : "";
+            return file.size > 10 * 1024 * 1024 || allowed.indexOf(extension) < 0;
+        });
+        if (feedback) {
+            feedback.textContent = errors.length
+                ? "فایل نامعتبر است: فقط PDF، Word، Excel، تصویر و ZIP تا حداکثر ۱۰ مگابایت مجاز است."
+                : (files.length ? files.length + " فایل برای پیوست انتخاب شد." : "");
+            feedback.classList.toggle("has-error", errors.length > 0);
+        }
+        if (submitButton) submitButton.disabled = errors.length > 0;
         if (zone) zone.classList.toggle("has-files", files.length > 0);
-        if (!files.length) return;
+        if (!files.length || errors.length) return;
 
-        files.forEach(function (file) {
+        files.forEach(function (file, index) {
             var card = document.createElement("div");
             card.className = "notification-file-card";
 
@@ -62,13 +78,27 @@
             info.appendChild(name);
             info.appendChild(size);
 
-            var check = document.createElement("i");
-            check.className = "ti-check notification-file-card__check";
+            var remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "notification-file-card__remove";
+            remove.setAttribute("aria-label", "حذف " + file.name + " از فهرست پیوست‌ها");
+            remove.innerHTML = '<i class="ti-close" aria-hidden="true"></i>';
+            remove.addEventListener("click", function () { removeSelectedFile(input, index); });
             card.appendChild(visual);
             card.appendChild(info);
-            card.appendChild(check);
+            card.appendChild(remove);
             container.appendChild(card);
         });
+    }
+
+    function removeSelectedFile(input, removeIndex) {
+        if (!window.DataTransfer) return;
+        var transfer = new DataTransfer();
+        Array.prototype.slice.call(input.files || []).forEach(function (file, index) {
+            if (index !== removeIndex) transfer.items.add(file);
+        });
+        input.files = transfer.files;
+        renderSelectedFiles(input);
     }
 
     document.querySelectorAll("[data-notification-files]").forEach(function (input) {
@@ -87,7 +117,13 @@
         link.href = file.FilePath;
         link.target = "_blank";
         link.rel = "noopener";
+        var nameAndSize = document.createElement("span");
+        nameAndSize.className = "notification-existing-file__details";
         link.textContent = file.FileName;
+        var size = document.createElement("small");
+        size.textContent = formatSize(Number(file.FileSize) || 0);
+        nameAndSize.appendChild(link);
+        nameAndSize.appendChild(size);
 
         var button = document.createElement("button");
         button.type = "button";
@@ -99,7 +135,7 @@
         });
 
         row.appendChild(visual);
-        row.appendChild(link);
+        row.appendChild(nameAndSize);
         row.appendChild(button);
         container.appendChild(row);
     }
