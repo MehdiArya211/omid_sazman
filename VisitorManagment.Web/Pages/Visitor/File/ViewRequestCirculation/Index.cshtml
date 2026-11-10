@@ -249,6 +249,50 @@ else
                                 </tbody>
                             </table>
                         </div>
+
+                        @if (Model.listviewmodel.PageCount > 1)
+                        {
+                            <nav aria-label="صفحه‌بندی گردش درخواست" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item @(Model.listviewmodel.CurrentPage <= 1 ? "disabled" : "")">
+                                        <a class="page-link"
+                                           asp-page="./Index"
+                                           asp-route-pageId="@(Model.listviewmodel.CurrentPage > 1 ? Model.listviewmodel.CurrentPage - 1 : 1)"
+                                           asp-route-filterCaption="@Request.Query["filterCaption"]"
+                                           asp-route-requestsubject="@Request.Query["requestsubject"]"
+                                           asp-route-filterGharargah="@Request.Query["filterGharargah"]"
+                                           asp-route-filterYegan="@Request.Query["filterYegan"]"
+                                           asp-route-startDateSearch="@Request.Query["startDateSearch"]"
+                                           asp-route-endDateSearch="@Request.Query["endDateSearch"]">قبلی</a>
+                                    </li>
+                                    @for (var pageNumber = 1; pageNumber <= Model.listviewmodel.PageCount; pageNumber++)
+                                    {
+                                        <li class="page-item @(pageNumber == Model.listviewmodel.CurrentPage ? "active" : "")">
+                                            <a class="page-link"
+                                               asp-page="./Index"
+                                               asp-route-pageId="@pageNumber"
+                                               asp-route-filterCaption="@Request.Query["filterCaption"]"
+                                               asp-route-requestsubject="@Request.Query["requestsubject"]"
+                                               asp-route-filterGharargah="@Request.Query["filterGharargah"]"
+                                               asp-route-filterYegan="@Request.Query["filterYegan"]"
+                                               asp-route-startDateSearch="@Request.Query["startDateSearch"]"
+                                               asp-route-endDateSearch="@Request.Query["endDateSearch"]">@pageNumber</a>
+                                        </li>
+                                    }
+                                    <li class="page-item @(Model.listviewmodel.CurrentPage >= Model.listviewmodel.PageCount ? "disabled" : "")">
+                                        <a class="page-link"
+                                           asp-page="./Index"
+                                           asp-route-pageId="@(Model.listviewmodel.CurrentPage < Model.listviewmodel.PageCount ? Model.listviewmodel.CurrentPage + 1 : Model.listviewmodel.PageCount)"
+                                           asp-route-filterCaption="@Request.Query["filterCaption"]"
+                                           asp-route-requestsubject="@Request.Query["requestsubject"]"
+                                           asp-route-filterGharargah="@Request.Query["filterGharargah"]"
+                                           asp-route-filterYegan="@Request.Query["filterYegan"]"
+                                           asp-route-startDateSearch="@Request.Query["startDateSearch"]"
+                                           asp-route-endDateSearch="@Request.Query["endDateSearch"]">بعدی</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
                     </div>
                 </div>
             </div>
