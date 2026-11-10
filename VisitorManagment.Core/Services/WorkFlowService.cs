@@ -89,7 +89,7 @@ namespace VisitorManagment.Core.Services
 
 
             return _context.UserRoles.Include(u => u.User).Include(x=>x.Role)
-    .Where(u => rcvrRoleIdList.Contains(u.RoleId) && u.Role.IsDelete==false )
+    .Where(u => rcvrRoleIdList.Contains(u.RoleId) && u.Role.IsDelete == false && u.User.IsActive && !u.User.IsDelete)
     .OrderBy(x => x.Role.SortNumMoavenat)
      .Select(u => new Users()
      {
