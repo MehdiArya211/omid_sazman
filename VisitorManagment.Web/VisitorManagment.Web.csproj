@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <!-- شماره build یکتا در هر اجرای build/publish؛ نمونه: 1.0.0-build.20261110183045 -->
+    <!-- شماره build یکتا در هر اجرای build/publish؛ نمونه: 1.0.0-build.20261110183045123 -->
     <BuildTimestampUtc>$([System.DateTime]::UtcNow.ToString('yyyyMMddHHmmssfff'))</BuildTimestampUtc>
     <Version>1.0.0-build.$(BuildTimestampUtc)</Version>
     <InformationalVersion>1.0.0 (Build $(BuildTimestampUtc) UTC)</InformationalVersion>
