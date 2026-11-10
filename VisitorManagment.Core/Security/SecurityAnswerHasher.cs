@@ -8,6 +8,7 @@ namespace VisitorManagment.Core.Security
     public static class SecurityAnswerHasher
     {
         private const int Iterations = 120000;
+        private const int MaximumAcceptedIterations = 500000;
         private const int SaltSize = 16;
         private const int HashSize = 32;
 
@@ -27,7 +28,10 @@ namespace VisitorManagment.Core.Security
         {
             if (string.IsNullOrWhiteSpace(storedValue)) return false;
             var parts = storedValue.Split('$');
-            if (parts.Length != 3 || !int.TryParse(parts[0], out var iterations) || iterations < 10000) return false;
+            if (parts.Length != 3 ||
+                !int.TryParse(parts[0], out var iterations) ||
+                iterations < 10000 ||
+                iterations > MaximumAcceptedIterations) return false;
             try
             {
                 var salt = Convert.FromBase64String(parts[1]);
