@@ -2728,7 +2728,6 @@ namespace VisitorManagment.Core.Services
                     (file.ArchivedRegUserId == userId ||
                      (currentUser.UnitDutyCode.HasValue &&
                       currentRoleTypes.Length > 0 &&
-                      file.UnitDutyCode == currentUser.UnitDutyCode &&
                       _context.Hameshes.Any(hamesh =>
                           hamesh.FileId == file.Id &&
                           hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
@@ -2764,7 +2763,6 @@ namespace VisitorManagment.Core.Services
                      (currentUser != null &&
                       currentUser.UnitDutyCode.HasValue &&
                       currentRoleTypes.Length > 0 &&
-                      file.UnitDutyCode == currentUser.UnitDutyCode &&
                       _context.Hameshes.Any(hamesh =>
                           hamesh.FileId == file.Id &&
                           hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
