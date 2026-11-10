@@ -226,9 +226,12 @@ namespace VisitorManagment.Web.Pages
             }
             #endregion
 
-            return _userService.IsPasswordChangeRequired(user.Id)
-                ? RedirectToPage("/ChangePasswordRequired")
-                : RedirectToPage("/Visitor/Index");
+            if (_userService.IsPasswordChangeRequired(user.Id))
+                return RedirectToPage("/ChangePasswordRequired");
+
+            return _userService.HasSecurityAnswers(user.Id)
+                ? RedirectToPage("/Visitor/Index")
+                : RedirectToPage("/AccountSecurityQuestions");
         }
 
         #endregion
