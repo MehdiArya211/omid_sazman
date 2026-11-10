@@ -602,6 +602,21 @@ namespace VisitorManagment.Core.Services
         /// </summary>
         public bool ForgetPassword(ForgetPasswordViewModel forgetPassword) => false;
 
+        /// <summary>بررسی می‌کند هر سه پاسخ امنیتی کاربر قبلاً ثبت شده‌اند.</summary>
+        public bool HasSecurityAnswers(int userId)
+        {
+            if (userId <= 0) return false;
+
+            var security = _context.UserSecurityQuestions
+                .AsNoTracking()
+                .SingleOrDefault(item => item.UserId == userId);
+
+            return security != null &&
+                   !string.IsNullOrWhiteSpace(security.Answer1Hash) &&
+                   !string.IsNullOrWhiteSpace(security.Answer2Hash) &&
+                   !string.IsNullOrWhiteSpace(security.Answer3Hash);
+        }
+
         /// <summary>سه پاسخ امنیتی را پس از بررسی رمز فعلی برای حساب ذخیره یا جایگزین می‌کند.</summary>
         public bool SaveSecurityAnswers(int userId, string currentPassword, string answer1, string answer2, string answer3)
         {

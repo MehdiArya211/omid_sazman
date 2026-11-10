@@ -1,16 +1,16 @@
+using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using VisitorManagment.Core.Services.Interfaces;
 
 namespace VisitorManagment.Web.Middleware
 {
     /// <summary>
-    /// کاربری را که رمز او توسط مدیر بازنشانی شده است تا زمان ثبت رمز جدید
-    /// به صفحه تغییر اجباری رمز محدود می‌کند.
+    /// تا زمان ثبت رمز جدید یا پاسخ‌های امنیتی لازم، کاربر را به صفحه‌ی تکمیل اطلاعات هدایت می‌کند.
     /// </summary>
     public class RequiredPasswordChangeMiddleware
     {
-        #region Fields and constructor
-
         private readonly RequestDelegate _next;
 
         public RequiredPasswordChangeMiddleware(RequestDelegate next)
@@ -18,34 +18,52 @@ namespace VisitorManagment.Web.Middleware
             _next = next;
         }
 
-        #endregion
-
-        #region Middleware pipeline
-
-        /// <summary>
-        /// Claim تغییر اجباری رمز را بررسی و درخواست‌های غیرمجاز را به فرم تغییر رمز هدایت می‌کند.
-        /// </summary>
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, IUserService userService)
         {
             var user = context.User;
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                await _next(context);
+                return;
+            }
+
             var requestPath = context.Request.Path;
-            var passwordChangeRequired = user.Identity?.IsAuthenticated == true &&
-                                         bool.TryParse(user.FindFirst("MustChangePassword")?.Value, out var required) &&
-                                         required;
+            if (IsAllowedPath(requestPath))
+            {
+                await _next(context);
+                return;
+            }
 
-            var isAllowedPath = requestPath.StartsWithSegments("/ChangePasswordRequired") ||
-                                requestPath.StartsWithSegments("/DevelopmentImpersonation") ||
-                                requestPath.StartsWithSegments("/Admin/Users/Logout");
+            if (!int.TryParse(user.FindFirst("Id")?.Value ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId) ||
+                userId <= 0)
+            {
+                await _next(context);
+                return;
+            }
 
-            if (passwordChangeRequired && !isAllowedPath)
+            if (userService.IsPasswordChangeRequired(userId))
             {
                 context.Response.Redirect("/ChangePasswordRequired");
+                return;
+            }
+
+            if (!userService.HasSecurityAnswers(userId))
+            {
+                context.Response.Redirect("/AccountSecurityQuestions");
                 return;
             }
 
             await _next(context);
         }
 
-        #endregion
+        private static bool IsAllowedPath(PathString path)
+        {
+            return path.StartsWithSegments("/AccountSecurityQuestions") ||
+                   path.StartsWithSegments("/ChangePasswordRequired") ||
+                   path.StartsWithSegments("/ForgetPassword") ||
+                   path.StartsWithSegments("/Index") ||
+                   path.StartsWithSegments("/DevelopmentImpersonation") ||
+                   path.StartsWithSegments("/Admin/Users/Logout");
+        }
     }
 }

@@ -50,6 +50,7 @@ namespace VisitorManagment.Core.Services.Interfaces
         #region Change Password
         bool ForgetPassword(ForgetPasswordViewModel forgetPassword);
         bool SaveSecurityAnswers(int userId, string currentPassword, string answer1, string answer2, string answer3);
+        bool HasSecurityAnswers(int userId);
         VisitorManagment.Core.DTOs.PasswordRecoveryResult ResetPasswordWithSecurityAnswer(string userName, int questionId, string answer, string newPassword);
 
         /// <summary>
