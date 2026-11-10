@@ -14,7 +14,7 @@ namespace VisitorManagment.Web.ViewComponents
         public Notification FirstUnread { get; set; }
     }
 
-    /// <summary>نشان اعلان و اولین اعلان خوانده‌نشده را در تمام صفحات سامانه نمایش می‌دهد.</summary>
+    /// <summary>نشان اعلان و جدیدترین اعلان خوانده‌نشده را در تمام صفحات سامانه نمایش می‌دهد.</summary>
     public class NotificationCenterViewComponent : ViewComponent
     {
         private readonly VisitorManagmentContext _context;
@@ -29,7 +29,7 @@ namespace VisitorManagment.Web.ViewComponents
             {
                 UnreadCount = await unreadQuery.CountAsync(),
                 FirstUnread = await unreadQuery.Include(item => item.Attachments)
-                    .OrderBy(item => item.PublishDate).ThenBy(item => item.Id).FirstOrDefaultAsync()
+                    .OrderByDescending(item => item.PublishDate).ThenByDescending(item => item.Id).FirstOrDefaultAsync()
             };
             return View("Default", model);
         }
