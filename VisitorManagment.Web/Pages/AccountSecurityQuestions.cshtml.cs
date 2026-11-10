@@ -22,7 +22,10 @@ namespace VisitorManagment.Web.Pages
 
         public IActionResult OnGet()
         {
-            if (!TryGetUserId(out _)) return Challenge();
+            if (!TryGetUserId(out var userId)) return Challenge();
+            if (_userService.HasSecurityAnswers(userId))
+                return RedirectToPage("/Visitor/Index");
+
             return Page();
         }
 
