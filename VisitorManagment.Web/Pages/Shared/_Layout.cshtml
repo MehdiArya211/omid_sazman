@@ -1,4 +1,9 @@
-﻿@inject VisitorManagment.Core.Services.Interfaces.IMaintenanceService MaintenanceService
+﻿@using System.Reflection
+@inject VisitorManagment.Core.Services.Interfaces.IMaintenanceService MaintenanceService
+@{
+    var installedVersion = typeof(VisitorManagment.Web.Program).Assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "نسخه نامشخص";
+}
 <!doctype html>
 <html lang="en">
 
@@ -10,6 +15,7 @@
     <link rel="stylesheet" href="~/css/development-impersonation.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/application-topbar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/notification-center.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/application-version.css" asp-append-version="true" />
 </head>
 <body>
     @{
@@ -192,6 +198,10 @@
                             @await Component.InvokeAsync("Permission", int.Parse(User.FindFirst("Id").Value))
                         </ul>
                     </div>
+                </div>
+                <div class="application-version" dir="rtl" aria-label="نسخه سامانه">
+                    <span>نسخه سامانه</span>
+                    <strong dir="ltr">@installedVersion</strong>
                 </div>
             </div>
             <!-- end::navigation menu -->
