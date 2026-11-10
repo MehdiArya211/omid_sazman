@@ -215,6 +215,11 @@ namespace VisitorManagment.Core.DTOs
 
         public bool IsArchived { get; set; }
 
+        /// <summary>مرحله‌ی فعلی گردش درخواست</summary>
+        public string CurrentStage { get; set; }
+
+        public bool IsFinished { get; set; }
+
         [Display(Name = "کد پرسنلی")]
         [Required(ErrorMessage = "لطفاً {0} را وارد کنید.")]
         [RegularExpression(@"^\d{1,9}$", ErrorMessage = "{0} باید فقط عدد و حداکثر ۹ رقم باشد.")]
