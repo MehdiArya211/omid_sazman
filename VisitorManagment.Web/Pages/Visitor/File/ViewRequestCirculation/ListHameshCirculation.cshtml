@@ -55,7 +55,7 @@
 
                                 <tr>
                                     <td>@(i+=1)</td>
-                                    <td class="text-width-align">@hamesh.RankTitlePersonal @hamesh.FirstNamePersonel @hamesh.LastNamePersonel</td>
+                                    <td class="text-width-align">@(string.IsNullOrWhiteSpace(hamesh.SenderUserName) ? "ثبت‌کننده درخواست" : hamesh.SenderUserName)</td>
                                     <td>@hamesh.RcvrUserName</td>
                                     <td>@hamesh.ActionTypeTitle</td>
                                     <td>@hamesh.UserDesc</td>
