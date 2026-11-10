@@ -103,7 +103,7 @@
                 <div class="user-notification__body">
                     <div class="user-notification__meta">
                         <span class="user-notification__state">@(isRead ? "مشاهده‌شده" : "خوانده‌نشده")</span>
-                        <time datetime="@item.PublishDate.ToString("o")"><i class="ti-time" aria-hidden="true"></i> @item.PublishDate.ToShamsi()</time>
+                        <time datetime="@item.PublishDate.ToString(&quot;o&quot;)"><i class="ti-time" aria-hidden="true"></i> @item.PublishDate.ToShamsi()</time>
                     </div>
                     <h2>@item.Title</h2>
                     <p>@item.Content</p>
