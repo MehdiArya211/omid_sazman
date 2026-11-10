@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="~/css/application-version.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/navigation-menu-polish.css" asp-append-version="true" />
 </head>
-<body>
+<body data-tour-user="@User.FindFirst("Id")?.Value">
     @{
         var maintenanceDeveloper = await MaintenanceService.IsDeveloperAsync(User);
     }
