@@ -2773,32 +2773,33 @@ namespace VisitorManagment.Core.Services
         {
             if (userId <= 0 || fileId <= 0) return false;
 
-            var currentUser = _context.Users
+            var currentUserUnitDutyCode = _context.Users
                 .AsNoTracking()
                 .Where(user => user.Id == userId)
-                .Select(user => new { user.UnitDutyCode })
+                .Select(user => user.UnitDutyCode)
                 .SingleOrDefault();
-            if (currentUser == null) return false;
-
-            var currentRoleTypes = _context.UserRoles
+            var currentRoles = _context.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
-                .Select(userRole => userRole.Role.RoleType)
-                .Distinct()
-                .ToArray();
+                .Select(userRole => new
+                {
+                    userRole.RoleId,
+                    userRole.Role.RoleType,
+                    userRole.Role.Title
+                })
+                .ToList();
+            var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+            var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+            var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
+            var positionFileIds = GetFilesWithPositionHamesh(
+                currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
 
             return _context.Files
                 .AsNoTracking()
                 .Any(file => file.Id == fileId &&
                     file.IsArchived &&
                     !file.IsDelete &&
-                    (file.ArchivedRegUserId == userId ||
-                     (currentUser.UnitDutyCode.HasValue &&
-                      currentRoleTypes.Length > 0 &&
-                      _context.Hameshes.Any(hamesh =>
-                          hamesh.FileId == file.Id &&
-                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
-                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
+                    (file.ArchivedRegUserId == userId || positionFileIds.Contains(file.Id)));
         }
 
         /// <summary>
@@ -2809,31 +2810,33 @@ namespace VisitorManagment.Core.Services
             string filterGharargah = "",
             string filterCaption = "")
         {
-            var currentUser = _context.Users
+            var currentUserUnitDutyCode = _context.Users
                 .AsNoTracking()
                 .Where(user => user.Id == userId)
-                .Select(user => new { user.UnitDutyCode })
+                .Select(user => user.UnitDutyCode)
                 .SingleOrDefault();
-            var currentRoleTypes = _context.UserRoles
+            var currentRoles = _context.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.UserId == userId && !userRole.Role.IsDelete)
-                .Select(userRole => userRole.Role.RoleType)
-                .Distinct()
-                .ToArray();
+                .Select(userRole => new
+                {
+                    userRole.RoleId,
+                    userRole.Role.RoleType,
+                    userRole.Role.Title
+                })
+                .ToList();
+            var currentRoleIds = currentRoles.Select(role => role.RoleId).Distinct().ToArray();
+            var currentRoleTypes = currentRoles.Select(role => role.RoleType).Distinct().ToArray();
+            var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
+            var positionFileIds = GetFilesWithPositionHamesh(
+                currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
 
-            // بایگانی متعلق به صاحب قبلی جایگاه، برای کارشناس فعلی همان نقش و یگان نیز قابل مشاهده است.
+            // آرشیوهای متصدیان قبلی همان RoleId، همراه با آرشیوهای مستقیم کاربر، در این فهرست می‌مانند.
             IQueryable<Files> listFile = _context.Files
                 .AsNoTracking()
                 .Where(file => file.IsArchived &&
                     !file.IsDelete &&
-                    (file.ArchivedRegUserId == userId ||
-                     (currentUser != null &&
-                      currentUser.UnitDutyCode.HasValue &&
-                      currentRoleTypes.Length > 0 &&
-                      _context.Hameshes.Any(hamesh =>
-                          hamesh.FileId == file.Id &&
-                          hamesh.User.UnitDutyCode == currentUser.UnitDutyCode &&
-                          currentRoleTypes.Contains(hamesh.RoleTypeId)))));
+                    (file.ArchivedRegUserId == userId || positionFileIds.Contains(file.Id)));
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
