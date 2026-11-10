@@ -398,7 +398,17 @@ namespace VisitorManagment.Core.Services
                 LastNamePersonel = t.File.Personal.LastName,
                 RankTitlePersonal = t.File.Personal.RankTitle,
                 FarmandehPersonalName = t.File.FarmandehPersonalName,
-                RcvrUserName = t.User.FirstName + " " + t.User.LastName + "**" + t.User.UserName,
+                // UserId is the person who performed this step; ParentId points to the previous step.
+                SenderUserName = t.ParentId.HasValue
+                    ? _context.Hameshes
+                        .Where(parent => parent.Id == t.ParentId.Value)
+                        .Select(parent => parent.User.FirstName + " " + parent.User.LastName)
+                        .FirstOrDefault()
+                    : _context.Users
+                        .Where(user => user.Id == t.File.RegUserId)
+                        .Select(user => user.FirstName + " " + user.LastName)
+                        .FirstOrDefault(),
+                RcvrUserName = t.User.FirstName + " " + t.User.LastName
 
             }).Skip(skip).Take(take).ToList();
             return list;
