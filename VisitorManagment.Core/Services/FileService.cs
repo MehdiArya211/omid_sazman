@@ -1207,10 +1207,15 @@ namespace VisitorManagment.Core.Services
                             : _context.Cartables
                                 .Where(cartable => cartable.FileId == file.Id && !cartable.IsDone)
                                 .OrderByDescending(cartable => cartable.RegDate)
-                                .Select(cartable => _context.Users
-                                    .Where(user => user.Id == cartable.RcvrUserId)
-                                    .Select(user => user.FirstName + " " + user.LastName)
-                                    .FirstOrDefault())
+                                .Select(cartable => cartable.RcvrUserId > 0
+                                    ? _context.Users
+                                        .Where(user => user.Id == cartable.RcvrUserId)
+                                        .Select(user => user.FirstName + " " + user.LastName)
+                                        .FirstOrDefault()
+                                    : _context.Roles
+                                        .Where(role => role.RoleId == cartable.RcvrRoleId)
+                                        .Select(role => role.Title)
+                                        .FirstOrDefault())
                                 .FirstOrDefault() ?? "در انتظار ارجاع",
                     RegDate = file.RegDate
                 })
