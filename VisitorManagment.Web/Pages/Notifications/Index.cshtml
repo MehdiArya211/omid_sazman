@@ -1,24 +1,154 @@
 @page
 @model VisitorManagment.Web.Pages.Notifications.IndexModel
 @using VisitorManagment.Core.Convertors
-@{ ViewData["Title"] = "اعلان‌های من"; }
-<main class="notification-page" dir="rtl">
-    <header class="notification-hero notification-hero--user"><div><span>مرکز اطلاع‌رسانی</span><h1>اعلان‌های من</h1><p>دستورالعمل‌ها، اطلاعیه‌ها و فایل‌های منتشرشده سامانه را مشاهده کنید.</p></div><i class="ti-announcement"></i></header>
-    <form data-notification-token>@Html.AntiForgeryToken()</form>
-    <section class="user-notification-list">
+@{
+    ViewData["Title"] = "اعلان‌های من";
+    var unreadCount = Model.Notifications.Count(item => !Model.ReadNotificationIds.Contains(item.Id));
+    var readCount = Model.Notifications.Count - unreadCount;
+}
+@functions {
+    private static string FileExtension(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName)) return "FILE";
+        var dotIndex = fileName.LastIndexOf('.');
+        return dotIndex >= 0 && dotIndex < fileName.Length - 1
+            ? fileName.Substring(dotIndex + 1).ToUpperInvariant()
+            : "FILE";
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024) return bytes + " بایت";
+        if (bytes < 1024 * 1024) return (bytes / 1024d).ToString("0.#") + " کیلوبایت";
+        return (bytes / (1024d * 1024d)).ToString("0.#") + " مگابایت";
+    }
+
+    private static bool IsImage(string fileName)
+    {
+        var extension = FileExtension(fileName);
+        return extension == "JPG" || extension == "JPEG" || extension == "PNG";
+    }
+}
+<main class="notification-page notification-inbox-page" dir="rtl">
+    <header class="notification-hero notification-hero--user">
+        <div>
+            <span>مرکز اطلاع‌رسانی</span>
+            <h1>اعلان‌های سامانه</h1>
+            <p>اطلاعیه‌ها را پیگیری کنید و فایل‌های مرتبط را مشاهده یا دریافت کنید.</p>
+        </div>
+        <i class="ti-announcement" aria-hidden="true"></i>
+    </header>
+
+    <form class="notification-token" data-notification-token>@Html.AntiForgeryToken()</form>
+
+    @if (Model.Notifications.Any())
+    {
+        <section class="notification-inbox-tools" aria-label="جستجو و فیلتر اعلان‌ها">
+            <div class="notification-inbox-stats">
+                <div class="notification-inbox-stat notification-inbox-stat--total">
+                    <span class="notification-inbox-stat__icon"><i class="ti-bell" aria-hidden="true"></i></span>
+                    <span><small>همه اعلان‌ها</small><strong data-count-total>@Model.Notifications.Count</strong></span>
+                </div>
+                <div class="notification-inbox-stat notification-inbox-stat--unread">
+                    <span class="notification-inbox-stat__icon"><i class="ti-email" aria-hidden="true"></i></span>
+                    <span><small>خوانده‌نشده</small><strong data-count-unread>@unreadCount</strong></span>
+                </div>
+                <div class="notification-inbox-stat notification-inbox-stat--read">
+                    <span class="notification-inbox-stat__icon"><i class="ti-check-box" aria-hidden="true"></i></span>
+                    <span><small>مشاهده‌شده</small><strong data-count-read>@readCount</strong></span>
+                </div>
+            </div>
+
+            <div class="notification-inbox-controls">
+                <label class="notification-search">
+                    <i class="ti-search" aria-hidden="true"></i>
+                    <input type="search" placeholder="جستجو در عنوان، متن یا نام فایل..." autocomplete="off" data-notification-search aria-label="جستجو در اعلان‌ها" />
+                    <button type="button" data-clear-notification-search aria-label="پاک‌کردن جستجو" hidden>&times;</button>
+                </label>
+                <div class="notification-filter-tabs" role="group" aria-label="فیلتر وضعیت اعلان">
+                    <button type="button" class="is-active" data-notification-filter="all" aria-pressed="true">همه</button>
+                    <button type="button" data-notification-filter="unread" aria-pressed="false">خوانده‌نشده</button>
+                    <button type="button" data-notification-filter="read" aria-pressed="false">مشاهده‌شده</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="notification-filter-empty" data-notification-filter-empty hidden>
+            <i class="ti-search" aria-hidden="true"></i>
+            <strong>اعلانی پیدا نشد</strong>
+            <span>عبارت جستجو یا فیلتر انتخاب‌شده را تغییر دهید.</span>
+        </div>
+    }
+
+    <section class="user-notification-list" data-notification-list>
         @if (!Model.Notifications.Any())
         {
-            <div class="notification-empty"><i class="ti-bell"></i><strong>اعلانی برای نمایش وجود ندارد</strong></div>
+            <div class="notification-empty">
+                <span class="notification-empty__icon"><i class="ti-bell" aria-hidden="true"></i></span>
+                <strong>اعلانی برای نمایش وجود ندارد</strong>
+                <span>اگر اطلاعیه‌ی جدیدی منتشر شود، در همین صفحه نمایش داده می‌شود.</span>
+            </div>
         }
         @foreach (var item in Model.Notifications)
         {
             var isRead = Model.ReadNotificationIds.Contains(item.Id);
-            <article class="user-notification @(isRead ? "is-read" : "is-unread")" data-notification-row="@item.Id">
-                <div class="user-notification__icon"><i class="ti-bell"></i></div>
-                <div class="user-notification__body"><div class="user-notification__meta"><span>@(isRead ? "مشاهده‌شده" : "جدید")</span><time>@item.PublishDate.ToShamsi()</time></div><h2>@item.Title</h2><p>@item.Content</p>
-                    @if (item.Attachments.Any()) { <div class="notification-files">@foreach(var file in item.Attachments){<a href="@file.FilePath" target="_blank" rel="noopener" download><i class="ti-clip"></i>@file.FileName</a>}</div> }
+            var searchText = item.Title + " " + item.Content + " " + string.Join(" ", item.Attachments.Select(file => file.FileName));
+            <article class="user-notification @(isRead ? "is-read" : "is-unread")"
+                     data-notification-row="@item.Id"
+                     data-notification-status="@(isRead ? "read" : "unread")"
+                     data-notification-search="@searchText">
+                <div class="user-notification__icon" aria-hidden="true">
+                    <i class="@(isRead ? "ti-check" : "ti-announcement")"></i>
                 </div>
-                @if (!isRead) { <button type="button" class="notification-mark-read" data-mark-notification="@item.Id"><i class="ti-check"></i> مشاهده کردم</button> }
+                <div class="user-notification__body">
+                    <div class="user-notification__meta">
+                        <span class="user-notification__state">@(isRead ? "مشاهده‌شده" : "خوانده‌نشده")</span>
+                        <time datetime="@item.PublishDate.ToString("o")"><i class="ti-time" aria-hidden="true"></i> @item.PublishDate.ToShamsi()</time>
+                    </div>
+                    <h2>@item.Title</h2>
+                    <p>@item.Content</p>
+
+                    @if (item.Attachments.Any())
+                    {
+                        <div class="notification-attachments">
+                            <div class="notification-attachments__heading">
+                                <strong><i class="ti-clip" aria-hidden="true"></i> فایل‌های پیوست</strong>
+                                <span>@item.Attachments.Count فایل</span>
+                            </div>
+                            <div class="notification-attachments__grid">
+                                @foreach (var file in item.Attachments)
+                                {
+                                    <article class="notification-attachment">
+                                        <a class="notification-attachment__preview" href="@file.FilePath" target="_blank" rel="noopener" title="باز کردن @file.FileName">
+                                            @if (IsImage(file.FileName))
+                                            {
+                                                <img src="@file.FilePath" loading="lazy" alt="" />
+                                            }
+                                            else
+                                            {
+                                                <span class="notification-attachment__extension">@FileExtension(file.FileName)</span>
+                                            }
+                                            <span class="notification-attachment__open"><i class="ti-new-window" aria-hidden="true"></i></span>
+                                        </a>
+                                        <div class="notification-attachment__info">
+                                            <strong title="@file.FileName">@file.FileName</strong>
+                                            <small>@FormatFileSize(file.FileSize)</small>
+                                        </div>
+                                        <a class="notification-attachment__download" href="@file.FilePath" download="@file.FileName" aria-label="دریافت @file.FileName" title="دریافت فایل">
+                                            <i class="ti-download" aria-hidden="true"></i>
+                                        </a>
+                                    </article>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (!isRead)
+                {
+                    <button type="button" class="notification-mark-read" data-mark-notification="@item.Id">
+                        <i class="ti-check" aria-hidden="true"></i><span>مشاهده کردم</span>
+                    </button>
+                }
             </article>
         }
     </section>
