@@ -17,7 +17,7 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model?.hameshes?.Any() == true)
+        @if (Model?.hameshes != null && Model.hameshes.Count > 0)
         {
             @foreach (var hamesh in Model.hameshes)
             {
