@@ -5,6 +5,7 @@
     var support = new signalR.HubConnectionBuilder().withUrl("/supporthub").build();
     var chat = new signalR.HubConnectionBuilder().withUrl("/chathub?support=true").build();
     var reconnectTimers = [];
+    var connectionErrors = ["", ""];
     var roomList, messages, form, input, sendButton, search, emptyState, currentUser, replyPreview;
     var messageSearch, fileInput, attachButton, typingIndicator, typingTimer = null, lastDateKey = "";
     var selectedReply = null;
@@ -150,7 +151,12 @@
     }
     function setConnectionState(text, connected) {
         var state = document.getElementById("supportConnectionStatus");
-        if (state) { state.textContent = text; state.classList.toggle("is-online", connected); }
+        if (state) {
+            var detail = connectionErrors.filter(Boolean).join(" | ");
+            state.textContent = text + (detail ? " — " + detail : "");
+            state.title = detail;
+            state.classList.toggle("is-online", connected);
+        }
         if (input) input.disabled = !connected || !activeRoomId;
         if (sendButton) sendButton.disabled = !connected || !activeRoomId;
     }
@@ -160,12 +166,16 @@
         reconnectTimers[index] = window.setTimeout(async function tryReconnect() {
             try {
                 await start(connection);
-                reconnectTimers[index] = null;
                 if (afterConnected) await afterConnected();
+                connectionErrors[index] = "";
+                reconnectTimers[index] = null;
                 if (support.state === signalR.HubConnectionState.Connected && chat.state === signalR.HubConnectionState.Connected) {
                     setConnectionState("آنلاین", true);
                 }
-            } catch (_) {
+            } catch (error) {
+                connectionErrors[index] = (index === 0 ? "پشتیبانی" : "چت") + ": " + (error && error.message ? error.message : "خطای نامشخص");
+                setConnectionState("در حال اتصال مجدد...", false);
+                console.error(index === 0 ? "SupportHub reconnect failed" : "ChatHub reconnect failed", error);
                 reconnectTimers[index] = window.setTimeout(tryReconnect, 5000);
             }
         }, 2000);
@@ -251,17 +261,22 @@
             setConnectionState("در حال اتصال مجدد...", false);
             reconnect(chat, function () { return activeRoomId ? chat.invoke("JoinRoom", activeRoomId) : Promise.resolve(); });
         });
-        try { await Promise.all([start(support), start(chat)]); setConnectionState("آنلاین", true); }
-        catch (error) {
+        var initialResults = await Promise.allSettled([start(support), start(chat)]);
+        var initialConnectionsOk = initialResults.every(function (result) { return result.status === "fulfilled"; });
+        initialResults.forEach(function (result, index) {
+            if (result.status === "rejected") {
+                connectionErrors[index] = (index === 0 ? "پشتیبانی" : "چت") + ": " + (result.reason && result.reason.message ? result.reason.message : "خطای نامشخص");
+                console.error(index === 0 ? "SupportHub connection failed" : "ChatHub connection failed", result.reason);
+            }
+        });
+        if (initialConnectionsOk) {
+            connectionErrors = ["", ""];
+            setConnectionState("آنلاین", true);
+        } else {
             setConnectionState("در حال اتصال مجدد...", false);
-            setEmptyState("اتصال به چت برقرار نشد", "سامانه به‌صورت خودکار دوباره تلاش می‌کند.", "ti-alert");
-            if (support.state === signalR.HubConnectionState.Disconnected) {
-                reconnect(support, function () { return support.invoke("RefreshRooms"); });
-            }
-            if (chat.state === signalR.HubConnectionState.Disconnected) {
-                reconnect(chat, function () { return activeRoomId ? chat.invoke("JoinRoom", activeRoomId) : Promise.resolve(); });
-            }
-            console.error("Chat connection failed", error);
+            setEmptyState("اتصال به چت برقرار نشد", "سامانه به‌صورت خودکار دوباره تلاش می‌کند. جزئیات خطا در وضعیت اتصال نمایش داده می‌شود.", "ti-alert");
+            if (support.state === signalR.HubConnectionState.Disconnected) reconnect(support, function () { return support.invoke("RefreshRooms"); });
+            if (chat.state === signalR.HubConnectionState.Disconnected) reconnect(chat, function () { return activeRoomId ? chat.invoke("JoinRoom", activeRoomId) : Promise.resolve(); });
         }
     });
     function updateMessage(item){var li=messages.querySelector('[data-message-id="'+item.id+'"]');if(!li)return;li._chatMessage=item;li.classList.toggle("is-deleted",!!item.isDeleted);var body=li.querySelector(".chat-message-body");if(body)body.textContent=item.isDeleted?"این پیام حذف شده است":(item.message||"");var meta=li.querySelector(".chat-message-meta");if(meta)meta.textContent=(item.sender||"کاربر")+" · "+formatPersianDate(item.time)+(item.editedAt?" · ویرایش‌شده":"");if(item.isDeleted)li.querySelectorAll(".chat-attachment,.chat-message-actions").forEach(function(x){x.remove();});}
