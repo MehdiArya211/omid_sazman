@@ -47,7 +47,7 @@
         }
     ];
 
-    var overlay, card, title, content, progress, stepText, previous, next, close;
+    var overlay, card, spotlight, title, content, progress, stepText, previous, next, close;
     var current = 0;
     var visibleSteps = [];
 
@@ -65,6 +65,7 @@
             '</section>';
         document.body.appendChild(overlay);
         card = overlay.querySelector(".system-tour-card");
+        spotlight = overlay.querySelector(".system-tour-spotlight");
         title = overlay.querySelector("#systemTourTitle");
         content = overlay.querySelector("#systemTourText");
         progress = overlay.querySelector("[data-tour-progress]");
@@ -102,11 +103,18 @@
         card.style.top = "";
         card.style.transform = "";
         if (!target) {
+            spotlight.hidden = true;
             card.classList.add("is-centered");
             return;
         }
+        spotlight.hidden = false;
         card.classList.remove("is-centered");
         var rect = target.getBoundingClientRect();
+        var gap = 7;
+        spotlight.style.left = Math.max(4, rect.left - gap) + "px";
+        spotlight.style.top = Math.max(4, rect.top - gap) + "px";
+        spotlight.style.width = Math.min(window.innerWidth - 8, rect.width + gap * 2) + "px";
+        spotlight.style.height = Math.min(window.innerHeight - 8, rect.height + gap * 2) + "px";
         var cardHeight = card.offsetHeight;
         var top = rect.bottom + 14;
         if (top + cardHeight > window.innerHeight - margin) top = rect.top - cardHeight - 14;
