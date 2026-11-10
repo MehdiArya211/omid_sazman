@@ -2798,13 +2798,18 @@ namespace VisitorManagment.Core.Services
             var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
             var positionFileIds = GetFilesWithPositionHamesh(
                 currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+            var formerPositionHolderIds = _context.RoleAssignmentHistories
+                .Where(history => currentRoleIds.Contains(history.RoleId))
+                .Select(history => history.UserId);
 
             return _context.Files
                 .AsNoTracking()
                 .Any(file => file.Id == fileId &&
                     file.IsArchived &&
                     !file.IsDelete &&
-                    (file.ArchivedRegUserId == userId || positionFileIds.Contains(file.Id)));
+                    (file.ArchivedRegUserId == userId ||
+                     formerPositionHolderIds.Contains(file.ArchivedRegUserId) ||
+                     positionFileIds.Contains(file.Id)));
         }
 
         /// <summary>
@@ -2835,13 +2840,18 @@ namespace VisitorManagment.Core.Services
             var currentRoleTitles = currentRoles.Select(role => role.Title).Where(title => !string.IsNullOrWhiteSpace(title)).Distinct().ToArray();
             var positionFileIds = GetFilesWithPositionHamesh(
                 currentUserUnitDutyCode, currentRoleIds, currentRoleTypes, currentRoleTitles);
+            var formerPositionHolderIds = _context.RoleAssignmentHistories
+                .Where(history => currentRoleIds.Contains(history.RoleId))
+                .Select(history => history.UserId);
 
             // آرشیوهای متصدیان قبلی همان RoleId، همراه با آرشیوهای مستقیم کاربر، در این فهرست می‌مانند.
             IQueryable<Files> listFile = _context.Files
                 .AsNoTracking()
                 .Where(file => file.IsArchived &&
                     !file.IsDelete &&
-                    (file.ArchivedRegUserId == userId || positionFileIds.Contains(file.Id)));
+                    (file.ArchivedRegUserId == userId ||
+                     formerPositionHolderIds.Contains(file.ArchivedRegUserId) ||
+                     positionFileIds.Contains(file.Id)));
 
             if (!string.IsNullOrWhiteSpace(filterCaption))
             {
