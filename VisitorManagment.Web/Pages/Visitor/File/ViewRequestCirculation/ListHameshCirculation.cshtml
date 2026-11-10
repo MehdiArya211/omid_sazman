@@ -50,17 +50,24 @@
                         </thead>
                         <tbody>
 
-                            @foreach (var hamesh in Model.listHameshViewModel.hameshes)
+                            @if (Model.listHameshViewModel?.hameshes != null && Model.listHameshViewModel.hameshes.Count > 0)
                             {
-
+                                @foreach (var hamesh in Model.listHameshViewModel.hameshes)
+                                {
+                                    <tr>
+                                        <td>@(++i)</td>
+                                        <td class="text-width-align">@(string.IsNullOrWhiteSpace(hamesh.SenderUserName) ? "ثبت‌کننده درخواست" : hamesh.SenderUserName)</td>
+                                        <td>@hamesh.RcvrUserName</td>
+                                        <td>@hamesh.ActionTypeTitle</td>
+                                        <td>@hamesh.UserDesc</td>
+                                        <td>@hamesh.RegDate.ToShamsi()</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
                                 <tr>
-                                    <td>@(i+=1)</td>
-                                    <td class="text-width-align">@(string.IsNullOrWhiteSpace(hamesh.SenderUserName) ? "ثبت‌کننده درخواست" : hamesh.SenderUserName)</td>
-                                    <td>@hamesh.RcvrUserName</td>
-                                    <td>@hamesh.ActionTypeTitle</td>
-                                    <td>@hamesh.UserDesc</td>
-                                    <td>@hamesh.RegDate.ToShamsi()</td>
-
+                                    <td colspan="6" class="text-center text-muted">هنوز اقدامی برای این درخواست ثبت نشده است.</td>
                                 </tr>
                             }
 
