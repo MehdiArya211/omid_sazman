@@ -52,7 +52,7 @@ namespace VisitorManagment.Web.Pages
         [Display(Name = "رمز عبور جدید")]
         [Required(ErrorMessage = "لطفاً {0} را وارد کنید")]
         [StringLength(64, MinimumLength = 8, ErrorMessage = "رمز عبور باید بین ۸ تا ۶۴ نویسه باشد")]
-        [RegularExpression(@"\A(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}\z",
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\u0660-\u0669\u06F0-\u06F9])(?=.*[^A-Za-z0-9\u0660-\u0669\u06F0-\u06F9])[\s\S]{8,64}$",
             ErrorMessage = "رمز باید شامل حرف بزرگ و کوچک انگلیسی، عدد و نشانه باشد")]
         public string NewPassword { get; set; }
 
