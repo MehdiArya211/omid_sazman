@@ -83,6 +83,11 @@
     <div class="header">
         <div class="omid-topbar">
             <ul class="navbar-nav omid-topbar__actions">
+                <li class="nav-item">
+                    <a href="/Admin/Users/Logout" class="omid-topbar__logout" title="خروج از سامانه">
+                        <i data-feather="log-out" aria-hidden="true"></i><span>خروج</span>
+                    </a>
+                </li>
                 @if (User.FindFirst("RoleTypeId")?.Value == "100")
                 {
                     <li class="nav-item"><a href="/Admin/OnlineUsers" class="nav-link" title="کاربران آنلاین"><i class="ti-user"></i><span class="sr-only">کاربران آنلاین</span></a></li>
@@ -131,11 +136,6 @@
                 <li class="nav-item navigation-toggler mobile-toggler">
                     <a href="#" class="nav-link" title="نمایش منو ">
                         <i data-feather="menu"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/Admin/Users/Logout" class="omid-topbar__logout" title="خروج از سامانه">
-                        <i data-feather="log-out" aria-hidden="true"></i><span>خروج</span>
                     </a>
                 </li>
             </ul>
