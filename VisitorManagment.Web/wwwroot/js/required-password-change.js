@@ -8,8 +8,8 @@
         length: function (value) { return value.length >= 8; },
         upper: function (value) { return /[A-Z]/.test(value); },
         lower: function (value) { return /[a-z]/.test(value); },
-        number: function (value) { return /\d/.test(value); },
-        symbol: function (value) { return /[^A-Za-z0-9]/.test(value); }
+        number: function (value) { return /[0-9\u0660-\u0669\u06F0-\u06F9]/.test(value); },
+        symbol: function (value) { return /[^A-Za-z0-9\u0660-\u0669\u06F0-\u06F9]/.test(value); }
     };
     var colors = ['#c84a5a', '#d48a28', '#c1a22b', '#398f79', '#148760'];
     var titles = ['بسیار ضعیف', 'ضعیف', 'متوسط', 'خوب', 'قوی'];
@@ -20,7 +20,11 @@
         Object.keys(rules).forEach(function (ruleName) {
             var isValid = rules[ruleName](value);
             var rule = document.querySelector('[data-rule="' + ruleName + '"]');
-            if (rule) rule.classList.toggle('is-valid', isValid);
+            if (rule) {
+                rule.classList.toggle('is-valid', isValid);
+                rule.classList.toggle('is-invalid', value.length > 0 && !isValid);
+                rule.setAttribute('aria-checked', isValid ? 'true' : 'false');
+            }
             if (isValid) score += 1;
         });
 
@@ -29,6 +33,13 @@
         bar.style.width = value ? (score * 20) + '%' : '0';
         bar.style.background = colors[Math.max(0, score - 1)];
         title.textContent = 'قدرت رمز: ' + (value ? titles[Math.max(0, score - 1)] : 'وارد نشده');
+        var validationMessage = document.querySelector('[data-valmsg-for="NewPassword"]');
+        if (value && score === Object.keys(rules).length && validationMessage &&
+            validationMessage.textContent.indexOf('شامل حرف بزرگ و کوچک') >= 0) {
+            validationMessage.textContent = '';
+            validationMessage.classList.remove('field-validation-error');
+            validationMessage.classList.add('field-validation-valid');
+        }
     }
 
     document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
