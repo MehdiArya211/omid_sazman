@@ -23,7 +23,6 @@
             if (rule) {
                 rule.classList.toggle('is-valid', isValid);
                 rule.classList.toggle('is-invalid', value.length > 0 && !isValid);
-                rule.setAttribute('aria-checked', isValid ? 'true' : 'false');
             }
             if (isValid) score += 1;
         });
