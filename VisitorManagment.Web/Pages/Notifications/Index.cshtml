@@ -92,6 +92,7 @@
         @foreach (var item in Model.Notifications)
         {
             var isRead = Model.ReadNotificationIds.Contains(item.Id);
+            var publishDateIso = item.PublishDate.ToString("o");
             var searchText = item.Title + " " + item.Content + " " + string.Join(" ", item.Attachments.Select(file => file.FileName));
             <article class="user-notification @(isRead ? "is-read" : "is-unread")"
                      data-notification-row="@item.Id"
@@ -103,7 +104,7 @@
                 <div class="user-notification__body">
                     <div class="user-notification__meta">
                         <span class="user-notification__state">@(isRead ? "مشاهده‌شده" : "خوانده‌نشده")</span>
-                        <time datetime="@item.PublishDate.ToString(&quot;o&quot;)"><i class="ti-time" aria-hidden="true"></i> @item.PublishDate.ToShamsi()</time>
+                        <time datetime="@publishDateIso"><i class="ti-time" aria-hidden="true"></i> @item.PublishDate.ToShamsi()</time>
                     </div>
                     <h2>@item.Title</h2>
                     <p>@item.Content</p>
