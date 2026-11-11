@@ -1,8 +1,40 @@
 ﻿@using System.Reflection
+@using System.Globalization
 @inject VisitorManagment.Core.Services.Interfaces.IMaintenanceService MaintenanceService
 @{
     var installedVersion = typeof(VisitorManagment.Web.Program).Assembly
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "نسخه نامشخص";
+
+    var versionForDisplay = installedVersion;
+    const string buildPrefix = "Build ";
+    var buildStart = installedVersion.IndexOf(buildPrefix, StringComparison.OrdinalIgnoreCase);
+    if (buildStart >= 0)
+    {
+        buildStart += buildPrefix.Length;
+        var buildEnd = installedVersion.IndexOf(" UTC", buildStart, StringComparison.OrdinalIgnoreCase);
+        var timestampLength = (buildEnd >= 0 ? buildEnd : installedVersion.Length) - buildStart;
+        var buildTimestamp = installedVersion.Substring(buildStart, timestampLength);
+        if (DateTime.TryParseExact(
+            buildTimestamp,
+            "yyyyMMddHHmmssfff",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var buildDateUtc))
+        {
+            var persianCalendar = new PersianCalendar();
+            var persianCulture = CultureInfo.GetCultureInfo("fa-IR");
+            var persianTimestamp =
+                persianCalendar.GetYear(buildDateUtc).ToString("0000", persianCulture) + "/" +
+                persianCalendar.GetMonth(buildDateUtc).ToString("00", persianCulture) + "/" +
+                persianCalendar.GetDayOfMonth(buildDateUtc).ToString("00", persianCulture) + " " +
+                buildDateUtc.Hour.ToString("00", persianCulture) + ":" +
+                buildDateUtc.Minute.ToString("00", persianCulture) + ":" +
+                buildDateUtc.Second.ToString("00", persianCulture);
+
+            versionForDisplay = installedVersion.Substring(0, buildStart) + persianTimestamp +
+                (buildEnd >= 0 ? installedVersion.Substring(buildEnd) : string.Empty);
+        }
+    }
 }
 <!doctype html>
 <html lang="en">
@@ -210,7 +242,7 @@
                 </div>
                 <div class="application-version" dir="rtl" aria-label="نسخه سامانه">
                     <span>نسخه سامانه</span>
-                    <strong dir="ltr">@installedVersion</strong>
+                    <strong dir="ltr">@versionForDisplay</strong>
                 </div>
             </div>
             <!-- end::navigation menu -->
@@ -247,9 +279,6 @@
         <!--end date picker-->
         <!-- search auto complete-->
         @RenderSection("autocompletesearch", required: false)
-        <!--end date picker-->
-        <!-- GetInformationPersonal-->
-        @RenderSection("GetInformationPersonal", required: false)
         <!--end GetInformationPersonal-->
 
 
