@@ -208,3 +208,62 @@
         font-size:12px;
     }
 }
+
+/* حذف فلش تکراری قالب و نگه‌داشتن یک نشانگر باز/بسته */
+.navigation-menu-body .sidebar-menu-parent::before,
+.navigation-menu-body .sidebar-menu-parent::after{
+    content:none!important;
+    display:none!important;
+}
+.navigation-menu-body .sidebar-menu-item{
+    box-sizing:border-box;
+    position:relative;
+    width:100%;
+    min-width:0;
+}
+.navigation-menu-body .sidebar-menu-link{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    max-width:calc(100% - 16px);
+    transform:none!important;
+}
+.navigation-menu-body .sidebar-menu-parent{
+    padding-left:32px;
+}
+.navigation-menu-body .sidebar-menu-chevron{
+    position:absolute;
+    top:50%;
+    left:12px;
+    right:auto;
+    margin:0!important;
+    transform:translateY(-50%);
+    color:#8298ad;
+    transition:transform .2s ease,color .2s ease;
+}
+.navigation-menu-body .sidebar-menu-item.open>.sidebar-menu-parent .sidebar-menu-chevron{
+    transform:translateY(-50%) rotate(-90deg);
+    color:#2476bd;
+}
+.navigation-menu-body .sidebar-menu-parent:hover .sidebar-menu-chevron{
+    color:#176cae;
+}
+.navigation-menu-body .sidebar-menu-link:hover,
+.navigation-menu-body .sidebar-submenu-link:hover{
+    transform:none!important;
+    box-shadow:none;
+}
+.navigation-menu-body .sidebar-menu-link:focus-visible,
+.navigation-menu-body .sidebar-submenu-link:focus-visible{
+    outline:2px solid #4a9be0;
+    outline-offset:-3px;
+}
+.navigation-menu-body,
+.navigation-menu-body .navigation-menu-group,
+.navigation-menu-body .navigation-menu-group>div,
+.navigation-menu-body .navigation-menu-group>div>ul{
+    overflow-x:hidden;
+}
+@media(prefers-reduced-motion:reduce){
+    .navigation-menu-body .sidebar-menu-chevron{transition:none}
+}
