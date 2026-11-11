@@ -34,6 +34,7 @@
                     </label>
                     <div class="notification-upload-help"><span><i class="ti-info-alt"></i> PDF، Word، Excel، تصویر و ZIP</span><span>حداکثر ۱۰ مگابایت برای هر فایل</span></div>
                     <div class="notification-file-preview" data-file-preview aria-live="polite"></div>
+                    <div class="notification-upload-feedback" data-upload-feedback role="status" aria-live="polite"></div>
                 </div>
                 <aside class="notification-publish-panel">
                     <div><strong>تنظیم انتشار</strong><small>پس از انتشار، اعلان در زنگوله و صفحه اعلان‌های کاربران نمایش داده می‌شود.</small></div>
@@ -50,7 +51,7 @@
         @foreach (var item in Model.Notifications)
         {
             <tr><td><strong>@item.Title</strong></td><td>@item.PublishDate.ToShamsi()</td><td>@item.Attachments.Count</td><td>@(Model.ViewCounts.ContainsKey(item.Id) ? Model.ViewCounts[item.Id] : 0)</td><td><span class="notification-status @(item.IsActive ? "is-active" : "")">@(item.IsActive ? "فعال" : "غیرفعال")</span></td><td><div class="notification-actions">
-                <button type="button" class="notification-edit" data-edit-notification data-id="@item.Id" data-title="@item.Title" data-content="@item.Content" data-active="@item.IsActive.ToString().ToLowerInvariant()" data-attachments='@System.Text.Json.JsonSerializer.Serialize(item.Attachments.Select(file => new { file.Id, file.FileName, file.FilePath }))'><i class="ti-pencil"></i> ویرایش</button>
+                <button type="button" class="notification-edit" data-edit-notification data-id="@item.Id" data-title="@item.Title" data-content="@item.Content" data-active="@item.IsActive.ToString().ToLowerInvariant()" data-attachments='@System.Text.Json.JsonSerializer.Serialize(item.Attachments.Select(file => new { file.Id, file.FileName, file.FilePath, file.FileSize }))'><i class="ti-pencil"></i> ویرایش</button>
                 <form method="post" asp-page-handler="Delete"><input type="hidden" name="id" value="@item.Id"/><button type="submit" class="notification-delete" data-confirm="اعلان «@item.Title» حذف شود؟" data-confirm-title="تأیید حذف اعلان" data-confirm-button="بله، حذف شود"><i class="ti-trash"></i></button></form>
             </div></td></tr>
         }
@@ -77,7 +78,8 @@
                         <span class="notification-upload-zone__text"><strong>انتخاب فایل جدید</strong><small>فایل‌های جدید به پیوست‌های فعلی اضافه می‌شوند.</small></span>
                         <span class="notification-upload-zone__button">انتخاب</span>
                     </label>
-                    <div class="notification-file-preview" data-file-preview></div>
+                    <div class="notification-file-preview" data-file-preview aria-live="polite"></div>
+                    <div class="notification-upload-feedback" data-upload-feedback role="status" aria-live="polite"></div>
                 </div>
                 <label class="notification-check notification-check--edit"><input name="isActive" type="checkbox" value="true"/><span><b>اعلان فعال باشد</b><small>برای کاربران قابل مشاهده باشد</small></span></label>
                 <div class="notification-existing-files" data-existing-files></div>

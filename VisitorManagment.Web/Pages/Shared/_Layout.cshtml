@@ -1,4 +1,9 @@
-﻿@inject VisitorManagment.Core.Services.Interfaces.IMaintenanceService MaintenanceService
+﻿@using System.Reflection
+@inject VisitorManagment.Core.Services.Interfaces.IMaintenanceService MaintenanceService
+@{
+    var installedVersion = typeof(VisitorManagment.Web.Program).Assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "نسخه نامشخص";
+}
 <!doctype html>
 <html lang="en">
 
@@ -10,8 +15,11 @@
     <link rel="stylesheet" href="~/css/development-impersonation.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/application-topbar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/notification-center.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/application-version.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/navigation-menu-polish.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/system-tour.css" asp-append-version="true" />
 </head>
-<body>
+<body data-tour-user="@User.FindFirst("Id")?.Value">
     @{
         var maintenanceDeveloper = await MaintenanceService.IsDeveloperAsync(User);
     }
@@ -67,6 +75,14 @@
                         <a href="/Admin/SupportChatOnline/Index" class="nav-link support-notification-link" title="پیام‌های پشتیبانی">
                             <i data-feather="message-circle"></i><span id="supportUnreadBadge" class="support-unread-badge" hidden>۰</span>
                         </a>
+                    </li>
+                }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-item">
+                        <button type="button" class="nav-link system-tour-trigger" data-system-tour-start title="راهنمای کار با سامانه" aria-label="شروع راهنمای کار با سامانه">
+                            <i data-feather="help-circle" aria-hidden="true"></i><span class="sr-only">راهنمای کار با سامانه</span>
+                        </button>
                     </li>
                 }
                 <li class="nav-item">
@@ -193,6 +209,10 @@
                         </ul>
                     </div>
                 </div>
+                <div class="application-version" dir="rtl" aria-label="نسخه سامانه">
+                    <span>نسخه سامانه</span>
+                    <strong dir="ltr">@installedVersion</strong>
+                </div>
             </div>
             <!-- end::navigation menu -->
 
@@ -241,6 +261,10 @@
     <script src="~/js/ui-preferences.js" asp-append-version="true"></script>
     <script src="~/js/application-topbar.js" asp-append-version="true"></script>
     <script src="~/js/notification-center.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/js/system-tour.js" asp-append-version="true"></script>
+    }
     @if (User.Identity?.IsAuthenticated == true)
     {
         <script src="~/js/online-presence.js" asp-append-version="true"></script>
