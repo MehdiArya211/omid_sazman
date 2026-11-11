@@ -6,6 +6,17 @@
 .slide-guide{display:flex;align-items:center;gap:14px;margin:20px 0;padding:16px 18px;border:1px solid #d7eaf0;border-radius:16px;background:#f4fbfc}.slide-guide i{font-size:24px;color:var(--brand-2)}.slide-guide div{display:flex;flex-direction:column;gap:4px}.slide-guide span{color:var(--muted);font-size:13px}
 .slide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}.slide-card{overflow:hidden;border:1px solid #dfeaf0;border-radius:18px;background:#fff;box-shadow:0 8px 28px rgba(31,70,91,.08);transition:.2s}.slide-card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(31,70,91,.12)}.slide-card.is-disabled{opacity:.65}
 .slide-card__image{position:relative;aspect-ratio:900/980;background:#eaf2f5;overflow:hidden}.slide-card__image img{width:100%;height:100%;object-fit:cover;display:block}.slide-card__image span{position:absolute;top:12px;right:12px;padding:5px 12px;border-radius:20px;color:#fff;background:#27a879;font-size:12px}.is-disabled .slide-card__image span{background:#7d8995}
+/* Refined three-button layout for each slide card. */
+.slide-card__actions{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.75fr);align-items:stretch;gap:7px;padding:0 12px 14px}
+.slide-card__actions form{display:flex;min-width:0;margin:0}
+.slide-card__actions>button,.slide-card__actions form button{min-width:0;min-height:40px;width:100%;padding:5px 7px;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid transparent;border-radius:10px;font:inherit;font-size:11px;font-weight:700;line-height:1.3;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background .18s ease,box-shadow .18s ease,transform .18s ease}
+.slide-card__actions>button:hover,.slide-card__actions form button:hover{transform:translateY(-1px);box-shadow:0 4px 11px rgba(26,60,78,.12)}
+.slide-card__actions i{flex:0 0 auto;font-size:12px}
+.slide-card__actions .slide-action--edit{background:#e4f6f7;color:#087783;border-color:#d3edef}
+.slide-card__actions form:not(:last-child) .slide-action{background:#edf3ff;color:#3b5fc5;border-color:#e0e9ff}
+.slide-card__actions .slide-action--delete{background:#fff0f1;color:#c53d4b;border-color:#ffe0e3}
+@media(max-width:760px){.slide-card__actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:0 10px 12px}.slide-card__actions>button,.slide-card__actions form button{font-size:10px;padding:5px 4px;min-height:38px}}
+@media(max-width:360px){.slide-card__actions{grid-template-columns:1fr}.slide-card__actions>button,.slide-card__actions form button{min-height:40px;font-size:12px}}
 .slide-card__body{padding:16px}.slide-card__body small{color:var(--brand-2)}.slide-card__body h2{font-size:17px;margin:7px 0}.slide-card__body p{height:40px;margin:0;color:var(--muted);font-size:13px;overflow:hidden}
 .slide-card__actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 14px 14px}.slide-card__actions form{margin:0}.slide-action{width:100%;min-height:38px;padding:0 8px;background:#eef6f8;color:#27566d;font-size:12px}.slide-action--edit{background:#def4f5;color:#087783}.slide-action--delete{background:#fff0f0;color:#c94646}
 .slide-empty{grid-column:1/-1;min-height:260px;border:2px dashed #d9e7ec;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted)}.slide-empty i{font-size:44px;color:#9ccbd2}
