@@ -83,7 +83,7 @@ namespace VisitorManagment.Core.Security
     public static class PasswordPolicy
     {
         private static readonly System.Text.RegularExpressions.Regex StrongPassword =
-            new System.Text.RegularExpressions.Regex(@"\A(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}\z",
+            new System.Text.RegularExpressions.Regex(@"\A(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\u0660-\u0669\u06F0-\u06F9])(?=.*[^A-Za-z0-9\u0660-\u0669\u06F0-\u06F9])[\s\S]{8,64}\z",
                 System.Text.RegularExpressions.RegexOptions.CultureInvariant);
         public static bool IsValid(string password) => !string.IsNullOrEmpty(password) && StrongPassword.IsMatch(password);
     }
