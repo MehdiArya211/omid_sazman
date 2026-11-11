@@ -118,3 +118,93 @@
         transition: none;
     }
 }
+
+/* خوانایی منو در نمایشگرهای باریک و عریض */
+.navigation .navigation-menu-body{
+    box-sizing:border-box;
+    width:280px!important;
+    min-width:280px!important;
+    max-width:calc(100vw - 68px)!important;
+}
+.navigation-menu-body .navigation-menu-group,
+.navigation-menu-body .navigation-menu-group>div,
+.navigation-menu-body .navigation-menu-group>div>ul{
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+}
+.navigation-menu-body .sidebar-menu-link{
+    box-sizing:border-box;
+    width:calc(100% - 16px);
+    min-width:0;
+    gap:9px;
+    margin:4px 8px;
+    padding:7px 9px;
+}
+.navigation-menu-body .sidebar-menu-icon{
+    width:32px;
+    height:32px;
+    flex:0 0 32px;
+}
+.navigation-menu-body .sidebar-menu-label{
+    display:block;
+    flex:1 1 0;
+    width:0;
+    min-width:0;
+    overflow-wrap:normal;
+    word-break:normal;
+    white-space:normal;
+    line-height:1.7;
+}
+.navigation-menu-body .sidebar-menu-chevron{
+    flex:0 0 10px;
+    margin-right:0;
+    margin-left:0;
+}
+.navigation-menu-body ul.sidebar-submenu{
+    box-sizing:border-box;
+    width:calc(100% - 16px);
+    padding:3px 24px 9px 5px;
+    margin:0 8px 5px;
+}
+.navigation-menu-body .sidebar-submenu-link{
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    gap:8px;
+    padding:7px 8px;
+    line-height:1.65;
+    overflow-wrap:normal;
+    word-break:normal;
+    white-space:normal;
+}
+.navigation-menu-body .sidebar-submenu-link>span{
+    flex:1 1 auto;
+    min-width:0;
+}
+.navigation-menu-body .sidebar-submenu-link>i{
+    flex:0 0 15px;
+    width:15px;
+}
+@media(max-width:600px){
+    .navigation .navigation-menu-body{
+        width:min(292px,calc(100vw - 68px))!important;
+        min-width:0!important;
+        max-width:calc(100vw - 68px)!important;
+    }
+    .navigation-menu-body .sidebar-menu-link{
+        min-height:44px;
+        gap:8px;
+        padding-right:8px;
+        padding-left:8px;
+    }
+    .navigation-menu-body .sidebar-menu-label{
+        font-size:13px;
+    }
+    .navigation-menu-body ul.sidebar-submenu{
+        padding-right:18px;
+    }
+    .navigation-menu-body .sidebar-submenu-link{
+        font-size:12px;
+    }
+}

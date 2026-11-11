@@ -104,21 +104,27 @@
         card.style.transform = "";
         if (!target) {
             spotlight.hidden = true;
+            card.removeAttribute("data-placement");
             card.classList.add("is-centered");
             return;
         }
         spotlight.hidden = false;
         card.classList.remove("is-centered");
         var rect = target.getBoundingClientRect();
-        var gap = 7;
+        var gap = 10;
         spotlight.style.left = Math.max(4, rect.left - gap) + "px";
         spotlight.style.top = Math.max(4, rect.top - gap) + "px";
         spotlight.style.width = Math.min(window.innerWidth - 8, rect.width + gap * 2) + "px";
         spotlight.style.height = Math.min(window.innerHeight - 8, rect.height + gap * 2) + "px";
         var cardHeight = card.offsetHeight;
-        var top = rect.bottom + 14;
-        if (top + cardHeight > window.innerHeight - margin) top = rect.top - cardHeight - 14;
+        var top = rect.bottom + 18;
+        var placement = "below";
+        if (top + cardHeight > window.innerHeight - margin) {
+            top = rect.top - cardHeight - 18;
+            placement = "above";
+        }
         if (top < margin) top = margin;
+        card.setAttribute("data-placement", placement);
         var left = Math.min(Math.max(margin, rect.left + rect.width / 2 - Math.min(card.offsetWidth, window.innerWidth - margin * 2) / 2), window.innerWidth - card.offsetWidth - margin);
         card.style.top = top + "px";
         card.style.left = left + "px";
