@@ -48,3 +48,25 @@ namespace VisitorManagment.Core.DTOs
         public int RequestCount { get; set; }
     }
 }
+
+namespace VisitorManagment.Core.DTOs
+{
+    /// <summary>تعداد درخواست‌ها برای یک دسته در گزارش تحلیلی داشبورد.</summary>
+    public class DashboardDemandCategory
+    {
+        public string Label { get; set; }
+        public int RequestCount { get; set; }
+    }
+
+    /// <summary>آمار درخواست‌ها به تفکیک یگان، درجه و موضوع.</summary>
+    public class DashboardDemandStatistics
+    {
+        public int TotalRequests { get; set; }
+        public System.Collections.Generic.List<DashboardDemandCategory> Units { get; set; }
+            = new System.Collections.Generic.List<DashboardDemandCategory>();
+        public System.Collections.Generic.List<DashboardDemandCategory> Ranks { get; set; }
+            = new System.Collections.Generic.List<DashboardDemandCategory>();
+        public System.Collections.Generic.List<DashboardDemandCategory> Subjects { get; set; }
+            = new System.Collections.Generic.List<DashboardDemandCategory>();
+    }
+}

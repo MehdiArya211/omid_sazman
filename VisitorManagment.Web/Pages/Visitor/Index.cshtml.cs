@@ -2,6 +2,7 @@
 using ITOWebApiClient;
 using System;
 using System.Linq;
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VisitorManagment.Core.Constants;
@@ -47,6 +48,10 @@ namespace VisitorManagment.Web.Pages.Visitor
         public ChartNomrehArzyabiGha chartDto { get; set; }
         public SearchPageAllUnitCodeForGhaReportViewModel searchPageUnitCodeReportViewModel { get; set; }
         public DashboardRequestStatistics Statistics { get; private set; } = new DashboardRequestStatistics();
+        public DashboardDemandStatistics DemandStatistics { get; private set; } = new DashboardDemandStatistics();
+        public string FromDate { get; private set; }
+        public string ToDate { get; private set; }
+        public string DateFilterError { get; private set; }
         public string UserDisplayName { get; private set; }
         public string UserUnitTitle { get; private set; }
         public string UserIpAddress { get; private set; }
@@ -57,10 +62,28 @@ namespace VisitorManagment.Web.Pages.Visitor
         /// <summary>
         /// اطلاعات موردنیاز صفحه را بارگذاری می‌کند.
         /// </summary>
-        public void OnGet(int period = 0, int? selectedUnitCode = null)
+        public void OnGet(int period = 0, int? selectedUnitCode = null, string fromDate = null, string toDate = null)
         {
             SelectedPeriod = new[] { 0, 3, 6, 12 }.Contains(period) ? period : 0;
             SelectedUnitCode = selectedUnitCode;
+            FromDate = NormalizePersianDate(fromDate);
+            ToDate = NormalizePersianDate(toDate);
+            var parsedFromDate = ParsePersianDate(FromDate);
+            var parsedToDate = ParsePersianDate(ToDate);
+            if ((!string.IsNullOrWhiteSpace(FromDate) && !parsedFromDate.HasValue) ||
+                (!string.IsNullOrWhiteSpace(ToDate) && !parsedToDate.HasValue))
+            {
+                DateFilterError = "تاریخ را به شکل سال/ماه/روز وارد کنید؛ برای نمونه ۱۴۰۵/۰۱/۰۱.";
+                parsedFromDate = null;
+                parsedToDate = null;
+            }
+            else if (parsedFromDate.HasValue && parsedToDate.HasValue && parsedFromDate.Value > parsedToDate.Value)
+            {
+                DateFilterError = "تاریخ شروع نمی‌تواند بعد از تاریخ پایان باشد.";
+                parsedFromDate = null;
+                parsedToDate = null;
+            }
+            var endDateExclusive = parsedToDate.HasValue ? parsedToDate.Value.AddDays(1) : (DateTime?)null;
 
             #region مودال اطلاعات سیستمی نفر لاگین کرده
             var userName = User.FindFirst("UserName")?.Value ?? string.Empty;
@@ -124,7 +147,13 @@ namespace VisitorManagment.Web.Pages.Visitor
                 roleTypeId,
                 personalCode,
                 SelectedPeriod,
-                SelectedUnitCode);
+                SelectedUnitCode,
+                parsedFromDate,
+                endDateExclusive);
+
+            DemandStatistics = _fileService.GetDashboardDemandStatistics(
+                unitDutyCode, unitCode, codeGha, roleTypeId, personalCode,
+                parsedFromDate, endDateExclusive, SelectedUnitCode);
 
             #region رتبه بندی
 
@@ -137,6 +166,40 @@ namespace VisitorManagment.Web.Pages.Visitor
 
 
 
+        }
+
+        private static string NormalizePersianDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+            var chars = value.Trim().ToCharArray();
+            for (var i = 0; i < chars.Length; i++)
+            {
+                if (chars[i] >= '\u06F0' && chars[i] <= '\u06F9')
+                    chars[i] = (char)('0' + chars[i] - '\u06F0');
+                else if (chars[i] >= '\u0660' && chars[i] <= '\u0669')
+                    chars[i] = (char)('0' + chars[i] - '\u0660');
+            }
+            return new string(chars).Replace('-', '/').Replace('.', '/');
+        }
+
+        private static DateTime? ParsePersianDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            var parts = value.Split('/');
+            if (parts.Length != 3 ||
+                !int.TryParse(parts[0], out var year) ||
+                !int.TryParse(parts[1], out var month) ||
+                !int.TryParse(parts[2], out var day))
+                return null;
+
+            try
+            {
+                return new PersianCalendar().ToDateTime(year, month, day, 0, 0, 0, 0);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return null;
+            }
         }
     }
 }

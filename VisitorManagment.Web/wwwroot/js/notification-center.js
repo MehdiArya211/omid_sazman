@@ -34,6 +34,20 @@
         });
     }
 
+    // انتخاب «بعداً» فقط تا پایان همین ورود معتبر است؛ با خروج، برای ورود بعدی پاک می‌شود.
+    document.addEventListener("click", function (event) {
+        var link = event.target.closest && event.target.closest("a[href]");
+        if (!link) return;
+        var target;
+        try { target = new URL(link.href, window.location.href); } catch (ignore) { return; }
+        if (target.pathname.toLowerCase() !== "/admin/users/logout") return;
+        try {
+            Object.keys(window.sessionStorage).forEach(function (key) {
+                if (key.indexOf("notification-dismissed-") === 0) window.sessionStorage.removeItem(key);
+            });
+        } catch (ignore) { }
+    }, true);
+
     function dismissedKey(id) { return "notification-dismissed-" + id; }
     function wasDismissed(id) {
         try { return window.sessionStorage.getItem(dismissedKey(id)) === "1"; } catch (ignore) { return false; }
