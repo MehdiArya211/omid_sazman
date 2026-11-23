@@ -1591,7 +1591,9 @@ namespace VisitorManagment.Core.Services
             string roleTypeId,
             string personalCode,
             int periodMonths = 0,
-            int? selectedUnitCode = null)
+            int? selectedUnitCode = null,
+            DateTime? fromDate = null,
+            DateTime? toDateExclusive = null)
         {
             var files = _context.Files.AsNoTracking().AsQueryable();
 
@@ -1647,6 +1649,10 @@ namespace VisitorManagment.Core.Services
                 : new DateTime(today.Year, today.Month, 1).AddMonths(-(periodMonths - 1));
             if (rangeStart.HasValue)
                 files = files.Where(file => file.RegDate >= rangeStart.Value);
+            if (fromDate.HasValue)
+                files = files.Where(file => file.RegDate >= fromDate.Value);
+            if (toDateExclusive.HasValue)
+                files = files.Where(file => file.RegDate < toDateExclusive.Value);
 
             // شناسه فایل، شناسه یکتای درخواست است. هر درخواست فقط یک بار در آمار می‌آید.
             var uniqueRequests = files
@@ -1725,6 +1731,86 @@ namespace VisitorManagment.Core.Services
             }
 
             return statistics;
+        }
+
+        /// <summary>
+        /// گزارش یکتای درخواست‌ها بر اساس محدوده دسترسی، یگان انتخابی و بازه تاریخ.
+        /// </summary>
+        public DashboardDemandStatistics GetDashboardDemandStatistics(
+            string unitDutyCode,
+            string unitCode,
+            string codeGha,
+            string roleTypeId,
+            string personalCode,
+            DateTime? fromDate = null,
+            DateTime? toDateExclusive = null,
+            int? selectedUnitCode = null)
+        {
+            var files = _context.Files.AsNoTracking().AsQueryable();
+
+            switch (roleTypeId)
+            {
+                case "1":
+                    files = files.Where(file => file.Personal.PersonalCode == personalCode);
+                    break;
+                case "2":
+                    if (!int.TryParse(unitDutyCode, out var parsedUnitDutyCode))
+                        return new DashboardDemandStatistics();
+                    files = files.Where(file => file.Personal.UnitDutyCode == parsedUnitDutyCode);
+                    break;
+                case "3":
+                case "12":
+                case "200":
+                case "201":
+                case "202":
+                case "203":
+                case "600":
+                case "601":
+                    if (!int.TryParse(unitCode, out var parsedUnitCode))
+                        return new DashboardDemandStatistics();
+                    files = files.Where(file => file.Personal.UnitCode == parsedUnitCode);
+                    break;
+                case "4":
+                    if (!int.TryParse(codeGha, out var parsedGhaCode))
+                        return new DashboardDemandStatistics();
+                    files = files.Where(file => file.Personal.CodGha == parsedGhaCode);
+                    break;
+            }
+
+            if (selectedUnitCode.HasValue)
+                files = files.Where(file => file.Personal.UnitCode == selectedUnitCode.Value);
+            if (fromDate.HasValue)
+                files = files.Where(file => file.RegDate >= fromDate.Value);
+            if (toDateExclusive.HasValue)
+                files = files.Where(file => file.RegDate < toDateExclusive.Value);
+
+            var result = new DashboardDemandStatistics
+            {
+                TotalRequests = files.Count(),
+                Units = files.GroupBy(file => file.Personal.UnitDutyTitle)
+                    .Select(group => new DashboardDemandCategory
+                    {
+                        Label = group.Key ?? "بدون عنوان یگان",
+                        RequestCount = group.Count()
+                    })
+                    .OrderByDescending(item => item.RequestCount).Take(12).ToList(),
+                Ranks = files.GroupBy(file => file.Personal.RankTitle)
+                    .Select(group => new DashboardDemandCategory
+                    {
+                        Label = group.Key ?? "بدون درجه",
+                        RequestCount = group.Select(file => file.Id).Distinct().Count()
+                    })
+                    .OrderByDescending(item => item.RequestCount).Take(12).ToList(),
+                Subjects = files.GroupBy(file => file.RequestSubject.Title)
+                    .Select(group => new DashboardDemandCategory
+                    {
+                        Label = group.Key ?? "بدون موضوع",
+                        RequestCount = group.Select(file => file.Id).Distinct().Count()
+                    })
+                    .OrderByDescending(item => item.RequestCount).Take(12).ToList()
+            };
+
+            return result;
         }
 
         private static string GetPersianMonthName(int month)

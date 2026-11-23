@@ -230,6 +230,19 @@ namespace VisitorManagment.Core.Services.Interfaces
             int? selectedUnitCode = null);
 
         /// <summary>
+        /// گزارش تحلیلی درخواست‌ها به تفکیک یگان خدمتی، درجه و موضوع.
+        /// </summary>
+        DashboardDemandStatistics GetDashboardDemandStatistics(
+            string unitDutyCode,
+            string unitCode,
+            string codeGha,
+            string roleTypeId,
+            string personalCode,
+            DateTime? fromDate = null,
+            DateTime? toDateExclusive = null,
+            int? selectedUnitCode = null);
+
+        /// <summary>
         /// تعداد کل درخواست‌های ثبت شده بر اساس سطح دسترسی کاربر
         /// </summary>
         int GetFileCount(

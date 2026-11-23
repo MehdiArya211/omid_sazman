@@ -34,8 +34,11 @@
         {
             <form method="get" class="omid-dashboard__filters" aria-label="فیلتر آمار مدیریتی">
                 <div class="omid-filter-field"><label for="dashboardPeriod"><i class="fa fa-calendar"></i> بازه زمانی</label><select id="dashboardPeriod" name="period"><option value="0" selected="@(Model.SelectedPeriod == 0)">همه بازه‌ها</option><option value="12" selected="@(Model.SelectedPeriod == 12)">یک‌ساله</option><option value="6" selected="@(Model.SelectedPeriod == 6)">شش‌ماهه</option><option value="3" selected="@(Model.SelectedPeriod == 3)">سه‌ماهه</option></select></div>
-                <div class="omid-filter-field omid-filter-field--unit"><label for="dashboardUnit"><i class="fa fa-building-o"></i> یگان</label><select id="dashboardUnit" name="selectedUnitCode" class="dashboard-unit-search"><option value="">همه یگان‌های قابل مشاهده</option>@foreach (var unit in Model.Statistics.AvailableUnits){<option value="@unit.UnitCode" selected="@(Model.SelectedUnitCode == unit.UnitCode)">@unit.UnitTitle</option>}</select></div>
+                <div class="omid-filter-field omid-filter-field--unit"><label for="dashboardUnit"><i class="fa fa-building-o"></i> یگان عمده</label><select id="dashboardUnit" name="selectedUnitCode" class="dashboard-unit-search"><option value="">همه یگان‌های قابل مشاهده</option>@foreach (var unit in Model.Statistics.AvailableUnits){<option value="@unit.UnitCode" selected="@(Model.SelectedUnitCode == unit.UnitCode)">@unit.UnitTitle</option>}</select></div>
+                <div class="omid-filter-field"><label for="dashboardFromDate"><i class="fa fa-calendar"></i> از تاریخ شمسی</label><input id="dashboardFromDate" name="fromDate" type="text" inputmode="numeric" placeholder="۱۴۰۵/۰۱/۰۱" value="@Model.FromDate" /></div>
+                <div class="omid-filter-field"><label for="dashboardToDate"><i class="fa fa-calendar-check-o"></i> تا تاریخ شمسی</label><input id="dashboardToDate" name="toDate" type="text" inputmode="numeric" placeholder="۱۴۰۵/۱۲/۲۹" value="@Model.ToDate" /></div>
                 <button type="submit"><i class="fa fa-filter"></i> اعمال فیلتر</button>
+                <a class="omid-filter-reset" href="@Url.Page("/Visitor/Index")"><i class="fa fa-undo"></i> پاک‌کردن</a>
             </form>
         }
         <div class="omid-stat-grid">
@@ -69,6 +72,36 @@
             <article class="omid-chart-card"><header><div class="omid-chart-card__icon"><i class="fa fa-percent"></i></div><div><h3>نرخ رسیدگی دوره‌ای</h3><p>درصد اقدام یا ثبت نظریه نسبت به کل</p></div><div class="omid-chart-actions"><label class="omid-chart-type"><select data-chart-target="efficiency"><option value="line">خطی</option><option value="bar">ستونی</option></select></label><button type="button" data-chart-expand="efficiency" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header><div class="omid-chart-canvas"><canvas id="efficiencyChart" aria-label="نمودار نرخ رسیدگی" role="img"></canvas></div></article>
         </div>
     </section>
+        <section class="omid-demand-report" aria-labelledby="demandReportTitle">
+            <div class="omid-demand-report__heading">
+                <div><span>الگوی ثبت درخواست</span><h2 id="demandReportTitle">بیشترین درخواست‌ها بر اساس یگان، درجه و موضوع</h2>
+                    <p>آمار بر اساس تاریخ ثبت درخواست، یگان منتخب و سطح دسترسی حساب کاربری محاسبه شده است.</p></div>
+                <div class="omid-demand-report__total"><small>درخواست‌های این بازه</small><strong>@Model.DemandStatistics.TotalRequests.ToString("N0")</strong></div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.DateFilterError))
+            {
+                <div class="omid-demand-report__error" role="alert"><i class="fa fa-exclamation-circle"></i> @Model.DateFilterError</div>
+            }
+            <div class="omid-demand-report__highlights">
+                <article><span class="omid-demand-icon omid-demand-icon--unit"><i class="fa fa-building"></i></span><div><small>پرتقاضاترین یگان</small><strong>@(Model.DemandStatistics.Units.FirstOrDefault()?.Label ?? "اطلاعاتی ثبت نشده")</strong><b>@(Model.DemandStatistics.Units.FirstOrDefault()?.RequestCount.ToString("N0") ?? "۰") درخواست</b></div></article>
+                <article><span class="omid-demand-icon omid-demand-icon--rank"><i class="fa fa-star"></i></span><div><small>پرتقاضاترین درجه</small><strong>@(Model.DemandStatistics.Ranks.FirstOrDefault()?.Label ?? "اطلاعاتی ثبت نشده")</strong><b>@(Model.DemandStatistics.Ranks.FirstOrDefault()?.RequestCount.ToString("N0") ?? "۰") درخواست</b></div></article>
+                <article><span class="omid-demand-icon omid-demand-icon--subject"><i class="fa fa-tags"></i></span><div><small>پرتکرارترین موضوع</small><strong>@(Model.DemandStatistics.Subjects.FirstOrDefault()?.Label ?? "اطلاعاتی ثبت نشده")</strong><b>@(Model.DemandStatistics.Subjects.FirstOrDefault()?.RequestCount.ToString("N0") ?? "۰") درخواست</b></div></article>
+            </div>
+            <div class="omid-demand-report__charts">
+                <article class="omid-chart-card">
+                    <header><div class="omid-chart-card__icon"><i class="fa fa-building-o"></i></div><div><h3>درخواست‌ها به تفکیک یگان</h3><p>یگان‌های خدمتی با بیشترین ثبت</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نمایش<select data-chart-target="demandUnits"><option value="horizontalBar">میله‌ای</option><option value="bar">ستونی</option><option value="doughnut">حلقه‌ای</option></select></label><button type="button" data-chart-expand="demandUnits" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                    <div class="omid-chart-canvas"><canvas id="demandUnitsChart" aria-label="درخواست‌ها به تفکیک یگان" role="img"></canvas></div>
+                </article>
+                <article class="omid-chart-card">
+                    <header><div class="omid-chart-card__icon"><i class="fa fa-star-o"></i></div><div><h3>درخواست‌ها به تفکیک درجه</h3><p>درجه‌های ثبت‌کنندگان درخواست</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نمایش<select data-chart-target="demandRanks"><option value="horizontalBar">میله‌ای</option><option value="bar">ستونی</option><option value="doughnut">حلقه‌ای</option></select></label><button type="button" data-chart-expand="demandRanks" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                    <div class="omid-chart-canvas"><canvas id="demandRanksChart" aria-label="درخواست‌ها به تفکیک درجه" role="img"></canvas></div>
+                </article>
+                <article class="omid-chart-card">
+                    <header><div class="omid-chart-card__icon"><i class="fa fa-tags"></i></div><div><h3>درخواست‌ها به تفکیک موضوع</h3><p>موضوعات پرتکرار درخواست‌ها</p></div><div class="omid-chart-actions"><label class="omid-chart-type">نمایش<select data-chart-target="demandSubjects"><option value="horizontalBar">میله‌ای</option><option value="bar">ستونی</option><option value="doughnut">حلقه‌ای</option></select></label><button type="button" data-chart-expand="demandSubjects" title="بزرگ‌نمایی"><i class="fa fa-expand"></i></button></div></header>
+                    <div class="omid-chart-canvas"><canvas id="demandSubjectsChart" aria-label="درخواست‌ها به تفکیک موضوع" role="img"></canvas></div>
+                </article>
+            </div>
+        </section>
     }
 
     <section class="omid-dashboard__lower-grid">
@@ -181,12 +214,38 @@
             efficiencyOptions.scales.yAxes[0].ticks.max = 100;
             efficiencyOptions.scales.yAxes[0].ticks.callback = function (value) { return value + "٪"; };
             var efficiencyChart = new Chart(document.getElementById("efficiencyChart"), { type: "bar", data: { labels: labels, datasets: [{ label: "درصد رسیدگی", data: trend.map(function (item) { return item.TotalRequests ? Math.round((item.ResolvedRequests + item.OpinionRequests) * 100 / item.TotalRequests) : 0; }), backgroundColor: "rgba(37,133,163,.78)", borderColor: "#2585a3", borderWidth: 1, barPercentage: .58, categoryPercentage: .72 }] }, options: efficiencyOptions });
-            var charts = { total: totalChart, status: statusChart, composition: compositionChart, units: unitChart, cumulative: cumulativeChart, efficiency: efficiencyChart };
+            var demandData = @Html.Raw(JsonSerializer.Serialize(Model.DemandStatistics));
+            var demandColors = ["#7351a4", "#278b9e", "#e3a33d", "#d66d74", "#568d6c", "#4775be", "#a16b9b", "#4da69b", "#cb8053", "#687a91", "#b1a242", "#815f4c"];
+            function getDemandOptions(type) {
+                if (type === "doughnut") {
+                    return { responsive: true, maintainAspectRatio: false, legend: { position: "bottom", labels: { fontFamily: "inherit", fontColor: "#55475f", padding: 14, usePointStyle: true } }, tooltips: commonOptions.tooltips, cutoutPercentage: 62 };
+                }
+                var options = JSON.parse(JSON.stringify(commonOptions));
+                options.scales = type === "horizontalBar"
+                    ? {
+                        xAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#675a70", padding: 8 } }],
+                        yAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#51445b", autoSkip: false } }]
+                    }
+                    : {
+                        xAxes: [{ gridLines: { display: false }, ticks: { fontFamily: "inherit", fontColor: "#51445b", autoSkip: false, maxRotation: 45, minRotation: 0 } }],
+                        yAxes: [{ gridLines: { color: gridColor, drawBorder: false }, ticks: { beginAtZero: true, precision: 0, fontFamily: "inherit", fontColor: "#675a70", padding: 8 } }]
+                    };
+                return options;
+            }
+            function createDemandChart(canvasId, rows, type) {
+                var chartData = { labels: rows.map(function (item) { return item.Label; }), datasets: [{ label: "تعداد درخواست", data: rows.map(function (item) { return item.RequestCount; }), backgroundColor: rows.map(function (_, index) { return demandColors[index % demandColors.length]; }), borderColor: rows.map(function (_, index) { return demandColors[index % demandColors.length]; }), borderWidth: 1, barPercentage: .68, categoryPercentage: .78 }] };
+                return new Chart(document.getElementById(canvasId), { type: type, data: chartData, options: getDemandOptions(type) });
+            }
+            var demandUnitChart = createDemandChart("demandUnitsChart", demandData.Units, "horizontalBar");
+            var demandRankChart = createDemandChart("demandRanksChart", demandData.Ranks, "horizontalBar");
+            var demandSubjectChart = createDemandChart("demandSubjectsChart", demandData.Subjects, "horizontalBar");
+
+            var charts = { total: totalChart, status: statusChart, composition: compositionChart, units: unitChart, cumulative: cumulativeChart, efficiency: efficiencyChart, demandUnits: demandUnitChart, demandRanks: demandRankChart, demandSubjects: demandSubjectChart };
             function changeChartType(key, type) {
                 var currentChart = charts[key];
                 var chartData = currentChart.config.data;
                 var canvas = currentChart.canvas;
-                var chartOptions = currentChart.config.options;
+                var chartOptions = key.indexOf("demand") === 0 ? getDemandOptions(type) : currentChart.config.options;
                 currentChart.destroy();
                 charts[key] = new Chart(canvas, { type: type, data: chartData, options: chartOptions });
             }
