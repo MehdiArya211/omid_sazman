@@ -227,7 +227,9 @@ namespace VisitorManagment.Core.Services.Interfaces
             string roleTypeId,
             string personalCode,
             int periodMonths = 0,
-            int? selectedUnitCode = null);
+            int? selectedUnitCode = null,
+            DateTime? fromDate = null,
+            DateTime? toDateExclusive = null);
 
         /// <summary>
         /// گزارش تحلیلی درخواست‌ها به تفکیک یگان خدمتی، درجه و موضوع.
