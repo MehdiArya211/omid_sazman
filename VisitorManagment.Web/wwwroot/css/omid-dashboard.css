@@ -52,3 +52,11 @@
 .omid-demand-report__charts .omid-chart-card:last-child .omid-chart-canvas{max-width:850px;margin:0 auto;width:100%}
 @media(max-width:900px){.omid-demand-report__charts{grid-template-columns:1fr}.omid-demand-report__charts .omid-chart-card:last-child{grid-column:auto}}
 @media(max-width:650px){.omid-demand-report{padding:16px}.omid-demand-report__heading{align-items:stretch;flex-direction:column}.omid-demand-report__total{align-items:flex-start}.omid-demand-report__highlights{grid-template-columns:1fr}.omid-dashboard__filters input[type=text]{width:100%}}
+
+/* انتخابگر تاریخ شمسی داشبورد */
+.datepicker-container{z-index:100100!important}
+.datepicker-container .datepicker-plot-area{font-family:inherit;border:1px solid #e7dcef;border-radius:15px;box-shadow:0 14px 34px rgba(70,46,91,.18);background:#fff}
+.datepicker-container .datepicker-plot-area .datepicker-navigator{border-radius:11px}
+.datepicker-container .datepicker-plot-area .datepicker-day-view .table-days td span{border-radius:8px}
+.datepicker-container .datepicker-plot-area .datepicker-day-view .table-days td span:hover{background:#f1eafa;color:#754397}
+.datepicker-container .datepicker-plot-area .datepicker-day-view .table-days td.selected span{background:#8f56b5;color:#fff}
