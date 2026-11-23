@@ -146,6 +146,22 @@
                 window.jQuery("#dashboardUnit").select2({ width: "100%", placeholder: "جست‌وجو یا انتخاب یگان", allowClear: true, dir: "rtl" });
             }
 
+            var jalaliDateInputs = window.jQuery && window.jQuery.fn.persianDatepicker
+                ? window.jQuery("#dashboardFromDate, #dashboardToDate")
+                : null;
+            if (jalaliDateInputs && jalaliDateInputs.length) {
+                jalaliDateInputs.persianDatepicker({
+                    calendarType: "persian",
+                    format: "YYYY/MM/DD",
+                    initialValue: false,
+                    initialValueType: "persian",
+                    persianDigit: true,
+                    autoClose: true,
+                    position: "auto",
+                    timePicker: { enabled: false }
+                });
+            }
+
             if (!window.Chart || !document.getElementById("totalRequestsTrend")) return;
             var trend = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.MonthlyTrend));
             var units = @Html.Raw(JsonSerializer.Serialize(Model.Statistics.UnitBreakdown));
